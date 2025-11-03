@@ -203,7 +203,7 @@ function Home() {
                                 {block.number.toLocaleString()}
                               </a>
                               <span className="block-time">
-                                {block.timestamp}
+                                Hash: {block.hash.substring(0, 10)}...
                               </span>
                             </div>
                             <div className="block-details">
@@ -212,22 +212,19 @@ function Home() {
                                   href={`#txs?block=${block.number}`}
                                   className="link-primary block-txns"
                                 >
-                                  {block.expressLaneTxns} Express Lane txns
+                                  {block.mevCount} MEV txns
                                 </a>
                                 <a
                                   href={`#txs?block=${block.number}`}
                                   className="link-primary block-txns"
                                 >
-                                  {block.totalTxns} txns
+                                  {block.timeboostedTxMevCount} Timeboosted MEV
                                 </a>
                               </div>
-                              <span className="block-time-taken">
-                                in {block.timeTaken}
-                              </span>
                             </div>
                           </div>
                         </div>
-                        <div className="block-value">{block.ethValue} Eth</div>
+                        <div className="block-value">${block.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       {index < latestBlocks.length - 1 && (
                         <hr className="block-separator" />

@@ -524,6 +524,53 @@
   white-space: nowrap;
 }
 
+.block-profit-label {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: var(--font-family-mono);
+}
+
+.block-profit-label strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.block-possible-mev {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.block-possible-mev-hashes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.block-tx-hash {
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.block-tx-hash:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.block-more-txs {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
 .block-value {
   font-size: 0.875rem;
   color: #111827;

@@ -21,14 +21,13 @@ export interface Transaction {
  * Block response type (list item)
  */
 export interface BlockListItem {
+  hash: string;
   number: number;
-  timestamp: string;
-  miner: string | null;
-  minerAddress: string;
-  expressLaneTxns: number;
-  totalTxns: number;
-  timeTaken: string;
-  ethValue: string;
+  mevCount: number;
+  totalProfit: number;
+  timeboostedTxCount: number;
+  timeboostedTxMevCount: number;
+  possibleMevTxHashes: string[];
 }
 
 /**

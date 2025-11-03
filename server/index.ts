@@ -172,25 +172,19 @@ app.get('/latest-blocks', async (
   try {
     const limit = parseInt(req.query.limit as string) || 20;
     
-    // Query joins blocks and tree tables
-    // Using ORDER BY (block_timestamp, block_number) for efficient querying
+    // Query mev_blocks table
+    // Using PRIMARY KEY (block_number, block_hash) for efficient querying
     const query = `
       SELECT 
-        b.block_number,
-        b.block_hash,
-        b.block_timestamp,
-        COUNT(DISTINCT t.tx_hash) as total_txns,
-        COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
-        SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
-            THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
-            ELSE 0 END) as total_coinbase_transfer,
-        MIN(t.gas_details.gas_used) as min_gas_used,
-        MAX(t.gas_details.gas_used) as max_gas_used
-      FROM ethereum.blocks b
-      INNER JOIN brontes.tree t ON b.block_number = t.block_number
-      WHERE b.valid = 1
-      GROUP BY b.block_number, b.block_hash, b.block_timestamp
-      ORDER BY b.block_timestamp DESC, b.block_number DESC
+        block_hash,
+        block_number,
+        mev_count.mev_count as mev_count,
+        total_mev_profit_usd as total_profit,
+        timeboosted_tx_count,
+        timeboosted_tx_mev_count,
+        possible_mev.tx_hash as possible_mev_tx_hash
+      FROM mev.mev_blocks
+      ORDER BY block_number DESC
       LIMIT ${limit}
     `;
 
@@ -200,39 +194,25 @@ app.get('/latest-blocks', async (
     });
 
     const data = await result.json<Array<{
-      block_number: number;
       block_hash: string;
-      block_timestamp: number;
-      total_txns: number;
-      express_lane_txns: number;
-      total_coinbase_transfer: string;
-      min_gas_used: string;
-      max_gas_used: string;
+      block_number: number;
+      mev_count: number;
+      total_profit: number;
+      timeboosted_tx_count: number;
+      timeboosted_tx_mev_count: number;
+      possible_mev_tx_hash: string[];
     }>>();
 
     // Map to BlockListItem type
-    const blocks: BlockListItem[] = data.map((row) => {
-      const ethValue = row.total_coinbase_transfer && row.total_coinbase_transfer !== '0'
-        ? formatEthValue(row.total_coinbase_transfer)
-        : '0.00000';
-
-      // Calculate time taken (approximation based on gas used)
-      const avgGas = (
-        (BigInt(row.min_gas_used) + BigInt(row.max_gas_used)) / BigInt(2)
-      ).toString();
-      const timeTaken = '12 secs'; // Could be calculated more accurately
-
-      return {
-        number: row.block_number,
-        timestamp: formatRelativeTime(row.block_timestamp),
-        miner: null, // Could be enhanced by joining with builder_info table
-        minerAddress: '0x0000000000000000000000000000000000000000', // Placeholder
-        expressLaneTxns: row.express_lane_txns,
-        totalTxns: row.total_txns,
-        timeTaken,
-        ethValue,
-      };
-    });
+    const blocks: BlockListItem[] = data.map((row) => ({
+      hash: row.block_hash,
+      number: row.block_number,
+      mevCount: row.mev_count,
+      totalProfit: row.total_profit,
+      timeboostedTxCount: row.timeboosted_tx_count,
+      timeboostedTxMevCount: row.timeboosted_tx_mev_count,
+      possibleMevTxHashes: row.possible_mev_tx_hash || [],
+    }));
 
     res.json(blocks);
   } catch (error) {
