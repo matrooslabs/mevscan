@@ -1,7 +1,17 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import type {
+  Transaction,
+  Block,
+  BlockListItem,
+  Address,
+  ErrorResponse,
+  HealthResponse,
+  RootResponse,
+} from '../shared/types';
 
-const express = require('express');
-const cors = require('cors');
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // Dummy data - Latest transactions
-const latestTransactions = [
+const latestTransactions: Transaction[] = [
   { 
     hash: '0xb791a07c9aefa03db87f8ad128121ed5b8a7096d8c968df682686ac7ea61e594', 
     from: '0xdadB0d80...24f783711', 
@@ -63,7 +73,7 @@ const latestTransactions = [
 ];
 
 // Dummy data - Latest blocks
-const latestBlocks = [
+const latestBlocks: BlockListItem[] = [
   { 
     number: 23717104, 
     timestamp: '5 secs ago', 
@@ -127,29 +137,30 @@ const latestBlocks = [
 ];
 
 // Helper function to simulate network delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number): Promise<void> => 
+  new Promise(resolve => setTimeout(resolve, ms));
 
 // Routes
 
 // Get latest transactions
-app.get('/latest-transactions', async (req, res) => {
+app.get('/latest-transactions', async (req: Request, res: Response<Transaction[]>) => {
   await delay(300); // Simulate network delay
   res.json(latestTransactions);
 });
 
 // Get latest blocks
-app.get('/latest-blocks', async (req, res) => {
+app.get('/latest-blocks', async (req: Request, res: Response<BlockListItem[]>) => {
   await delay(300); // Simulate network delay
   res.json(latestBlocks);
 });
 
 // Get a specific block by identifier (hash or number)
-app.get('/blocks/:blockId', async (req, res) => {
+app.get('/blocks/:blockId', async (req: Request<{ blockId: string }>, res: Response<Block>) => {
   await delay(300);
   const { blockId } = req.params;
   
   // Try to find by number first
-  let block = latestBlocks.find(b => b.number.toString() === blockId);
+  let block: Block | undefined = latestBlocks.find(b => b.number.toString() === blockId);
   
   // If not found by number, create a dummy block based on the ID
   if (!block) {
@@ -175,7 +186,10 @@ app.get('/blocks/:blockId', async (req, res) => {
 });
 
 // Get a specific transaction by identifier
-app.get('/transactions/:transactionId', async (req, res) => {
+app.get('/transactions/:transactionId', async (
+  req: Request<{ transactionId: string }>, 
+  res: Response<Transaction>
+) => {
   await delay(300);
   const { transactionId } = req.params;
   
@@ -205,12 +219,15 @@ app.get('/transactions/:transactionId', async (req, res) => {
 });
 
 // Get a specific address by identifier
-app.get('/addresses/:address', async (req, res) => {
+app.get('/addresses/:address', async (
+  req: Request<{ address: string }>, 
+  res: Response<Address>
+) => {
   await delay(300);
   const { address } = req.params;
   
   // Create dummy address data
-  const addressData = {
+  const addressData: Address = {
     address: address,
     balance: '1.234567',
     balanceInEth: '1.234567',
@@ -226,12 +243,12 @@ app.get('/addresses/:address', async (req, res) => {
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response<HealthResponse>) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response<RootResponse>) => {
   res.json({ 
     message: 'MEV GPT API Server',
     version: '1.0.0',
@@ -247,7 +264,12 @@ app.get('/', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((
+  err: Error,
+  req: Request,
+  res: Response<ErrorResponse>,
+  _next: NextFunction
+) => {
   console.error(err.stack);
   res.status(500).json({ 
     error: 'Something went wrong!',
@@ -256,7 +278,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req: Request, res: Response<ErrorResponse>) => {
   res.status(404).json({ 
     error: 'Not Found',
     message: `Cannot ${req.method} ${req.path}`

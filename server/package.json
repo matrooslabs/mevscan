@@ -2,10 +2,12 @@
   "name": "mevgpt-server",
   "version": "1.0.0",
   "description": "Express.js API server for MEV GPT",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts",
+    "dev:watch": "nodemon --exec ts-node index.ts"
   },
   "keywords": [
     "express",
@@ -22,7 +24,12 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "typescript": "^5.6.0",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.14.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17"
   }
 }
 
