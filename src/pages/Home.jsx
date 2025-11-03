@@ -9,14 +9,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useLatestBlocks, useLatestTransactions } from "../hooks/useApi";
-import { useWallet } from "../hooks/useWallet";
+import Navbar from "../components/Navbar";
 import "./Home.css";
 
 function Home() {
   const [txHash, setTxHash] = useState("");
   const navigate = useNavigate();
-  const { formattedAddress, isConnected, isConnecting, connect, disconnect } =
-    useWallet();
 
   // Fetch data using TanStack Query
   const {
@@ -67,34 +65,7 @@ function Home() {
 
   return (
     <div className="home-container">
-      <nav className="navbar">
-        <div className="navbar-container">
-          <h1 className="navbar-logo">IntentScan</h1>
-          <div className="navbar-right">
-            <div className="wallet-button-container">
-              {isConnected ? (
-                <div className="wallet-connected">
-                  <span className="wallet-address">{formattedAddress}</span>
-                  <button
-                    onClick={disconnect}
-                    className="wallet-disconnect-button"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={connect}
-                  disabled={isConnecting}
-                  className="connect-wallet-button"
-                >
-                  {isConnecting ? "Connecting..." : "Connect Wallet"}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
       <div className="search-section">
         <div className="search-container">
           <form onSubmit={handleSearch} className="search-form">
@@ -210,11 +181,11 @@ function Home() {
                           <div className="block-info">
                             <div className="block-number-time">
                               <a
-                                href={`#block/${block.number}`}
+                                href={`/blocks/${block.number}`}
                                 className="link-primary block-number"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  // Navigate to block detail page if needed
+                                  navigate(`/blocks/${block.number}`);
                                 }}
                               >
                                 {block.number.toLocaleString()}
