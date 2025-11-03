@@ -21,11 +21,13 @@ class ApiClient {
 
   /**
    * Get latest transactions
+   * @param limit - Optional limit for number of transactions to retrieve (default: 20)
    * @returns Promise resolving to an array of transaction objects
    */
-  async getLatestTransactions(): Promise<Transaction[]> {
+  async getLatestTransactions(limit?: number): Promise<Transaction[]> {
     try {
-      const response = await this.client.get<Transaction[]>('/latest-transactions');
+      const params = limit ? { limit } : {};
+      const response = await this.client.get<Transaction[]>('/latest-transactions', { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -34,11 +36,13 @@ class ApiClient {
 
   /**
    * Get latest blocks
+   * @param limit - Optional limit for number of blocks to retrieve (default: 20)
    * @returns Promise resolving to an array of block objects
    */
-  async getLatestBlocks(): Promise<BlockListItem[]> {
+  async getLatestBlocks(limit?: number): Promise<BlockListItem[]> {
     try {
-      const response = await this.client.get<BlockListItem[]>('/latest-blocks');
+      const params = limit ? { limit } : {};
+      const response = await this.client.get<BlockListItem[]>('/latest-blocks', { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);

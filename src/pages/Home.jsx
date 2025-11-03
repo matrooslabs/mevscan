@@ -20,12 +20,12 @@ function Home() {
     data: latestBlocksData,
     isLoading: blocksLoading,
     error: blocksError,
-  } = useLatestBlocks();
+  } = useLatestBlocks(20);
   const {
     data: latestTransactionsData,
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useLatestTransactions();
+  } = useLatestTransactions(10);
 
   const handleSearch = (e) => {
     e.preventDefault();

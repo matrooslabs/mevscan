@@ -13,13 +13,14 @@ const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://loc
 
 /**
  * Query hook for fetching latest blocks
+ * @param {number} [limit] - Optional limit for number of blocks to retrieve (default: 20)
  * @returns {ReturnType<typeof useQuery<BlockListItem[]>>}
  */
-export function useLatestBlocks() {
+export function useLatestBlocks(limit) {
   return useQuery({
-    queryKey: ['blocks', 'latest'],
+    queryKey: ['blocks', 'latest', limit],
     queryFn: async () => {
-      const data = await apiClient.getLatestBlocks()
+      const data = await apiClient.getLatestBlocks(limit)
       return data
     },
     refetchInterval: 12000, // Refetch every 12 seconds for real-time updates
@@ -28,13 +29,14 @@ export function useLatestBlocks() {
 
 /**
  * Query hook for fetching latest transactions
+ * @param {number} [limit] - Optional limit for number of transactions to retrieve (default: 20)
  * @returns {ReturnType<typeof useQuery<Transaction[]>>}
  */
-export function useLatestTransactions() {
+export function useLatestTransactions(limit) {
   return useQuery({
-    queryKey: ['transactions', 'latest'],
+    queryKey: ['transactions', 'latest', limit],
     queryFn: async () => {
-      const data = await apiClient.getLatestTransactions()
+      const data = await apiClient.getLatestTransactions(limit)
       return data
     },
     refetchInterval: 12000, // Refetch every 12 seconds for real-time updates
