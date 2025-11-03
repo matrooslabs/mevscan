@@ -6,8 +6,28 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
   globalIgnores(['dist']),
+  // Server configuration (Node.js environment)
+  {
+    files: ['server/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'script', // CommonJS
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  // Client configuration (Browser environment)
   {
     files: ['**/*.{js,jsx}'],
+    ignores: ['server/**/*'],
     extends: [
       js.configs.recommended,
       reactHooks.configs['recommended-latest'],

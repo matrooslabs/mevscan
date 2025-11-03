@@ -1,6 +1,16 @@
+/**
+ * @typedef {import('../../shared/types').Transaction} Transaction
+ * @typedef {import('../../shared/types').Block} Block
+ * @typedef {import('../../shared/types').BlockListItem} BlockListItem
+ * @typedef {import('../../shared/types').Address} Address
+ */
+
 import axios from 'axios';
 
 class ApiClient {
+  /**
+   * @param {string} baseURL
+   */
   constructor(baseURL) {
     this.client = axios.create({
       baseURL: baseURL,
@@ -13,7 +23,7 @@ class ApiClient {
 
   /**
    * Get latest transactions
-   * @returns {Promise} Array of transaction objects
+   * @returns {Promise<Transaction[]>} Array of transaction objects
    */
   async getLatestTransactions() {
     // Simulate network delay
@@ -74,7 +84,7 @@ class ApiClient {
 
   /**
    * Get latest blocks
-   * @returns {Promise} Array of block objects
+   * @returns {Promise<BlockListItem[]>} Array of block objects
    */
   async getLatestBlocks() {
     // Simulate network delay
@@ -148,7 +158,7 @@ class ApiClient {
   /**
    * Get a specific block by identifier
    * @param {string} blockId - Block hash or block number
-   * @returns {Promise} Axios response with block data
+   * @returns {Promise<Block>} Block data
    */
   async getBlock(blockId) {
     try {
@@ -162,7 +172,7 @@ class ApiClient {
   /**
    * Get a specific transaction by identifier
    * @param {string} transactionId - Transaction hash
-   * @returns {Promise} Axios response with transaction data
+   * @returns {Promise<Transaction>} Transaction data
    */
   async getTransaction(transactionId) {
     try {
@@ -176,7 +186,7 @@ class ApiClient {
   /**
    * Get a specific address by identifier
    * @param {string} address - Address hash
-   * @returns {Promise} Axios response with address data
+   * @returns {Promise<Address>} Address data
    */
   async getAddress(address) {
     try {

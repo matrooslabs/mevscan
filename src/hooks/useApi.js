@@ -1,3 +1,10 @@
+/**
+ * @typedef {import('../../shared/types').Transaction} Transaction
+ * @typedef {import('../../shared/types').Block} Block
+ * @typedef {import('../../shared/types').BlockListItem} BlockListItem
+ * @typedef {import('../../shared/types').Address} Address
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import ApiClient from '../services/apiClient'
 
@@ -6,6 +13,7 @@ const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://loc
 
 /**
  * Query hook for fetching latest blocks
+ * @returns {ReturnType<typeof useQuery<BlockListItem[]>>}
  */
 export function useLatestBlocks() {
   return useQuery({
@@ -20,6 +28,7 @@ export function useLatestBlocks() {
 
 /**
  * Query hook for fetching latest transactions
+ * @returns {ReturnType<typeof useQuery<Transaction[]>>}
  */
 export function useLatestTransactions() {
   return useQuery({
@@ -34,6 +43,8 @@ export function useLatestTransactions() {
 
 /**
  * Query hook for fetching a specific block
+ * @param {string} blockId
+ * @returns {ReturnType<typeof useQuery<Block>>}
  */
 export function useBlock(blockId) {
   return useQuery({
@@ -48,6 +59,8 @@ export function useBlock(blockId) {
 
 /**
  * Query hook for fetching a specific transaction
+ * @param {string} transactionId
+ * @returns {ReturnType<typeof useQuery<Transaction>>}
  */
 export function useTransaction(transactionId) {
   return useQuery({
@@ -62,6 +75,8 @@ export function useTransaction(transactionId) {
 
 /**
  * Query hook for fetching a specific address
+ * @param {string} address
+ * @returns {ReturnType<typeof useQuery<Address>>}
  */
 export function useAddress(address) {
   return useQuery({
