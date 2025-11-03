@@ -136,27 +136,20 @@ const latestBlocks: BlockListItem[] = [
   },
 ];
 
-// Helper function to simulate network delay
-const delay = (ms: number): Promise<void> => 
-  new Promise(resolve => setTimeout(resolve, ms));
-
 // Routes
 
 // Get latest transactions
 app.get('/latest-transactions', async (req: Request, res: Response<Transaction[]>) => {
-  await delay(300); // Simulate network delay
   res.json(latestTransactions);
 });
 
 // Get latest blocks
 app.get('/latest-blocks', async (req: Request, res: Response<BlockListItem[]>) => {
-  await delay(300); // Simulate network delay
   res.json(latestBlocks);
 });
 
 // Get a specific block by identifier (hash or number)
 app.get('/blocks/:blockId', async (req: Request<{ blockId: string }>, res: Response<Block>) => {
-  await delay(300);
   const { blockId } = req.params;
   
   // Try to find by number first
@@ -190,7 +183,6 @@ app.get('/transactions/:transactionId', async (
   req: Request<{ transactionId: string }>, 
   res: Response<Transaction>
 ) => {
-  await delay(300);
   const { transactionId } = req.params;
   
   // Try to find in latest transactions
@@ -223,7 +215,6 @@ app.get('/addresses/:address', async (
   req: Request<{ address: string }>, 
   res: Response<Address>
 ) => {
-  await delay(300);
   const { address } = req.params;
   
   // Create dummy address data

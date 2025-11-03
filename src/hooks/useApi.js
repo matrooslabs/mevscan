@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import ApiClient from '../services/apiClient'
 
 // Initialize API client - you may want to configure this based on your environment
-const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api')
+const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001')
 
 /**
  * Query hook for fetching latest blocks
