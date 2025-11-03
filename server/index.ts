@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import { createClient, ClickHouseClient } from '@clickhouse/client';
 import type {
   Transaction,
   Block,
@@ -16,198 +17,456 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Initialize ClickHouse client once
+let clickhouseClient: ClickHouseClient | null = null;
+
+function initClickHouseClient(): ClickHouseClient {
+  const url = process.env.CLICKHOUSE_URL;
+  const username = process.env.CLICKHOUSE_USERNAME;
+  const password = process.env.CLICKHOUSE_PASSWORD;
+  const database = process.env.CLICKHOUSE_DATABASE;
+
+  // Validate all required environment variables are present
+  if (!url) {
+    console.error('ERROR: CLICKHOUSE_URL environment variable is required');
+    process.exit(1);
+  }
+  if (!username) {
+    console.error('ERROR: CLICKHOUSE_USERNAME environment variable is required');
+    process.exit(1);
+  }
+  if (password === undefined) {
+    console.error('ERROR: CLICKHOUSE_PASSWORD environment variable is required');
+    process.exit(1);
+  }
+  if (!database) {
+    console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
+    process.exit(1);
+  }
+
+  return createClient({
+    host: url,
+    username,
+    password,
+    database,
+  });
+}
+
+// Initialize ClickHouse client at startup - exit if configuration is invalid
+try {
+  clickhouseClient = initClickHouseClient();
+  console.log('✓ ClickHouse client initialized successfully');
+} catch (error) {
+  console.error('ERROR: Failed to initialize ClickHouse client:', error);
+  process.exit(1);
+}
+
+// Middleware to inject ClickHouse client into request context
+declare global {
+  namespace Express {
+    interface Request {
+      clickhouse: ClickHouseClient;
+    }
+  }
+}
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Client is guaranteed to be initialized at this point
+  req.clickhouse = clickhouseClient!;
+  next();
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Dummy data - Latest transactions
-const latestTransactions: Transaction[] = [
-  { 
-    hash: '0xb791a07c9aefa03db87f8ad128121ed5b8a7096d8c968df682686ac7ea61e594', 
-    from: '0xdadB0d80...24f783711', 
-    to: '0x4675C7e5...ef3b0a263', 
-    toLabel: null,
-    value: '0.20476', 
-    time: '20 secs ago' 
-  },
-  { 
-    hash: '0x51640f94fc391cfc47e120e1f877c95ad87a74f639dd23497e591679979d50c9', 
-    from: '0xdadB0d80...24f783711', 
-    to: '0xB423b53D...adC211020', 
-    toLabel: null,
-    value: '0.00158', 
-    time: '20 secs ago' 
-  },
-  { 
-    hash: '0x3481191f2f58b1e8bd28925ea21e39a9831e2131e9ffba9c62df25f95ca42d0c', 
-    from: '0x0Dc1E92F...3b1A03d73', 
-    to: '0x3Fb9cED5...39519f65A', 
-    toLabel: null,
-    value: '0.22', 
-    time: '20 secs ago' 
-  },
-  { 
-    hash: '0x1053e70bd8f205624b27e157d34c569eb317d5d4365f27ec79a4956426f68cab', 
-    from: '0x2A66c35C...54c1471FD', 
-    to: '0xf984A448...396272A65', 
-    toLabel: null,
-    value: '0.0022', 
-    time: '20 secs ago' 
-  },
-  { 
-    hash: '0xd883c28e36e95cc0dcc1ac63b432f83f9aa4ad07718b619cb58f97b69ad301a7', 
-    from: '0xd1Db5ecb...51F29E707', 
-    to: '0x307576Dd...E8e067d31', 
-    toLabel: null,
-    value: '0.00578', 
-    time: '20 secs ago' 
-  },
-  { 
-    hash: '0x6e09878217cbf8cb54746e41021e1aba6cdf144f4205bbfdd836891825905ceb', 
-    from: '0x66E092fD...d738aE7bC', 
-    to: '0xC333E80e...2D294F771', 
-    toLabel: null,
-    value: '960', 
-    time: '20 secs ago' 
-  },
-];
+// Helper function to format relative time
+function formatRelativeTime(timestamp: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - timestamp;
+  
+  if (diff < 60) return `${diff} secs ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
+  return `${Math.floor(diff / 86400)} days ago`;
+}
 
-// Dummy data - Latest blocks
-const latestBlocks: BlockListItem[] = [
-  { 
-    number: 23717104, 
-    timestamp: '5 secs ago', 
-    miner: 'Titan Builder', 
-    minerAddress: '0x4838b106...B0BAD5f97',
-    expressLaneTxns: 45,
-    totalTxns: 220, 
-    timeTaken: '12 secs',
-    ethValue: '0.03488'
-  },
-  { 
-    number: 23717103, 
-    timestamp: '17 secs ago', 
-    miner: 'BuilderNet', 
-    minerAddress: '0xdadb0d80...24f783711',
-    expressLaneTxns: 52,
-    totalTxns: 234, 
-    timeTaken: '12 secs',
-    ethValue: '0.02176'
-  },
-  { 
-    number: 23717102, 
-    timestamp: '29 secs ago', 
-    miner: 'Titan Builder', 
-    minerAddress: '0x4838b106...B0BAD5f97',
-    expressLaneTxns: 68,
-    totalTxns: 282, 
-    timeTaken: '12 secs',
-    ethValue: '0.07486'
-  },
-  { 
-    number: 23717101, 
-    timestamp: '41 secs ago', 
-    miner: null, 
-    minerAddress: '0x1f9090aa...8e676c326',
-    expressLaneTxns: 23,
-    totalTxns: 110, 
-    timeTaken: '12 secs',
-    ethValue: '0.00724'
-  },
-  { 
-    number: 23717100, 
-    timestamp: '53 secs ago', 
-    miner: 'BuilderNet', 
-    minerAddress: '0xdadb0d80...24f783711',
-    expressLaneTxns: 89,
-    totalTxns: 382, 
-    timeTaken: '12 secs',
-    ethValue: '0.02058'
-  },
-  { 
-    number: 23717099, 
-    timestamp: '1 min ago', 
-    miner: 'Titan Builder', 
-    minerAddress: '0x4838b106...B0BAD5f97',
-    expressLaneTxns: 38,
-    totalTxns: 202, 
-    timeTaken: '12 secs',
-    ethValue: '0.01849'
-  },
-];
+// Helper function to format ETH value
+function formatEthValue(wei: string | number): string {
+  const value = typeof wei === 'string' ? BigInt(wei) : BigInt(wei);
+  const eth = Number(value) / 1e18;
+  return eth.toFixed(5);
+}
 
 // Routes
 
 // Get latest transactions
-app.get('/latest-transactions', async (req: Request, res: Response<Transaction[]>) => {
-  res.json(latestTransactions);
+app.get('/latest-transactions', async (
+  req: Request,
+  res: Response<Transaction[] | ErrorResponse>
+) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 20;
+    
+    // Query joins bundle_header and tree tables
+    // Using PRIMARY KEY (block_number, tx_hash) for efficient querying
+    const query = `
+      SELECT 
+        bh.tx_hash,
+        t.from,
+        t.to,
+        bh.profit_usd,
+        bh.bribe_usd,
+        bh.mev_type,
+        bh.block_number,
+        t.gas_details.priority_fee as priority_fee,
+        t.gas_details.gas_used as gas_used,
+        bh.timeboosted,
+        bh.express_lane_controller
+      FROM mev.bundle_header bh
+      INNER JOIN brontes.tree t ON bh.block_number = t.block_number AND bh.tx_hash = t.tx_hash
+      ORDER BY bh.block_number DESC, bh.tx_index ASC
+      LIMIT ${limit}
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      tx_hash: string;
+      from: string;
+      to: string | null;
+      profit_usd: number;
+      bribe_usd: number;
+      mev_type: string;
+      block_number: number;
+      priority_fee: string;
+      gas_used: string;
+      timeboosted: boolean;
+      express_lane_controller: string | null;
+    }>>();
+
+    // Map to Transaction type
+    const transactions: Transaction[] = data.map((row) => {
+      // Format value as ETH from priority_fee or use profit_usd as fallback
+      const value = row.priority_fee 
+        ? formatEthValue(row.priority_fee)
+        : (row.profit_usd / 1e6).toFixed(5); // Convert from USD to approximate ETH
+
+      return {
+        hash: row.tx_hash,
+        from: row.from.length > 14 
+          ? `${row.from.slice(0, 10)}...${row.from.slice(-6)}`
+          : row.from,
+        to: row.to 
+          ? (row.to.length > 14 
+              ? `${row.to.slice(0, 10)}...${row.to.slice(-6)}`
+              : row.to)
+          : 'Contract Creation',
+        toLabel: row.mev_type || null,
+        value,
+        time: 'Just now', // Could be enhanced with block timestamp if available
+        blockNumber: row.block_number,
+      };
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error fetching latest transactions:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch latest transactions',
+    });
+  }
 });
 
 // Get latest blocks
-app.get('/latest-blocks', async (req: Request, res: Response<BlockListItem[]>) => {
-  res.json(latestBlocks);
+app.get('/latest-blocks', async (
+  req: Request,
+  res: Response<BlockListItem[] | ErrorResponse>
+) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 20;
+    
+    // Query joins blocks and tree tables
+    // Using ORDER BY (block_timestamp, block_number) for efficient querying
+    const query = `
+      SELECT 
+        b.block_number,
+        b.block_hash,
+        b.block_timestamp,
+        COUNT(DISTINCT t.tx_hash) as total_txns,
+        COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
+        SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
+            THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
+            ELSE 0 END) as total_coinbase_transfer,
+        MIN(t.gas_details.gas_used) as min_gas_used,
+        MAX(t.gas_details.gas_used) as max_gas_used
+      FROM ethereum.blocks b
+      INNER JOIN brontes.tree t ON b.block_number = t.block_number
+      WHERE b.valid = 1
+      GROUP BY b.block_number, b.block_hash, b.block_timestamp
+      ORDER BY b.block_timestamp DESC, b.block_number DESC
+      LIMIT ${limit}
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      block_number: number;
+      block_hash: string;
+      block_timestamp: number;
+      total_txns: number;
+      express_lane_txns: number;
+      total_coinbase_transfer: string;
+      min_gas_used: string;
+      max_gas_used: string;
+    }>>();
+
+    // Map to BlockListItem type
+    const blocks: BlockListItem[] = data.map((row) => {
+      const ethValue = row.total_coinbase_transfer && row.total_coinbase_transfer !== '0'
+        ? formatEthValue(row.total_coinbase_transfer)
+        : '0.00000';
+
+      // Calculate time taken (approximation based on gas used)
+      const avgGas = (
+        (BigInt(row.min_gas_used) + BigInt(row.max_gas_used)) / BigInt(2)
+      ).toString();
+      const timeTaken = '12 secs'; // Could be calculated more accurately
+
+      return {
+        number: row.block_number,
+        timestamp: formatRelativeTime(row.block_timestamp),
+        miner: null, // Could be enhanced by joining with builder_info table
+        minerAddress: '0x0000000000000000000000000000000000000000', // Placeholder
+        expressLaneTxns: row.express_lane_txns,
+        totalTxns: row.total_txns,
+        timeTaken,
+        ethValue,
+      };
+    });
+
+    res.json(blocks);
+  } catch (error) {
+    console.error('Error fetching latest blocks:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch latest blocks',
+    });
+  }
 });
 
 // Get a specific block by identifier (hash or number)
-app.get('/blocks/:blockId', async (req: Request<{ blockId: string }>, res: Response<Block>) => {
-  const { blockId } = req.params;
-  
-  // Try to find by number first
-  let block: Block | undefined = latestBlocks.find(b => b.number.toString() === blockId);
-  
-  // If not found by number, create a dummy block based on the ID
-  if (!block) {
-    block = {
-      number: parseInt(blockId) || 23717104,
-      hash: blockId.startsWith('0x') ? blockId : `0x${blockId}`,
-      timestamp: 'Just now',
-      miner: 'Titan Builder',
-      minerAddress: '0x4838b106...B0BAD5f97',
-      expressLaneTxns: 45,
-      totalTxns: 220,
+app.get('/blocks/:blockId', async (
+  req: Request<{ blockId: string }>,
+  res: Response<Block | ErrorResponse>
+) => {
+  try {
+    const { blockId } = req.params;
+    const isBlockNumber = !blockId.startsWith('0x') && /^\d+$/.test(blockId);
+    
+    let query: string;
+    if (isBlockNumber) {
+      // Query by block number using index (block_timestamp, block_number)
+      query = `
+        SELECT 
+          b.block_number,
+          b.block_hash,
+          b.block_timestamp,
+          COUNT(DISTINCT t.tx_hash) as total_txns,
+          COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
+          SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
+              THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
+              ELSE 0 END) as total_coinbase_transfer,
+          SUM(CAST(t.gas_details.gas_used AS UInt128)) as total_gas_used
+        FROM ethereum.blocks b
+        INNER JOIN brontes.tree t ON b.block_number = t.block_number
+        WHERE b.block_number = ${parseInt(blockId)} AND b.valid = 1
+        GROUP BY b.block_number, b.block_hash, b.block_timestamp
+        LIMIT 1
+      `;
+    } else {
+      // Query by block hash
+      query = `
+        SELECT 
+          b.block_number,
+          b.block_hash,
+          b.block_timestamp,
+          COUNT(DISTINCT t.tx_hash) as total_txns,
+          COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
+          SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
+              THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
+              ELSE 0 END) as total_coinbase_transfer,
+          SUM(CAST(t.gas_details.gas_used AS UInt128)) as total_gas_used
+        FROM ethereum.blocks b
+        INNER JOIN brontes.tree t ON b.block_number = t.block_number
+        WHERE b.block_hash = '${blockId}' AND b.valid = 1
+        GROUP BY b.block_number, b.block_hash, b.block_timestamp
+        LIMIT 1
+      `;
+    }
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      block_number: number;
+      block_hash: string;
+      block_timestamp: number;
+      total_txns: number;
+      express_lane_txns: number;
+      total_coinbase_transfer: string;
+      total_gas_used: string;
+    }>>();
+
+    if (data.length === 0) {
+      res.status(404).json({
+        error: 'Not Found',
+        message: `Block ${blockId} not found`,
+      });
+      return;
+    }
+
+    const row = data[0];
+    
+    // Get transaction hashes for this block
+    const txQuery = `
+      SELECT tx_hash
+      FROM brontes.tree
+      WHERE block_number = ${row.block_number}
+      ORDER BY tx_idx ASC
+    `;
+    
+    const txResult = await req.clickhouse.query({
+      query: txQuery,
+      format: 'JSONEachRow',
+    });
+
+    const transactions = await txResult.json<Array<{ tx_hash: string }>>();
+
+    const block: Block = {
+      number: row.block_number,
+      hash: row.block_hash,
+      timestamp: formatRelativeTime(row.block_timestamp),
+      miner: null,
+      minerAddress: '0x0000000000000000000000000000000000000000',
+      expressLaneTxns: row.express_lane_txns,
+      totalTxns: row.total_txns,
       timeTaken: '12 secs',
-      ethValue: '0.03488',
-      parentHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      gasLimit: 30000000,
-      gasUsed: 25000000,
-      baseFeePerGas: '0x123456789',
-      transactions: latestTransactions.map(tx => tx.hash),
+      ethValue: row.total_coinbase_transfer && row.total_coinbase_transfer !== '0'
+        ? formatEthValue(row.total_coinbase_transfer)
+        : '0.00000',
+      gasUsed: row.total_gas_used,
+      transactions: transactions.map(tx => tx.tx_hash),
     };
+
+    res.json(block);
+  } catch (error) {
+    console.error('Error fetching block:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch block',
+    });
   }
-  
-  res.json(block);
 });
 
 // Get a specific transaction by identifier
 app.get('/transactions/:transactionId', async (
   req: Request<{ transactionId: string }>, 
-  res: Response<Transaction>
+  res: Response<Transaction | ErrorResponse>
 ) => {
-  const { transactionId } = req.params;
-  
-  // Try to find in latest transactions
-  let transaction = latestTransactions.find(tx => tx.hash === transactionId);
-  
-  // If not found, create a dummy transaction
-  if (!transaction) {
-    transaction = {
-      hash: transactionId,
-      from: '0xdadB0d80...24f783711',
-      to: '0x4675C7e5...ef3b0a263',
-      toLabel: null,
-      value: '0.20476',
+  try {
+    const { transactionId } = req.params;
+    
+    // Query joins bundle_header and tree tables using PRIMARY KEY (block_number, tx_hash)
+    const query = `
+      SELECT 
+        bh.tx_hash,
+        t.from,
+        t.to,
+        bh.profit_usd,
+        bh.bribe_usd,
+        bh.mev_type,
+        bh.block_number,
+        t.gas_details.priority_fee as priority_fee,
+        t.gas_details.gas_used as gas_used,
+        t.gas_details.effective_gas_price as effective_gas_price,
+        bh.timeboosted,
+        bh.express_lane_controller
+      FROM mev.bundle_header bh
+      INNER JOIN brontes.tree t ON bh.block_number = t.block_number AND bh.tx_hash = t.tx_hash
+      WHERE bh.tx_hash = '${transactionId}'
+      LIMIT 1
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      tx_hash: string;
+      from: string;
+      to: string | null;
+      profit_usd: number;
+      bribe_usd: number;
+      mev_type: string;
+      block_number: number;
+      priority_fee: string;
+      gas_used: string;
+      effective_gas_price: string;
+      timeboosted: boolean;
+      express_lane_controller: string | null;
+    }>>();
+
+    if (data.length === 0) {
+      res.status(404).json({
+        error: 'Not Found',
+        message: `Transaction ${transactionId} not found`,
+      });
+      return;
+    }
+
+    const row = data[0];
+    const value = row.priority_fee 
+      ? formatEthValue(row.priority_fee)
+      : (row.profit_usd / 1e6).toFixed(5);
+
+    const transaction: Transaction = {
+      hash: row.tx_hash,
+      from: row.from.length > 14 
+        ? `${row.from.slice(0, 10)}...${row.from.slice(-6)}`
+        : row.from,
+      to: row.to 
+        ? (row.to.length > 14 
+            ? `${row.to.slice(0, 10)}...${row.to.slice(-6)}`
+            : row.to)
+        : 'Contract Creation',
+      toLabel: row.mev_type || null,
+      value,
       time: 'Just now',
-      blockNumber: 23717104,
-      blockHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      gas: '21000',
-      gasPrice: '0x123456789',
-      nonce: 123,
-      input: '0x',
+      blockNumber: row.block_number,
+      gas: row.gas_used,
+      gasPrice: row.effective_gas_price,
       status: 'success',
     };
+
+    res.json(transaction);
+  } catch (error) {
+    console.error('Error fetching transaction:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch transaction',
+    });
   }
-  
-  res.json(transaction);
 });
 
 // Get a specific address by identifier
@@ -225,9 +484,7 @@ app.get('/addresses/:address', async (
     transactionCount: 42,
     code: null,
     isContract: false,
-    transactions: latestTransactions.filter(tx => 
-      tx.from === address || tx.to === address
-    ).map(tx => tx.hash),
+    transactions: [],
   };
   
   res.json(addressData);
