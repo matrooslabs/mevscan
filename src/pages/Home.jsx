@@ -171,7 +171,9 @@ function Home() {
           </div>
           <div className="card-content">
             {blocksLoading && (
-              <div className="loading-state">Loading blocks...</div>
+              <div className="loading-state">
+                <div className="spinner"></div>
+              </div>
             )}
             {blocksError && (
               <div className="error-state">
@@ -247,7 +249,9 @@ function Home() {
           </div>
           <div className="card-content">
             {transactionsLoading && (
-              <div className="loading-state">Loading transactions...</div>
+              <div className="loading-state">
+                <div className="spinner"></div>
+              </div>
             )}
             {transactionsError && (
               <div className="error-state">
