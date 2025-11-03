@@ -27,7 +27,6 @@ export interface BlockListItem {
   totalProfit: number;
   timeboostedTxCount: number;
   timeboostedTxMevCount: number;
-  possibleMevTxHashes: string[];
 }
 
 /**
