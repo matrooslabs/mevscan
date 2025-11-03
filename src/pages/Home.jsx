@@ -20,7 +20,7 @@ function Home() {
     data: latestBlocksData,
     isLoading: blocksLoading,
     error: blocksError,
-  } = useLatestBlocks(20);
+  } = useLatestBlocks(30);
   const {
     data: latestTransactionsData,
     isLoading: transactionsLoading,
