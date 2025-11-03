@@ -278,46 +278,64 @@ function Home() {
                                   navigate(`/tx/${tx.hash}`);
                                 }}
                               >
-                                {tx.hash.substring(0, 12)}...
+                                {tx.hash.substring(0, 16)}...
                               </a>
-                              <span className="tx-time">{tx.time}</span>
+                              <span className="tx-time">Block {tx.blockNumber.toLocaleString()}</span>
                             </div>
                             <div className="tx-addresses">
                               <div className="tx-address-group">
-                                <span className="tx-label">From</span>
-                                <a
-                                  href={`/address/${tx.from}`}
-                                  className="link-secondary tx-address"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(`/address/${tx.from}`);
-                                  }}
-                                >
-                                  {tx.from}
-                                </a>
+                                <span className="tx-label">MEV Type</span>
+                                <span className="tx-address">
+                                  {tx.mevType}
+                                </span>
                               </div>
                               <div className="tx-address-group">
-                                <span className="tx-label">To</span>
-                                <a
-                                  href={`/address/${tx.to}`}
-                                  className="link-secondary tx-address"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(`/address/${tx.to}`);
-                                  }}
-                                >
-                                  {tx.toLabel && (
-                                    <span className="address-label">
-                                      {tx.toLabel}{" "}
-                                    </span>
-                                  )}
-                                  {tx.to}
-                                </a>
+                                <span className="tx-label">Profit</span>
+                                <span className="tx-address">
+                                  ${tx.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                                </span>
                               </div>
+                              <div className="tx-address-group">
+                                <span className="tx-label">Timeboosted</span>
+                                <span className="tx-address">
+                                  {tx.timeboosted ? '✓ Yes' : '✗ No'}
+                                </span>
+                              </div>
+                              {tx.expressLaneController && (
+                                <div className="tx-address-group">
+                                  <span className="tx-label">Express Lane Controller</span>
+                                  <a
+                                    href={`/address/${tx.expressLaneController}`}
+                                    className="link-secondary tx-address"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      navigate(`/address/${tx.expressLaneController}`);
+                                    }}
+                                  >
+                                    {tx.expressLaneController.substring(0, 10)}...{tx.expressLaneController.slice(-8)}
+                                  </a>
+                                </div>
+                              )}
+                              {tx.expressLanePrice && (
+                                <div className="tx-address-group">
+                                  <span className="tx-label">Express Lane Price</span>
+                                  <span className="tx-address">
+                                    {tx.expressLanePrice}
+                                  </span>
+                                </div>
+                              )}
+                              {tx.expressLaneRound !== null && (
+                                <div className="tx-address-group">
+                                  <span className="tx-label">Express Lane Round</span>
+                                  <span className="tx-address">
+                                    {tx.expressLaneRound.toLocaleString()}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
-                        <div className="tx-value">{tx.value} Eth</div>
+                        <div className="tx-value">${tx.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       {index < latestTransactions.length - 1 && (
                         <hr className="transaction-separator" />

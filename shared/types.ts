@@ -8,18 +8,13 @@
  */
 export interface Transaction {
   hash: string;
-  from: string;
-  to: string;
-  toLabel: string | null;
-  value: string;
-  time: string;
-  blockNumber?: number;
-  blockHash?: string;
-  gas?: string;
-  gasPrice?: string;
-  nonce?: number;
-  input?: string;
-  status?: string;
+  blockNumber: number;
+  profit: number;
+  mevType: string;
+  timeboosted: boolean;
+  expressLaneController: string | null;
+  expressLanePrice: string | null;
+  expressLaneRound: number | null;
 }
 
 /**

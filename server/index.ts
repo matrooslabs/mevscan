@@ -108,24 +108,21 @@ app.get('/latest-transactions', async (
   try {
     const limit = parseInt(req.query.limit as string) || 20;
     
-    // Query joins bundle_header and tree tables
+    // Query bundle_header table only
     // Using PRIMARY KEY (block_number, tx_hash) for efficient querying
     const query = `
       SELECT 
-        bh.tx_hash,
-        t.from,
-        t.to,
-        bh.profit_usd,
-        bh.bribe_usd,
-        bh.mev_type,
-        bh.block_number,
-        t.gas_details.priority_fee as priority_fee,
-        t.gas_details.gas_used as gas_used,
-        bh.timeboosted,
-        bh.express_lane_controller
-      FROM mev.bundle_header bh
-      INNER JOIN brontes.tree t ON bh.block_number = t.block_number AND bh.tx_hash = t.tx_hash
-      ORDER BY bh.block_number DESC, bh.tx_index ASC
+        block_number,
+        tx_hash,
+        profit_usd as profit,
+        mev_type,
+        timeboosted,
+        express_lane_controller,
+        express_lane_price,
+        express_lane_round
+      FROM mev.bundle_header
+      WHERE mev_type != 'SearcherTx'
+      ORDER BY block_number DESC
       LIMIT ${limit}
     `;
 
@@ -135,42 +132,27 @@ app.get('/latest-transactions', async (
     });
 
     const data = await result.json<Array<{
-      tx_hash: string;
-      from: string;
-      to: string | null;
-      profit_usd: number;
-      bribe_usd: number;
-      mev_type: string;
       block_number: number;
-      priority_fee: string;
-      gas_used: string;
+      tx_hash: string;
+      profit: number;
+      mev_type: string;
       timeboosted: boolean;
       express_lane_controller: string | null;
+      express_lane_price: string | null;
+      express_lane_round: number | null;
     }>>();
 
     // Map to Transaction type
-    const transactions: Transaction[] = data.map((row) => {
-      // Format value as ETH from priority_fee or use profit_usd as fallback
-      const value = row.priority_fee 
-        ? formatEthValue(row.priority_fee)
-        : (row.profit_usd / 1e6).toFixed(5); // Convert from USD to approximate ETH
-
-      return {
-        hash: row.tx_hash,
-        from: row.from.length > 14 
-          ? `${row.from.slice(0, 10)}...${row.from.slice(-6)}`
-          : row.from,
-        to: row.to 
-          ? (row.to.length > 14 
-              ? `${row.to.slice(0, 10)}...${row.to.slice(-6)}`
-              : row.to)
-          : 'Contract Creation',
-        toLabel: row.mev_type || null,
-        value,
-        time: 'Just now', // Could be enhanced with block timestamp if available
-        blockNumber: row.block_number,
-      };
-    });
+    const transactions: Transaction[] = data.map((row) => ({
+      hash: row.tx_hash,
+      blockNumber: row.block_number,
+      profit: row.profit,
+      mevType: row.mev_type,
+      timeboosted: row.timeboosted,
+      expressLaneController: row.express_lane_controller,
+      expressLanePrice: row.express_lane_price,
+      expressLaneRound: row.express_lane_round,
+    }));
 
     res.json(transactions);
   } catch (error) {
