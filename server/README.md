@@ -12,11 +12,13 @@ npm install
 ## Running the Server
 
 ### Production mode
+
 ```bash
 npm start
 ```
 
 ### Development mode (with auto-reload)
+
 ```bash
 npm run dev
 ```
@@ -53,4 +55,3 @@ curl http://localhost:3001/transactions/0xb791a07c9aefa03db87f8ad128121ed5b8a709
 # Get address information
 curl http://localhost:3001/addresses/0xdadB0d80...24f783711
 ```
-

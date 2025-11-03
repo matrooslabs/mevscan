@@ -5,7 +5,7 @@
  * @typedef {import('../../shared/types').Address} Address
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import ApiClient from '../services/apiClient'
 
 // Initialize API client - you may want to configure this based on your environment
