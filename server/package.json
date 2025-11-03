@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node index.ts",
-    "dev:watch": "nodemon --exec ts-node index.ts"
+    "dev:watch": "nodemon"
   },
   "keywords": [
     "express",
