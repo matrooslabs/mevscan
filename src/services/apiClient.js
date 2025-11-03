@@ -174,6 +174,20 @@ class ApiClient {
   }
 
   /**
+   * Get a specific address by identifier
+   * @param {string} address - Address hash
+   * @returns {Promise} Axios response with address data
+   */
+  async getAddress(address) {
+    try {
+      const response = await this.client.get(`/addresses/${address}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Handle API errors
    * @private
    * @param {Error} error - Axios error object

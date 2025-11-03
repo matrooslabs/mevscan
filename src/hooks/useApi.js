@@ -60,3 +60,17 @@ export function useTransaction(transactionId) {
   })
 }
 
+/**
+ * Query hook for fetching a specific address
+ */
+export function useAddress(address) {
+  return useQuery({
+    queryKey: ['addresses', address],
+    queryFn: async () => {
+      const data = await apiClient.getAddress(address)
+      return data
+    },
+    enabled: !!address, // Only run query if address is provided
+  })
+}
+

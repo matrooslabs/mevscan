@@ -30,8 +30,20 @@ function Home() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (txHash.trim()) {
-      navigate(`/tx/${txHash.trim()}`);
+    const searchTerm = txHash.trim();
+    if (searchTerm) {
+      // Check if it's a block number (numeric)
+      if (/^\d+$/.test(searchTerm)) {
+        navigate(`/blocks/${searchTerm}`);
+      } 
+      // Check if it's an address (starts with 0x and is 42 chars)
+      else if (/^0x[a-fA-F0-9]{40}$/.test(searchTerm)) {
+        navigate(`/address/${searchTerm}`);
+      }
+      // Otherwise assume it's a transaction hash
+      else {
+        navigate(`/tx/${searchTerm}`);
+      }
     }
   };
 
@@ -272,8 +284,12 @@ function Home() {
                               <div className="tx-address-group">
                                 <span className="tx-label">From</span>
                                 <a
-                                  href={`#address/${tx.from}`}
+                                  href={`/address/${tx.from}`}
                                   className="link-secondary tx-address"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/address/${tx.from}`);
+                                  }}
                                 >
                                   {tx.from}
                                 </a>
@@ -281,8 +297,12 @@ function Home() {
                               <div className="tx-address-group">
                                 <span className="tx-label">To</span>
                                 <a
-                                  href={`#address/${tx.to}`}
+                                  href={`/address/${tx.to}`}
                                   className="link-secondary tx-address"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/address/${tx.to}`);
+                                  }}
                                 >
                                   {tx.toLabel && (
                                     <span className="address-label">

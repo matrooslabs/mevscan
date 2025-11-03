@@ -111,9 +111,25 @@ function Block() {
                     {block.miner || 'Unknown'}
                   </div>
                   {block.minerAddress && (
-                    <div style={{ marginTop: '4px', fontSize: '14px', fontFamily: 'monospace', color: '#6b7280' }}>
+                    <a
+                      href={`/address/${block.minerAddress.replace('...', '')}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Extract full address if we have it, or use the truncated one
+                        const address = block.fullMinerAddress || block.minerAddress.replace('...', '');
+                        navigate(`/address/${address}`);
+                      }}
+                      style={{ 
+                        marginTop: '4px', 
+                        fontSize: '14px', 
+                        fontFamily: 'monospace', 
+                        color: '#3b82f6',
+                        textDecoration: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
                       {block.minerAddress}
-                    </div>
+                    </a>
                   )}
                 </div>
 
