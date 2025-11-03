@@ -8,9 +8,19 @@
 }
 
 .home-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   padding: 2rem 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  position: relative;
+}
+
+.header-logo {
+  position: absolute;
+  top: 2rem;
+  right: 1.5rem;
+  height: 60px;
+  width: auto;
+  z-index: 10;
 }
 
 .header-content {
@@ -25,7 +35,7 @@
 .logo {
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: black;
   margin: 0;
   text-decoration: none;
 }
@@ -33,14 +43,15 @@
 .search-form {
   flex: 1;
   min-width: 300px;
-  display: flex;
-  gap: 0.5rem;
+  position: relative;
   max-width: 700px;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
-  flex: 1;
-  padding: 0.875rem 1.25rem;
+  width: 100%;
+  padding: 0.875rem 3.5rem 0.875rem 1.25rem;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -48,6 +59,7 @@
   color: #333;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
 .search-input:focus {
@@ -56,21 +68,27 @@
 }
 
 .search-button {
-  padding: 0.875rem 1.5rem;
-  background-color: #4f46e5;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.625rem 1rem;
+  background-color: #FFA726;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1.2rem;
   cursor: pointer;
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 2.25rem;
+  margin: 0;
 }
 
 .search-button:hover {
-  background-color: #4338ca;
+  background-color: #FF9800;
 }
 
 .stats-bar {
@@ -79,8 +97,20 @@
   display: flex;
   gap: 3rem;
   justify-content: center;
+  align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   flex-wrap: wrap;
+}
+
+.chart-item {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.chart-wrapper {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .stat-item {
@@ -104,8 +134,8 @@
 
 .content-grid {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+  margin: 2rem auto 4rem auto;
+  padding: 0 1.5rem 2rem 1.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
@@ -119,7 +149,7 @@
 
 .card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: box-shadow 0.2s;
@@ -146,7 +176,7 @@
 }
 
 .view-all-link {
-  color: #667eea;
+  color: #FFA726;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -154,7 +184,7 @@
 }
 
 .view-all-link:hover {
-  color: #4f46e5;
+  color: #FF9800;
 }
 
 .card-content {
@@ -197,14 +227,14 @@
 }
 
 .link-primary {
-  color: #667eea;
+  color: #FFA726;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .link-primary:hover {
-  color: #4f46e5;
+  color: #FF9800;
   text-decoration: underline;
 }
 
@@ -217,7 +247,7 @@
 }
 
 .link-secondary:hover {
-  color: #667eea;
+  color: #FFA726;
   text-decoration: underline;
 }
 
@@ -256,7 +286,7 @@
 
 .tx-icon {
   font-size: 1.25rem;
-  color: #667eea;
+  color: #FFA726;
   margin-top: 0.125rem;
   flex-shrink: 0;
 }
@@ -277,14 +307,14 @@
 .tx-hash {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.875rem;
-  color: #667eea;
+  color: #FFA726;
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .tx-hash:hover {
-  color: #4f46e5;
+  color: #FF9800;
   text-decoration: underline;
 }
 
@@ -322,7 +352,7 @@
 }
 
 .tx-address:hover {
-  color: #667eea;
+  color: #FFA726;
   text-decoration: underline;
 }
 
@@ -374,7 +404,7 @@
 
 .block-icon {
   font-size: 1.25rem;
-  color: #667eea;
+  color: #FFA726;
   margin-top: 0.125rem;
   flex-shrink: 0;
 }
@@ -394,13 +424,13 @@
 
 .block-number {
   font-size: 0.875rem;
-  color: #667eea;
+  color: #FFA726;
   text-decoration: none;
   font-weight: 500;
 }
 
 .block-number:hover {
-  color: #4f46e5;
+  color: #FF9800;
   text-decoration: underline;
 }
 
@@ -438,7 +468,7 @@
 }
 
 .block-miner:hover {
-  color: #667eea;
+  color: #FFA726;
   text-decoration: underline;
 }
 
@@ -451,14 +481,14 @@
 
 .block-txns {
   font-size: 0.8125rem;
-  color: #667eea;
+  color: #FFA726;
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .block-txns:hover {
-  color: #4f46e5;
+  color: #FF9800;
   text-decoration: underline;
 }
 
@@ -489,6 +519,12 @@
     padding: 1.5rem 1rem;
   }
 
+  .header-logo {
+    top: 1.5rem;
+    right: 1rem;
+    height: 40px;
+  }
+
   .header-content {
     flex-direction: column;
     gap: 1rem;
@@ -502,6 +538,11 @@
   .stats-bar {
     padding: 1rem;
     gap: 1.5rem;
+  }
+
+  .chart-item {
+    min-width: 100%;
+    max-width: 100%;
   }
 
   .content-grid {
