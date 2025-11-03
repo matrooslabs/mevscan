@@ -191,6 +191,32 @@
   padding: 0;
 }
 
+.loading-state,
+.error-state,
+.empty-state {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.loading-state {
+  color: #FFA726;
+}
+
+.error-state {
+  color: #ef4444;
+  background-color: #fef2f2;
+  margin: 0.5rem;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.empty-state {
+  color: #9ca3af;
+  font-style: italic;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
