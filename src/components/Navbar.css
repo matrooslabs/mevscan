@@ -29,6 +29,39 @@
   flex-shrink: 0;
 }
 
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  justify-content: center;
+}
+
+.navbar-menu-item {
+  padding: 0.5rem var(--spacing-md);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.navbar-menu-item:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-primary);
+}
+
+.navbar-menu-item:active {
+  transform: translateY(0);
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -120,10 +153,27 @@
   .navbar-container {
     padding: 0.75rem var(--spacing-md);
     gap: var(--spacing-md);
+    flex-wrap: wrap;
   }
 
   .navbar-logo {
     font-size: 1.5rem;
+  }
+
+  .navbar-menu {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: var(--spacing-sm);
+  }
+
+  .navbar-menu-item {
+    padding: 0.5rem var(--spacing-sm);
+    font-size: 1.25rem;
+  }
+
+  .navbar-right {
+    order: 2;
   }
 
   .wallet-button-container {

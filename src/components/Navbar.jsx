@@ -17,6 +17,26 @@ function Navbar() {
         >
           IntentScan
         </h1>
+        <div className="navbar-menu">
+          <h2 
+            className="navbar-menu-item"
+            onClick={() => navigate('/')}
+          >
+            Home
+          </h2>
+          <h2 
+            className="navbar-menu-item"
+            onClick={() => navigate('/dashboard')}
+          >
+            Dashboard
+          </h2>
+          <h2 
+            className="navbar-menu-item"
+            onClick={() => navigate('/ask')}
+          >
+            Ask
+          </h2>
+        </div>
         <div className="navbar-right">
           <div className="wallet-button-container">
             {isConnected ? (

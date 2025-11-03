@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useLatestBlocks, useLatestTransactions } from "../hooks/useApi";
-import Navbar from "../components/Navbar";
 import "./Home.css";
 
 function Home() {
@@ -77,7 +76,6 @@ function Home() {
 
   return (
     <div className="home-container">
-      <Navbar />
       <div className="search-section">
         <div className="search-container">
           <form onSubmit={handleSearch} className="search-form">
