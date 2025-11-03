@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AreaChart,
@@ -9,10 +9,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useLatestBlocks, useLatestTransactions } from "../hooks/useApi";
+import type { BlockListItem, Transaction } from "../../shared/types";
 import "./Home.css";
 
+interface TransactionHistoryData {
+  date: string;
+  count: number;
+  fullDate: Date;
+}
+
 function Home() {
-  const [txHash, setTxHash] = useState("");
+  const [txHash, setTxHash] = useState<string>("");
   const navigate = useNavigate();
 
   // Fetch data using TanStack Query
@@ -27,7 +34,7 @@ function Home() {
     error: transactionsError,
   } = useLatestTransactions(10);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const searchTerm = txHash.trim();
     if (searchTerm) {
@@ -47,15 +54,15 @@ function Home() {
   };
 
   // Use data from TanStack Query or fallback to empty array
-  const latestBlocks = latestBlocksData || [];
-  const latestTransactions = latestTransactionsData || [];
+  const latestBlocks: BlockListItem[] = latestBlocksData || [];
+  const latestTransactions: Transaction[] = latestTransactionsData || [];
 
   const etherPrice = 2450.75;
   const mevExtracted = 1234.56;
 
   // Generate transaction history data for last 14 days
-  const transactionHistory = useMemo(() => {
-    const data = [];
+  const transactionHistory = useMemo<TransactionHistoryData[]>(() => {
+    const data: TransactionHistoryData[] = [];
     const today = new Date();
     for (let i = 13; i >= 0; i--) {
       const date = new Date(today);
@@ -83,7 +90,7 @@ function Home() {
               type="text"
               placeholder="Search by Transaction Hash / Block Number / Address / Token"
               value={txHash}
-              onChange={(e) => setTxHash(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setTxHash(e.target.value)}
               className="search-input"
             />
             <button type="submit" className="search-button">
@@ -145,7 +152,7 @@ function Home() {
                     fontWeight: 600,
                     marginBottom: "4px",
                   }}
-                  formatter={(value) => value.toLocaleString()}
+                  formatter={(value: number) => value.toLocaleString()}
                 />
                 <Area
                   type="monotone"
@@ -321,7 +328,7 @@ function Home() {
                                   </span>
                                 </div>
                               )}
-                              {tx.expressLaneRound !== null && (
+                              {tx.expressLaneRound !== null && tx.expressLaneRound !== undefined && (
                                 <div className="tx-address-group">
                                   <span className="tx-label">Express Lane Round</span>
                                   <span className="tx-address">
@@ -350,3 +357,4 @@ function Home() {
 }
 
 export default Home;
+

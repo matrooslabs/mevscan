@@ -1,16 +1,24 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBlock } from '../hooks/useApi'
 import Navbar from '../components/Navbar'
+import type { Block } from '../../shared/types'
 import './Home.css'
 
+interface BlockWithExtended extends Block {
+  parentHash?: string;
+  gasLimit?: string;
+  baseFeePerGas?: string;
+  fullMinerAddress?: string;
+}
+
 function Block() {
-  const { block_number } = useParams()
+  const { block_number } = useParams<{ block_number: string }>()
   const navigate = useNavigate()
   const {
     data: blockData,
     isLoading,
     error,
-  } = useBlock(block_number)
+  } = useBlock(block_number || '')
 
   if (isLoading) {
     return (
@@ -33,8 +41,9 @@ function Block() {
   }
 
   // Use dummy data if API doesn't return data (for development)
-  const block = blockData || {
-    number: block_number,
+  const block: BlockWithExtended = blockData || {
+    number: parseInt(block_number || '0', 10),
+    hash: '0x0000...0000',
     timestamp: 'N/A',
     miner: 'Unknown',
     minerAddress: '0x0000...0000',
@@ -42,9 +51,8 @@ function Block() {
     totalTxns: 0,
     timeTaken: 'N/A',
     ethValue: '0',
-    hash: '0x0000...0000',
-    parentHash: '0x0000...0000',
     gasUsed: '0',
+    parentHash: '0x0000...0000',
     gasLimit: '0',
     baseFeePerGas: '0',
   }
@@ -116,7 +124,7 @@ function Block() {
                       onClick={(e) => {
                         e.preventDefault();
                         // Extract full address if we have it, or use the truncated one
-                        const address = block.fullMinerAddress || block.minerAddress.replace('...', '');
+                        const address = block.fullMinerAddress || block.minerAddress?.replace('...', '');
                         navigate(`/address/${address}`);
                       }}
                       style={{ 

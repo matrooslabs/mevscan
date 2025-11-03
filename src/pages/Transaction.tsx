@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar'
 import './Home.css'
 
 function Transaction() {
-  const { tx_hash } = useParams()
+  const { tx_hash } = useParams<{ tx_hash: string }>()
   const navigate = useNavigate()
 
   return (

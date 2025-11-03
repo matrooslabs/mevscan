@@ -1,16 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAddress } from '../hooks/useApi'
 import Navbar from '../components/Navbar'
+import type { Address as AddressType } from '../../shared/types'
 import './Home.css'
 
 function Address() {
-  const { address } = useParams()
+  const { address } = useParams<{ address: string }>()
   const navigate = useNavigate()
   const {
     data: addressData,
     isLoading,
     error,
-  } = useAddress(address)
+  } = useAddress(address || '')
 
   if (isLoading) {
     return (
@@ -33,8 +34,8 @@ function Address() {
   }
 
   // Use dummy data if API doesn't return data (for development)
-  const addr = addressData || {
-    address: address,
+  const addr: AddressType = addressData || {
+    address: address || '',
     balance: '0',
     ethBalance: '0',
     transactionCount: 0,

@@ -1,22 +1,22 @@
-/**
- * @typedef {import('../../shared/types').Transaction} Transaction
- * @typedef {import('../../shared/types').Block} Block
- * @typedef {import('../../shared/types').BlockListItem} BlockListItem
- * @typedef {import('../../shared/types').Address} Address
- */
-
 import { useQuery } from '@tanstack/react-query'
+import type { UseQueryResult } from '@tanstack/react-query'
 import ApiClient from '../services/apiClient'
+import type {
+  Transaction,
+  Block,
+  BlockListItem,
+  Address,
+} from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
 const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001')
 
 /**
  * Query hook for fetching latest blocks
- * @param {number} [limit] - Optional limit for number of blocks to retrieve (default: 20)
- * @returns {ReturnType<typeof useQuery<BlockListItem[]>>}
+ * @param limit - Optional limit for number of blocks to retrieve (default: 20)
+ * @returns Query result with array of block list items
  */
-export function useLatestBlocks(limit) {
+export function useLatestBlocks(limit?: number): UseQueryResult<BlockListItem[], Error> {
   return useQuery({
     queryKey: ['blocks', 'latest', limit],
     queryFn: async () => {
@@ -29,10 +29,10 @@ export function useLatestBlocks(limit) {
 
 /**
  * Query hook for fetching latest transactions
- * @param {number} [limit] - Optional limit for number of transactions to retrieve (default: 20)
- * @returns {ReturnType<typeof useQuery<Transaction[]>>}
+ * @param limit - Optional limit for number of transactions to retrieve (default: 20)
+ * @returns Query result with array of transactions
  */
-export function useLatestTransactions(limit) {
+export function useLatestTransactions(limit?: number): UseQueryResult<Transaction[], Error> {
   return useQuery({
     queryKey: ['transactions', 'latest', limit],
     queryFn: async () => {
@@ -45,10 +45,10 @@ export function useLatestTransactions(limit) {
 
 /**
  * Query hook for fetching a specific block
- * @param {string} blockId
- * @returns {ReturnType<typeof useQuery<Block>>}
+ * @param blockId - Block hash or block number
+ * @returns Query result with block data
  */
-export function useBlock(blockId) {
+export function useBlock(blockId: string): UseQueryResult<Block, Error> {
   return useQuery({
     queryKey: ['blocks', blockId],
     queryFn: async () => {
@@ -61,10 +61,10 @@ export function useBlock(blockId) {
 
 /**
  * Query hook for fetching a specific transaction
- * @param {string} transactionId
- * @returns {ReturnType<typeof useQuery<Transaction>>}
+ * @param transactionId - Transaction hash
+ * @returns Query result with transaction data
  */
-export function useTransaction(transactionId) {
+export function useTransaction(transactionId: string): UseQueryResult<Transaction, Error> {
   return useQuery({
     queryKey: ['transactions', transactionId],
     queryFn: async () => {
@@ -77,10 +77,10 @@ export function useTransaction(transactionId) {
 
 /**
  * Query hook for fetching a specific address
- * @param {string} address
- * @returns {ReturnType<typeof useQuery<Address>>}
+ * @param address - Address hash
+ * @returns Query result with address data
  */
-export function useAddress(address) {
+export function useAddress(address: string): UseQueryResult<Address, Error> {
   return useQuery({
     queryKey: ['addresses', address],
     queryFn: async () => {

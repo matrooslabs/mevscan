@@ -1,13 +1,12 @@
 import './Dashboard.css'
 import { useMemo } from 'react'
 import { Card, CardContent, Typography } from '@mui/material'
-import TimeSeriesChart from '../components/TimeSeriesChart'
+import TimeSeriesChart, { type TimeSeriesData } from '../components/TimeSeriesChart'
 
 function Dashboard() {
   // Generate time series data with one-minute intervals
-  /** @type {import('../components/TimeSeriesChart').TimeSeriesData} */
-  const timeSeriesData = useMemo(() => {
-    const data = []
+  const timeSeriesData = useMemo<TimeSeriesData>(() => {
+    const data: TimeSeriesData = []
     const now = new Date()
     const minutes = 60 // Generate data for the last 60 minutes
     
