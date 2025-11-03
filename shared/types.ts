@@ -15,6 +15,14 @@ export interface Transaction {
   expressLaneController: string | null;
   expressLanePrice: string | null;
   expressLaneRound: number | null;
+  from?: string;
+  to?: string | null;
+  toLabel?: string | null;
+  value?: string;
+  time?: string;
+  gas?: string;
+  gasPrice?: string;
+  status?: string;
 }
 
 /**
@@ -32,12 +40,17 @@ export interface BlockListItem {
 /**
  * Block response type (detailed)
  */
-export interface Block extends BlockListItem {
-  hash?: string;
-  parentHash?: string;
-  gasLimit?: number;
+export interface Block {
+  number: number;
+  hash: string;
+  timestamp?: string;
+  miner?: string | null;
+  minerAddress?: string;
+  expressLaneTxns?: number;
+  totalTxns?: number;
+  timeTaken?: string;
+  ethValue?: string;
   gasUsed?: number | string;
-  baseFeePerGas?: string;
   transactions?: string[];
 }
 

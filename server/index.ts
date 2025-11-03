@@ -401,6 +401,13 @@ app.get('/transactions/:transactionId', async (
 
     const transaction: Transaction = {
       hash: row.tx_hash,
+      blockNumber: row.block_number,
+      profit: row.profit_usd,
+      mevType: row.mev_type,
+      timeboosted: row.timeboosted,
+      expressLaneController: row.express_lane_controller,
+      expressLanePrice: null,
+      expressLaneRound: null,
       from: row.from.length > 14 
         ? `${row.from.slice(0, 10)}...${row.from.slice(-6)}`
         : row.from,
@@ -412,7 +419,6 @@ app.get('/transactions/:transactionId', async (
       toLabel: row.mev_type || null,
       value,
       time: 'Just now',
-      blockNumber: row.block_number,
       gas: row.gas_used,
       gasPrice: row.effective_gas_price,
       status: 'success',
