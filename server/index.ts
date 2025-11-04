@@ -563,7 +563,7 @@ app.get('/api/gross-mev', async (
       GROUP BY
         time
       ORDER BY
-        time DESC
+        time ASC
     `;
 
     const result = await req.clickhouse.query({
@@ -636,7 +636,7 @@ app.get('/api/gross-atomic-arb', async (
       GROUP BY
         time
       ORDER BY
-        time DESC
+        time ASC
     `;
 
     const result = await req.clickhouse.query({
@@ -708,7 +708,7 @@ app.get('/api/gross-cex-dex-quotes', async (
       GROUP BY
         time
       ORDER BY
-        time DESC
+        time ASC
     `;
 
     const result = await req.clickhouse.query({
@@ -783,7 +783,7 @@ app.get('/api/gross-liquidation', async (
       GROUP BY
         time
       ORDER BY
-        time DESC
+        time ASC
     `;
 
     const result = await req.clickhouse.query({
