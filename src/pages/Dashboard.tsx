@@ -323,7 +323,7 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Gross CexDexQuotes */}
+          {/* Gross CexDex */}
           <Card className="dashboard-box dashboard-box-full">
             <CardContent 
               className="chart-card-content"
@@ -334,7 +334,7 @@ function Dashboard() {
                 component="h2" 
                 className="chard-card-title"
               >
-                Gross CexDexQuotes
+                Gross CexDex
               </Typography>
               {grossCexDexQuotes.isLoading ? (
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
@@ -398,38 +398,6 @@ function Dashboard() {
       </Box>
 
       <Box className="dashboard-section">
-        {/* Atomic MEV Timeboosted */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
-            >
-              Atomic MEV Timeboosted
-            </Typography>
-            {atomicMEVTimeboosted.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : atomicMEVTimeboosted.isError ? (
-              <Alert severity="error">{atomicMEVTimeboosted.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformedAtomicMEVData}
-                xAxisKey="time"
-                yAxisLabel="Profit (USD)"
-                showArea={true}
-                hideZeroValues={true}
-                lines={atomicMEVLineConfigs}
-              />
-            )}
-          </CardContent>
-        </Card>
-
         {/* Atomic Arb MEV */}
         <Card className="dashboard-box dashboard-box-full">
           <CardContent 
@@ -457,6 +425,38 @@ function Dashboard() {
                 showArea={true}
                 hideZeroValues={true}
                 lines={atomicMEVTransformed.lineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Atomic MEV Timeboosted */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Atomic MEV Timeboosted
+            </Typography>
+            {atomicMEVTimeboosted.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : atomicMEVTimeboosted.isError ? (
+              <Alert severity="error">{atomicMEVTimeboosted.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={transformedAtomicMEVData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                hideZeroValues={true}
+                lines={atomicMEVLineConfigs}
               />
             )}
           </CardContent>

@@ -926,8 +926,8 @@ WITH
             proto
     )
 SELECT
-    t.time,
-    p.proto,
+    t.time as time,
+    p.proto as proto,
     ifNull(r.profit_usd, 0) AS profit_usd
 FROM       (SELECT DISTINCT time FROM real) AS t
 CROSS JOIN proto_list             AS p
