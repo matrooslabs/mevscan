@@ -662,13 +662,9 @@ function Dashboard() {
                     data={transformPieChartData}
                     innerRadius={40}
                     outerRadius={80}
+                    showLegend={true}
                   />
                 </Box>
-                {expressLaneMEVPercentage.data && (
-                  <Typography variant="h6" style={{ marginTop: 'var(--spacing-md)' }}>
-                    {expressLaneMEVPercentage.data.percentage.toFixed(2)}%
-                  </Typography>
-                )}
               </Box>
             )}
           </CardContent>
@@ -713,3 +709,4 @@ function Dashboard() {
 }
 
 export default Dashboard
+

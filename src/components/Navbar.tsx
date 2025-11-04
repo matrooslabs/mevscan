@@ -15,7 +15,7 @@ function Navbar() {
           onClick={() => navigate('/')} 
           style={{ cursor: 'pointer' }}
         >
-          IntentScan
+          MevScan
         </h1>
         <div className="navbar-menu">
           <h2 
