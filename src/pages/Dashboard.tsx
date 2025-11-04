@@ -10,6 +10,7 @@ import {
   useGrossLiquidation,
   useAtomicMEVTimeboosted,
   useExpressLaneMEVPercentage,
+  useExpressLaneMEVPercentagePerMinute,
   useAtomicMEV,
   useCexDex,
   useCexDexTimeboosted,
@@ -27,6 +28,7 @@ function Dashboard() {
   const grossLiquidation = useGrossLiquidation(timeRange)
   const atomicMEVTimeboosted = useAtomicMEVTimeboosted(timeRange)
   const expressLaneMEVPercentage = useExpressLaneMEVPercentage(timeRange)
+  const expressLaneMEVPercentagePerMinute = useExpressLaneMEVPercentagePerMinute(timeRange)
   const atomicMEV = useAtomicMEV(timeRange)
   const cexDex = useCexDex(timeRange)
   const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
@@ -165,7 +167,13 @@ function Dashboard() {
     if (!expressLaneMEVPercentage.data) return []
     
     const { total, timeboost } = expressLaneMEVPercentage.data
-    const normal = total - timeboost
+    const normal = Math.max(0, total - timeboost)
+    const timeboostValue = Math.max(0, timeboost || 0)
+    
+    // If both values are 0 or total is 0, return empty to show "No data available"
+    if (total === 0 || (normal === 0 && timeboostValue === 0)) {
+      return []
+    }
     
     return [
       {
@@ -175,11 +183,22 @@ function Dashboard() {
       },
       {
         name: 'Timeboost',
-        value: timeboost,
+        value: timeboostValue,
         color: '#82ca9d',
       },
     ]
   }, [expressLaneMEVPercentage.data])
+
+  // Transform Express Lane MEV Percentage per minute data
+  const transformPercentageTimeSeriesData = useMemo((): TimeSeriesData => {
+    if (!expressLaneMEVPercentagePerMinute.data) return []
+    return expressLaneMEVPercentagePerMinute.data.map((item) => ({
+      time: item.time,
+      total: item.percentage,
+      normal: 0,
+      timeboost: item.percentage,
+    }))
+  }, [expressLaneMEVPercentagePerMinute.data])
 
   // Check if any query has error
   const hasError = 
@@ -189,6 +208,7 @@ function Dashboard() {
     grossLiquidation.isError ||
     atomicMEVTimeboosted.isError ||
     expressLaneMEVPercentage.isError ||
+    expressLaneMEVPercentagePerMinute.isError ||
     atomicMEV.isError ||
     cexDex.isError ||
     cexDexTimeboosted.isError ||
@@ -202,6 +222,7 @@ function Dashboard() {
     grossLiquidation.error?.message ||
     atomicMEVTimeboosted.error?.message ||
     expressLaneMEVPercentage.error?.message ||
+    expressLaneMEVPercentagePerMinute.error?.message ||
     atomicMEV.error?.message ||
     cexDex.error?.message ||
     cexDexTimeboosted.error?.message ||
@@ -591,7 +612,7 @@ function Dashboard() {
         </Card>
 
         {/* Express Lane MEV Percentage */}
-        <Card className="dashboard-box">
+        <Card className="dashboard-box dashboard-box-half">
           <CardContent 
             className="chart-card-content"
             style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
@@ -610,18 +631,54 @@ function Dashboard() {
             ) : expressLaneMEVPercentage.isError ? (
               <Alert severity="error">{expressLaneMEVPercentage.error?.message || 'Failed to load data'}</Alert>
             ) : (
-              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)' }}>
-                <PieChart 
-                  data={transformPieChartData}
-                  innerRadius={40}
-                  outerRadius={80}
-                />
+              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
+                <Box style={{ width: '100%', height: '250px', flex: 1 }}>
+                  <PieChart 
+                    data={transformPieChartData}
+                    innerRadius={40}
+                    outerRadius={80}
+                  />
+                </Box>
                 {expressLaneMEVPercentage.data && (
                   <Typography variant="h6" style={{ marginTop: 'var(--spacing-md)' }}>
                     {expressLaneMEVPercentage.data.percentage.toFixed(2)}%
                   </Typography>
                 )}
               </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Express Lane MEV Percentage Time Series */}
+        <Card className="dashboard-box dashboard-box-half">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Express Lane MEV Percentage
+            </Typography>
+            {expressLaneMEVPercentagePerMinute.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : expressLaneMEVPercentagePerMinute.isError ? (
+              <Alert severity="error">{expressLaneMEVPercentagePerMinute.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={transformPercentageTimeSeriesData}
+                xAxisKey="time"
+                yAxisLabel="Percentage (%)"
+                showArea={true}
+                hideZeroValues={true}
+                lines={[
+                  { dataKey: 'total', name: 'Percentage', strokeColor: '#82ca9d' },
+                ]}
+              />
             )}
           </CardContent>
         </Card>

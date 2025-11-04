@@ -7,6 +7,7 @@ import type {
   TimeSeriesResponse,
   TimeSeriesByProtocolResponse,
   PieChartResponse,
+  TimeSeriesPercentageResponse,
 } from '../../shared/types';
 
 class ApiClient {
@@ -181,7 +182,23 @@ class ApiClient {
    */
   async getExpressLaneMEVPercentage(timeRange: string = '15min'): Promise<PieChartResponse> {
     try {
-      const response = await this.client.get<PieChartResponse>('/api/express-lane-mev-percentage', {
+      const response = await this.client.get<PieChartResponse>('/api/express-lane/mev-percentage', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Express Lane MEV Percentage per minute time series
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series percentage data
+   */
+  async getExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): Promise<TimeSeriesPercentageResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute', {
         params: { timeRange },
       });
       return response.data;

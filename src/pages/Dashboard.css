@@ -40,6 +40,11 @@
   min-width: 100% !important;
 }
 
+.dashboard-box-half {
+  flex: 0 0 calc(50% - var(--spacing-lg) / 2) !important;
+  max-width: calc(50% - var(--spacing-lg) / 2) !important;
+}
+
 .chart-card-content {
   display: flex;
   flex-direction: column;

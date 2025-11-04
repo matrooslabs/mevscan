@@ -15,6 +15,8 @@ import type {
   TimeSeriesByProtocolResponse,
   TimeSeriesByProtocolDataPoint,
   PieChartResponse,
+  TimeSeriesPercentageResponse,
+  TimeSeriesPercentageDataPoint,
 } from '../shared/types';
 
 dotenv.config();
@@ -1320,7 +1322,7 @@ ORDER BY
 });
 
 // Get Express Lane MEV Percentage
-app.get('/api/express-lane-mev-percentage', async (
+app.get('/api/express-lane/mev-percentage', async (
   req: Request,
   res: Response<PieChartResponse | ErrorResponse>
 ) => {
@@ -1383,6 +1385,76 @@ app.get('/api/express-lane-mev-percentage', async (
   }
 });
 
+// Get Express Lane MEV Percentage per minute time series
+app.get('/api/express-lane/mev-percentage-per-minute', async (
+  req: Request,
+  res: Response<TimeSeriesPercentageResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+        sum(m.profit_usd)                              AS total,
+        sumIf(m.profit_usd, m.timeboosted = 1)         AS timeboost,
+        timeboost / total * 100                        AS percentage
+      FROM ethereum.blocks        AS e
+      LEFT JOIN mev.bundle_header AS m
+             ON m.block_number = e.block_number
+      LEFT JOIN mev.atomic_arbs   AS a
+             ON a.tx_hash = m.tx_hash
+      WHERE (m.mev_type = 'CexDexQuotes' OR m.mev_type='AtomicArb' OR m.mev_type='Liquidation')
+        AND (
+              a.arb_type = ''
+              OR replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
+            )
+        AND ${timeFilter}
+      GROUP BY time
+      ORDER BY time ASC
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      total: number;
+      timeboost: number;
+      percentage: number;
+    }>>();
+
+    const response: TimeSeriesPercentageResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          total: row.total || 0,
+          timeboost: row.timeboost || 0,
+          percentage: row.percentage || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesPercentageDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Express Lane MEV Percentage per minute:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Express Lane MEV Percentage per minute',
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req: Request, res: Response<HealthResponse>) => {
   res.json({ status: 'ok', message: 'Server is running' });
@@ -1404,7 +1476,8 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
       'GET /api/gross-cex-dex-quotes?timeRange=15min',
       'GET /api/gross-liquidation?timeRange=15min',
       'GET /api/protocols/atomic-mev/timeboosted?timeRange=15min',
-      'GET /api/express-lane-mev-percentage?timeRange=15min',
+      'GET /api/express-lane/mev-percentage?timeRange=15min',
+      'GET /api/express-lane/mev-percentage-per-minute?timeRange=15min',
       'GET /health'
     ]
   });

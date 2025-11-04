@@ -155,3 +155,18 @@ export interface PieChartResponse {
   percentage: number;
 }
 
+/**
+ * Time series data point with percentage for Express Lane MEV Percentage over time
+ */
+export interface TimeSeriesPercentageDataPoint {
+  time: string;
+  total: number;
+  timeboost: number;
+  percentage: number;
+}
+
+/**
+ * Time series percentage response type
+ */
+export type TimeSeriesPercentageResponse = TimeSeriesPercentageDataPoint[];
+

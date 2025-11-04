@@ -24,8 +24,12 @@ function PieChart({
   innerRadius = 0,
   outerRadius = 80,
 }: PieChartProps) {
+  if (!data || data.length === 0) {
+    return <div>No data available</div>
+  }
+
   return (
-    <div className="chart-container">
+    <div className="chart-container" style={{ width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart>
           <Pie

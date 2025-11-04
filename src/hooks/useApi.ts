@@ -9,6 +9,7 @@ import type {
   TimeSeriesResponse,
   TimeSeriesByProtocolResponse,
   PieChartResponse,
+  TimeSeriesPercentageResponse,
 } from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
@@ -184,6 +185,22 @@ export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQue
     queryKey: ['express-lane-mev-percentage', timeRange],
     queryFn: async () => {
       const data = await apiClient.getExpressLaneMEVPercentage(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Express Lane MEV Percentage per minute time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series percentage data
+ */
+export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): UseQueryResult<TimeSeriesPercentageResponse, Error> {
+  return useQuery({
+    queryKey: ['express-lane-mev-percentage-per-minute', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getExpressLaneMEVPercentagePerMinute(timeRange)
       return data
     },
     refetchInterval: 30000,
