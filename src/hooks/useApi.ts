@@ -190,3 +190,83 @@ export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQue
   })
 }
 
+/**
+ * Query hook for fetching Atomic Arb MEV time series by protocol
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useAtomicMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['atomic-mev', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getAtomicMEV(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching CexDex Arb time series by protocol
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useCexDex(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['cexdex', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getCexDex(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching CexDex MEV Timeboosted time series by protocol
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useCexDexTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['cexdex-timeboosted', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getCexDexTimeboosted(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Liquidation time series by protocol
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['liquidation', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getLiquidation(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Liquidation Timeboosted time series by protocol
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['liquidation-timeboosted', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getLiquidationTimeboosted(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+

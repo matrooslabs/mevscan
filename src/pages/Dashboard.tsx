@@ -10,6 +10,11 @@ import {
   useGrossLiquidation,
   useAtomicMEVTimeboosted,
   useExpressLaneMEVPercentage,
+  useAtomicMEV,
+  useCexDex,
+  useCexDexTimeboosted,
+  useLiquidation,
+  useLiquidationTimeboosted,
 } from '../hooks/useApi'
 
 function Dashboard() {
@@ -22,6 +27,11 @@ function Dashboard() {
   const grossLiquidation = useGrossLiquidation(timeRange)
   const atomicMEVTimeboosted = useAtomicMEVTimeboosted(timeRange)
   const expressLaneMEVPercentage = useExpressLaneMEVPercentage(timeRange)
+  const atomicMEV = useAtomicMEV(timeRange)
+  const cexDex = useCexDex(timeRange)
+  const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
+  const liquidation = useLiquidation(timeRange)
+  const liquidationTimeboosted = useLiquidationTimeboosted(timeRange)
 
   // Use time series data directly without transformation
   const transformTimeSeriesData = (data: typeof grossMEV.data): TimeSeriesData => {
@@ -34,30 +44,121 @@ function Dashboard() {
     }))
   }
 
-  // Transform Atomic MEV Timeboosted data - aggregate by protocol
-  const transformAtomicMEVData = useMemo(() => {
-    if (!atomicMEVTimeboosted.data) return []
+  // Transform Atomic MEV Timeboosted data - one line per protocol
+  const { transformedAtomicMEVData, atomicMEVLineConfigs } = useMemo(() => {
+    if (!atomicMEVTimeboosted.data || atomicMEVTimeboosted.data.length === 0) {
+      return { transformedAtomicMEVData: [], atomicMEVLineConfigs: [] }
+    }
     
-    // Group by time and sum all protocols
-    const groupedByTime = new Map<string, { total: number }>()
+    // Get unique protocols
+    const protocols = Array.from(new Set(atomicMEVTimeboosted.data.map(item => item.proto))).sort()
     
+    // Get unique times
+    const times = Array.from(new Set(atomicMEVTimeboosted.data.map(item => item.time))).sort()
+    
+    // Create a map for quick lookup: time -> proto -> profit_usd
+    const dataMap = new Map<string, Map<string, number>>()
     atomicMEVTimeboosted.data.forEach((item) => {
-      const existing = groupedByTime.get(item.time) || { total: 0 }
-      groupedByTime.set(item.time, {
-        total: existing.total + item.profit_usd,
-      })
+      if (!dataMap.has(item.time)) {
+        dataMap.set(item.time, new Map())
+      }
+      dataMap.get(item.time)!.set(item.proto, item.profit_usd)
     })
     
-    // Convert to TimeSeriesData format
-    return Array.from(groupedByTime.entries())
-      .map(([time, values]) => ({
-        time,
-        total: values.total,
-        normal: 0,
-        timeboost: values.total, // All are timeboosted
-      }))
-      .sort((a, b) => a.time.localeCompare(b.time))
+    // Transform to chart format: one object per time point with a property for each protocol
+    const transformedData = times.map(time => {
+      const protoMap = dataMap.get(time) || new Map()
+      const dataPoint: Record<string, string | number> = { time }
+      
+      protocols.forEach(proto => {
+        // Use a safe property name (replace spaces/special chars with underscores)
+        const safeProtoName = proto.replace(/[^a-zA-Z0-9]/g, '_')
+        dataPoint[safeProtoName] = protoMap.get(proto) || 0
+      })
+      
+      return dataPoint
+    })
+    
+    // Generate distinct colors for each protocol
+    const colorPalette = [
+      '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe',
+      '#00c49f', '#ffbb28', '#ff8042', '#8884d8', '#82ca9d',
+      '#ffc658', '#ff7300', '#0088fe', '#00c49f', '#ffbb28'
+    ]
+    
+    const lineConfigs = protocols.map((proto, index) => ({
+      dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
+      name: proto,
+      strokeColor: colorPalette[index % colorPalette.length],
+    }))
+    
+    return {
+      transformedAtomicMEVData: transformedData,
+      atomicMEVLineConfigs: lineConfigs,
+    }
   }, [atomicMEVTimeboosted.data])
+
+  // Helper function to transform protocol-based data
+  const transformProtocolData = useMemo(() => {
+    const colorPalette = [
+      '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe',
+      '#00c49f', '#ffbb28', '#ff8042', '#8884d8', '#82ca9d',
+      '#ffc658', '#ff7300', '#0088fe', '#00c49f', '#ffbb28'
+    ]
+    
+    return (data: typeof atomicMEV.data) => {
+      if (!data || data.length === 0) {
+        return { transformedData: [], lineConfigs: [] }
+      }
+      
+      // Get unique protocols
+      const protocols = Array.from(new Set(data.map(item => item.proto))).sort()
+      
+      // Get unique times
+      const times = Array.from(new Set(data.map(item => item.time))).sort()
+      
+      // Create a map for quick lookup: time -> proto -> profit_usd
+      const dataMap = new Map<string, Map<string, number>>()
+      data.forEach((item) => {
+        if (!dataMap.has(item.time)) {
+          dataMap.set(item.time, new Map())
+        }
+        dataMap.get(item.time)!.set(item.proto, item.profit_usd)
+      })
+      
+      // Transform to chart format: one object per time point with a property for each protocol
+      const transformedData = times.map(time => {
+        const protoMap = dataMap.get(time) || new Map()
+        const dataPoint: Record<string, string | number> = { time }
+        
+        protocols.forEach(proto => {
+          // Use a safe property name (replace spaces/special chars with underscores)
+          const safeProtoName = proto.replace(/[^a-zA-Z0-9]/g, '_')
+          dataPoint[safeProtoName] = protoMap.get(proto) || 0
+        })
+        
+        return dataPoint
+      })
+      
+      const lineConfigs = protocols.map((proto, index) => ({
+        dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
+        name: proto,
+        strokeColor: colorPalette[index % colorPalette.length],
+      }))
+      
+      return {
+        transformedData,
+        lineConfigs,
+      }
+    }
+  }, [])
+
+  // Transform protocol-based data for each visualization
+  const atomicMEVTransformed = useMemo(() => transformProtocolData(atomicMEV.data), [atomicMEV.data, transformProtocolData])
+  const cexDexTransformed = useMemo(() => transformProtocolData(cexDex.data), [cexDex.data, transformProtocolData])
+  const cexDexTimeboostedTransformed = useMemo(() => transformProtocolData(cexDexTimeboosted.data), [cexDexTimeboosted.data, transformProtocolData])
+  const liquidationTransformed = useMemo(() => transformProtocolData(liquidation.data), [liquidation.data, transformProtocolData])
+  const liquidationTimeboostedTransformed = useMemo(() => transformProtocolData(liquidationTimeboosted.data), [liquidationTimeboosted.data, transformProtocolData])
 
   // Transform pie chart data
   const transformPieChartData = useMemo((): PieChartData[] => {
@@ -87,7 +188,12 @@ function Dashboard() {
     grossCexDexQuotes.isLoading ||
     grossLiquidation.isLoading ||
     atomicMEVTimeboosted.isLoading ||
-    expressLaneMEVPercentage.isLoading
+    expressLaneMEVPercentage.isLoading ||
+    atomicMEV.isLoading ||
+    cexDex.isLoading ||
+    cexDexTimeboosted.isLoading ||
+    liquidation.isLoading ||
+    liquidationTimeboosted.isLoading
 
   // Check if any query has error
   const hasError = 
@@ -96,7 +202,12 @@ function Dashboard() {
     grossCexDexQuotes.isError ||
     grossLiquidation.isError ||
     atomicMEVTimeboosted.isError ||
-    expressLaneMEVPercentage.isError
+    expressLaneMEVPercentage.isError ||
+    atomicMEV.isError ||
+    cexDex.isError ||
+    cexDexTimeboosted.isError ||
+    liquidation.isError ||
+    liquidationTimeboosted.isError
 
   const errorMessage = 
     grossMEV.error?.message ||
@@ -105,6 +216,11 @@ function Dashboard() {
     grossLiquidation.error?.message ||
     atomicMEVTimeboosted.error?.message ||
     expressLaneMEVPercentage.error?.message ||
+    atomicMEV.error?.message ||
+    cexDex.error?.message ||
+    cexDexTimeboosted.error?.message ||
+    liquidation.error?.message ||
+    liquidationTimeboosted.error?.message ||
     'An error occurred while fetching data'
 
   return (
@@ -295,13 +411,166 @@ function Dashboard() {
               <Alert severity="error">{atomicMEVTimeboosted.error?.message || 'Failed to load data'}</Alert>
             ) : (
               <TimeSeriesChart 
-                data={transformAtomicMEVData}
+                data={transformedAtomicMEVData}
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
-                lines={[
-                  { dataKey: 'timeboost', name: 'Total Timeboosted', strokeColor: '#82ca9d' },
-                ]}
+                lines={atomicMEVLineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Atomic Arb MEV */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Atomic Arb MEV
+            </Typography>
+            {atomicMEV.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : atomicMEV.isError ? (
+              <Alert severity="error">{atomicMEV.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={atomicMEVTransformed.transformedData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                lines={atomicMEVTransformed.lineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CexDex Arb */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              CexDex Arb
+            </Typography>
+            {cexDex.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : cexDex.isError ? (
+              <Alert severity="error">{cexDex.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={cexDexTransformed.transformedData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                lines={cexDexTransformed.lineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CexDex MEV Timeboosted */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              CexDex MEV Timeboosted
+            </Typography>
+            {cexDexTimeboosted.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : cexDexTimeboosted.isError ? (
+              <Alert severity="error">{cexDexTimeboosted.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={cexDexTimeboostedTransformed.transformedData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                lines={cexDexTimeboostedTransformed.lineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Liquidation */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Liquidation
+            </Typography>
+            {liquidation.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : liquidation.isError ? (
+              <Alert severity="error">{liquidation.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={liquidationTransformed.transformedData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                lines={liquidationTransformed.lineConfigs}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Liquidation Timeboosted */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Liquidation Timeboosted
+            </Typography>
+            {liquidationTimeboosted.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : liquidationTimeboosted.isError ? (
+              <Alert severity="error">{liquidationTimeboosted.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={liquidationTimeboostedTransformed.transformedData}
+                xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
+                lines={liquidationTimeboostedTransformed.lineConfigs}
               />
             )}
           </CardContent>

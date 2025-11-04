@@ -191,6 +191,86 @@ class ApiClient {
   }
 
   /**
+   * Get Atomic Arb MEV time series data by protocol
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series data by protocol
+   */
+  async getAtomicMEV(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get CexDex Arb time series data by protocol
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series data by protocol
+   */
+  async getCexDex(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get CexDex MEV Timeboosted time series data by protocol
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series data by protocol
+   */
+  async getCexDexTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Liquidation time series data by protocol
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series data by protocol
+   */
+  async getLiquidation(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Liquidation Timeboosted time series data by protocol
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to time series data by protocol
+   */
+  async getLiquidationTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+    try {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Handle API errors
    * @private
    * @param error - Axios error object
