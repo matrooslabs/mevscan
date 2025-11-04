@@ -16,6 +16,7 @@ import {
   useCexDexTimeboosted,
   useLiquidation,
   useLiquidationTimeboosted,
+  usePeriodicApiRefreshByKeys,
 } from '../hooks/useApi'
 
 function Dashboard() {
@@ -34,6 +35,29 @@ function Dashboard() {
   const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
   const liquidation = useLiquidation(timeRange)
   const liquidationTimeboosted = useLiquidationTimeboosted(timeRange)
+
+  // Periodic refresh - refresh all queries every 1 minute
+  usePeriodicApiRefreshByKeys(
+    useMemo(
+      () => [
+        ['gross-mev', timeRange],
+        ['gross-atomic-arb', timeRange],
+        ['gross-cex-dex-quotes', timeRange],
+        ['gross-liquidation', timeRange],
+        ['atomic-mev-timeboosted', timeRange],
+        ['express-lane-mev-percentage', timeRange],
+        ['express-lane-mev-percentage-per-minute', timeRange],
+        ['atomic-mev', timeRange],
+        ['cexdex', timeRange],
+        ['cexdex-timeboosted', timeRange],
+        ['liquidation', timeRange],
+        ['liquidation-timeboosted', timeRange],
+      ],
+      [timeRange]
+    ),
+    60000, // 1 minute
+    true // enabled by default
+  )
 
   // Use time series data directly without transformation
   const transformTimeSeriesData = (data: typeof grossMEV.data): TimeSeriesData => {
@@ -621,6 +645,7 @@ function Dashboard() {
               variant="h5" 
               component="h2" 
               className="chard-card-title"
+              style={{ marginBottom: 'var(--spacing-lg)' }}
             >
               Express Lane MEV Percentage
             </Typography>

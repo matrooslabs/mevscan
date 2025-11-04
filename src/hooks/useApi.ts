@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import ApiClient from '../services/apiClient'
 import type {
   Transaction,
@@ -285,5 +286,232 @@ export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQuery
     },
     refetchInterval: 30000,
   })
+}
+
+/**
+ * Hook to refresh multiple API queries
+ * @param queries - Array of UseQueryResult objects to refresh
+ * @returns Object with refresh function and loading state
+ * 
+ * @example
+ * ```tsx
+ * const grossMEV = useGrossMEV(timeRange)
+ * const atomicMEV = useAtomicMEV(timeRange)
+ * const { refresh, isRefreshing } = useApiRefresh([grossMEV, atomicMEV])
+ * 
+ * // Later in your component:
+ * <button onClick={refresh}>Refresh Data</button>
+ * ```
+ */
+export function useApiRefresh(
+  queries: UseQueryResult<unknown, Error>[]
+): {
+  refresh: () => Promise<void>
+  isRefreshing: boolean
+} {
+  const refresh = useCallback(async () => {
+    await Promise.all(queries.map(query => query.refetch()))
+  }, [queries])
+
+  const isRefreshing = queries.some(query => query.isFetching)
+
+  return { refresh, isRefreshing }
+}
+
+/**
+ * Hook to refresh API queries by query keys
+ * Useful when you want to refresh queries without having access to the query results
+ * @param queryKeys - Array of query keys to refresh
+ * @returns Object with refresh function and loading state
+ * 
+ * @example
+ * ```tsx
+ * const { refresh, isRefreshing } = useApiRefreshByKeys([
+ *   ['gross-mev', '15min'],
+ *   ['atomic-mev', '15min']
+ * ])
+ * 
+ * // Later in your component:
+ * <button onClick={refresh}>Refresh Data</button>
+ * ```
+ */
+export function useApiRefreshByKeys(
+  queryKeys: unknown[][]
+): {
+  refresh: () => Promise<void>
+  isRefreshing: boolean
+} {
+  const queryClient = useQueryClient()
+
+  const refresh = useCallback(async () => {
+    await Promise.all(
+      queryKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
+    )
+  }, [queryClient, queryKeys])
+
+  const isRefreshing = queryKeys.some(queryKey => 
+    queryClient.getQueryState(queryKey)?.isFetching ?? false
+  )
+
+  return { refresh, isRefreshing }
+}
+
+/**
+ * Hook to periodically refresh multiple API queries
+ * @param queries - Array of UseQueryResult objects to refresh
+ * @param intervalMs - Refresh interval in milliseconds (default: 30000)
+ * @param enabled - Whether periodic refresh is enabled (default: true)
+ * @returns Object with refresh function, loading state, and controls
+ * 
+ * @example
+ * ```tsx
+ * const grossMEV = useGrossMEV(timeRange)
+ * const atomicMEV = useAtomicMEV(timeRange)
+ * const { refresh, isRefreshing, pause, resume, isPaused } = usePeriodicApiRefresh(
+ *   [grossMEV, atomicMEV],
+ *   30000, // 30 seconds
+ *   true // enabled by default
+ * )
+ * 
+ * // Pause/resume periodic refresh
+ * <button onClick={isPaused ? resume : pause}>
+ *   {isPaused ? 'Resume Auto-refresh' : 'Pause Auto-refresh'}
+ * </button>
+ * ```
+ */
+export function usePeriodicApiRefresh(
+  queries: UseQueryResult<unknown, Error>[],
+  intervalMs: number = 30000,
+  enabled: boolean = true
+): {
+  refresh: () => Promise<void>
+  isRefreshing: boolean
+  pause: () => void
+  resume: () => void
+  isPaused: boolean
+} {
+  const [isPaused, setIsPaused] = useState(!enabled)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const refresh = useCallback(async () => {
+    await Promise.all(queries.map(query => query.refetch()))
+  }, [queries])
+
+  const pause = useCallback(() => {
+    setIsPaused(true)
+  }, [])
+
+  const resume = useCallback(() => {
+    setIsPaused(false)
+  }, [])
+
+  useEffect(() => {
+    if (isPaused || intervalMs <= 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
+    // Set up periodic refresh
+    intervalRef.current = setInterval(() => {
+      refresh()
+    }, intervalMs)
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [isPaused, intervalMs, refresh])
+
+  const isRefreshing = queries.some(query => query.isFetching)
+
+  return { refresh, isRefreshing, pause, resume, isPaused }
+}
+
+/**
+ * Hook to periodically refresh API queries by query keys
+ * Useful when you want to refresh queries without having access to the query results
+ * @param queryKeys - Array of query keys to refresh
+ * @param intervalMs - Refresh interval in milliseconds (default: 30000)
+ * @param enabled - Whether periodic refresh is enabled (default: true)
+ * @returns Object with refresh function, loading state, and controls
+ * 
+ * @example
+ * ```tsx
+ * const { refresh, isRefreshing, pause, resume, isPaused } = usePeriodicApiRefreshByKeys(
+ *   [
+ *     ['gross-mev', timeRange],
+ *     ['atomic-mev', timeRange]
+ *   ],
+ *   30000, // 30 seconds
+ *   true // enabled by default
+ * )
+ * 
+ * // Pause/resume periodic refresh
+ * <button onClick={isPaused ? resume : pause}>
+ *   {isPaused ? 'Resume Auto-refresh' : 'Pause Auto-refresh'}
+ * </button>
+ * ```
+ */
+export function usePeriodicApiRefreshByKeys(
+  queryKeys: unknown[][],
+  intervalMs: number = 30000,
+  enabled: boolean = true
+): {
+  refresh: () => Promise<void>
+  isRefreshing: boolean
+  pause: () => void
+  resume: () => void
+  isPaused: boolean
+} {
+  const queryClient = useQueryClient()
+  const [isPaused, setIsPaused] = useState(!enabled)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const refresh = useCallback(async () => {
+    await Promise.all(
+      queryKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
+    )
+  }, [queryClient, queryKeys])
+
+  const pause = useCallback(() => {
+    setIsPaused(true)
+  }, [])
+
+  const resume = useCallback(() => {
+    setIsPaused(false)
+  }, [])
+
+  useEffect(() => {
+    if (isPaused || intervalMs <= 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
+    // Set up periodic refresh
+    intervalRef.current = setInterval(() => {
+      refresh()
+    }, intervalMs)
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [isPaused, intervalMs, refresh])
+
+  const isRefreshing = queryKeys.some(queryKey => 
+    queryClient.getQueryState(queryKey)?.isFetching ?? false
+  )
+
+  return { refresh, isRefreshing, pause, resume, isPaused }
 }
 

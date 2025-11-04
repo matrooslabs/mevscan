@@ -14,6 +14,40 @@ interface PieChartProps {
   outerRadius?: number
 }
 
+interface TooltipProps {
+  active?: boolean
+  payload?: Array<{
+    name?: string
+    value?: number
+    color?: string
+  }>
+}
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
+  if (!active || !payload || payload.length === 0) {
+    return null
+  }
+
+  const entry = payload[0]
+  const roundedValue = typeof entry.value === 'number' 
+    ? entry.value.toFixed(2) 
+    : entry.value
+
+  return (
+    <div style={{
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      border: '1px solid #ccc',
+      borderRadius: '4px',
+      padding: '8px',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '12px' }}>
+        {entry.name}: {roundedValue}
+      </p>
+    </div>
+  )
+}
+
 /**
  * PieChart - A reusable pie chart component using Recharts
  */
@@ -45,7 +79,7 @@ function PieChart({
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          {showTooltip && <Tooltip />}
+          {showTooltip && <Tooltip content={<CustomTooltip />} />}
           {showLegend && (
             <Legend 
               content={({ payload }) => {
