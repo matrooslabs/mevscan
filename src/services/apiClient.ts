@@ -8,6 +8,9 @@ import type {
   TimeSeriesByProtocolResponse,
   PieChartResponse,
   TimeSeriesPercentageResponse,
+  ExpressLaneNetProfitResponse,
+  ExpressLaneProfitByControllerResponse,
+  TimeboostRevenueResponse,
 } from '../../shared/types';
 
 class ApiClient {
@@ -279,6 +282,67 @@ class ApiClient {
   async getLiquidationTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
     try {
       const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Express Lane Net Profit data
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Express Lane Net Profit data
+   */
+  async getExpressLaneNetProfit(timeRange: string = '15min'): Promise<ExpressLaneNetProfitResponse> {
+    try {
+      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Express Lane Profit by Controller data
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Express Lane Profit by Controller data
+   */
+  async getExpressLaneProfitByController(timeRange: string = '15min'): Promise<ExpressLaneProfitByControllerResponse> {
+    try {
+      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Timeboost Gross Revenue (all-time, no timeRange)
+   * @returns Promise resolving to Timeboost Revenue data
+   */
+  async getTimeboostGrossRevenue(): Promise<TimeboostRevenueResponse> {
+    try {
+      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/gross-revenue');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Timeboost Revenue (time-ranged)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Timeboost Revenue data
+   */
+  async getTimeboostRevenue(timeRange: string = '15min'): Promise<TimeboostRevenueResponse> {
+    try {
+      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue', {
         params: { timeRange },
       });
       return response.data;

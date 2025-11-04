@@ -3,6 +3,8 @@ import { useState, useMemo } from 'react'
 import { Card, CardContent, Typography, Select, MenuItem, FormControl, InputLabel, CircularProgress, Alert, Box } from '@mui/material'
 import TimeSeriesChart, { type TimeSeriesData } from '../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../components/PieChart'
+import BarChart from '../components/BarChart'
+import RadialBarChart from '../components/RadialBarChart'
 import {
   useGrossMEV,
   useGrossAtomicArb,
@@ -16,6 +18,10 @@ import {
   useCexDexTimeboosted,
   useLiquidation,
   useLiquidationTimeboosted,
+  useExpressLaneNetProfit,
+  useExpressLaneProfitByController,
+  useTimeboostGrossRevenue,
+  useTimeboostRevenue,
   usePeriodicApiRefreshByKeys,
 } from '../hooks/useApi'
 
@@ -35,6 +41,10 @@ function Dashboard() {
   const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
   const liquidation = useLiquidation(timeRange)
   const liquidationTimeboosted = useLiquidationTimeboosted(timeRange)
+  const expressLaneNetProfit = useExpressLaneNetProfit(timeRange)
+  const expressLaneProfitByController = useExpressLaneProfitByController(timeRange)
+  const timeboostGrossRevenue = useTimeboostGrossRevenue()
+  const timeboostRevenue = useTimeboostRevenue(timeRange)
 
   // Periodic refresh - refresh all queries every 1 minute
   usePeriodicApiRefreshByKeys(
@@ -52,6 +62,10 @@ function Dashboard() {
         ['cexdex-timeboosted', timeRange],
         ['liquidation', timeRange],
         ['liquidation-timeboosted', timeRange],
+        ['express-lane-net-profit', timeRange],
+        ['express-lane-profit-by-controller', timeRange],
+        ['timeboost-gross-revenue'],
+        ['timeboost-revenue', timeRange],
       ],
       [timeRange]
     ),
@@ -224,6 +238,39 @@ function Dashboard() {
     }))
   }, [expressLaneMEVPercentagePerMinute.data])
 
+  // Transform Express Lane Net Profit data for X-Y chart (round vs net_profit)
+  const transformExpressLaneNetProfitData = useMemo(() => {
+    if (!expressLaneNetProfit.data || expressLaneNetProfit.data.length === 0) {
+      return []
+    }
+    // Group by round and sum net_profit per round
+    const roundMap = new Map<number, number>()
+    expressLaneNetProfit.data.forEach((item) => {
+      const current = roundMap.get(item.round) || 0
+      roundMap.set(item.round, current + item.net_profit)
+    })
+    // Convert to array sorted by round
+    return Array.from(roundMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([round, net_profit]) => ({
+        round: round.toString(),
+        net_profit,
+      }))
+  }, [expressLaneNetProfit.data])
+
+  // Transform Express Lane Profit by Controller data for bar chart
+  const transformExpressLaneProfitByControllerData = useMemo(() => {
+    if (!expressLaneProfitByController.data || expressLaneProfitByController.data.length === 0) {
+      return []
+    }
+    return expressLaneProfitByController.data
+      .map((item) => ({
+        name: item.controller || 'Unknown',
+        value: item.net_profit_total || 0,
+      }))
+      .sort((a, b) => b.value - a.value) // Sort descending
+  }, [expressLaneProfitByController.data])
+
   // Check if any query has error
   const hasError = 
     grossMEV.isError ||
@@ -237,7 +284,11 @@ function Dashboard() {
     cexDex.isError ||
     cexDexTimeboosted.isError ||
     liquidation.isError ||
-    liquidationTimeboosted.isError
+    liquidationTimeboosted.isError ||
+    expressLaneNetProfit.isError ||
+    expressLaneProfitByController.isError ||
+    timeboostGrossRevenue.isError ||
+    timeboostRevenue.isError
 
   const errorMessage = 
     grossMEV.error?.message ||
@@ -252,6 +303,10 @@ function Dashboard() {
     cexDexTimeboosted.error?.message ||
     liquidation.error?.message ||
     liquidationTimeboosted.error?.message ||
+    expressLaneNetProfit.error?.message ||
+    expressLaneProfitByController.error?.message ||
+    timeboostGrossRevenue.error?.message ||
+    timeboostRevenue.error?.message ||
     'An error occurred while fetching data'
 
   return (
@@ -751,6 +806,181 @@ function Dashboard() {
                   { dataKey: 'total', name: 'Percentage', strokeColor: '#82ca9d' },
                 ]}
               />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Express Lane Net Profit */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Express Lane Net Profit
+            </Typography>
+            {expressLaneNetProfit.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : expressLaneNetProfit.isError ? (
+              <Alert severity="error">{expressLaneNetProfit.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <TimeSeriesChart 
+                data={transformExpressLaneNetProfitData.map(item => ({
+                  time: item.round,
+                  total: item.net_profit,
+                  normal: 0,
+                  timeboost: item.net_profit,
+                }))}
+                xAxisKey="time"
+                yAxisLabel="Net Profit (USD)"
+                showArea={true}
+                hideZeroValues={true}
+                lines={[
+                  { dataKey: 'total', name: 'Net Profit', strokeColor: '#82ca9d' },
+                ]}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Express Lane Profit by Controller */}
+        <Card className="dashboard-box dashboard-box-full">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+            >
+              Express Lane Profit by Controller
+            </Typography>
+            {expressLaneProfitByController.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : expressLaneProfitByController.isError ? (
+              <Alert severity="error">{expressLaneProfitByController.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <BarChart 
+                data={transformExpressLaneProfitByControllerData}
+                xAxisKey="name"
+                yAxisLabel="Net Profit (USD)"
+                showGrid={true}
+                showLegend={false}
+                showTooltip={true}
+                barColor="#82ca9d"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+      </Box>
+
+      {/* Timeboost Section */}
+      <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            marginBottom: 'var(--spacing-2xl)',
+            padding: 'var(--spacing-lg)',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            fontSize: '2rem',
+            letterSpacing: '-0.5px',
+            position: 'relative',
+            display: 'inline-block',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '8px',
+              left: 'var(--spacing-lg)',
+              width: '80px',
+              height: '4px',
+              background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+              borderRadius: '2px',
+            }
+          }}
+        >
+          Timeboost
+        </Typography>
+        <Box className="dashboard-section">
+        {/* Timeboost Gross Revenue */}
+        <Card className="dashboard-box dashboard-box-half">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+              style={{ marginBottom: 'var(--spacing-lg)' }}
+            >
+              Timeboost Gross Revenue (All-Time)
+            </Typography>
+            {timeboostGrossRevenue.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : timeboostGrossRevenue.isError ? (
+              <Alert severity="error">{timeboostGrossRevenue.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
+                <Box style={{ width: '100%', height: '250px', flex: 1 }}>
+                  <RadialBarChart 
+                    data={timeboostGrossRevenue.data || { total_first_price: 0, total_second_price: 0 }}
+                    showLegend={true}
+                    showTooltip={true}
+                  />
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Timeboost Revenue (Time-Ranged) */}
+        <Card className="dashboard-box dashboard-box-half">
+          <CardContent 
+            className="chart-card-content"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+          >
+            <Typography 
+              variant="h5" 
+              component="h2" 
+              className="chard-card-title"
+              style={{ marginBottom: 'var(--spacing-lg)' }}
+            >
+              Timeboost Revenue
+            </Typography>
+            {timeboostRevenue.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+              </Box>
+            ) : timeboostRevenue.isError ? (
+              <Alert severity="error">{timeboostRevenue.error?.message || 'Failed to load data'}</Alert>
+            ) : (
+              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
+                <Box style={{ width: '100%', height: '250px', flex: 1 }}>
+                  <RadialBarChart 
+                    data={timeboostRevenue.data || { total_first_price: 0, total_second_price: 0 }}
+                    showLegend={true}
+                    showTooltip={true}
+                  />
+                </Box>
+              </Box>
             )}
           </CardContent>
         </Card>

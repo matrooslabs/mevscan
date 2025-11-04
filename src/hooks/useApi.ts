@@ -11,6 +11,9 @@ import type {
   TimeSeriesByProtocolResponse,
   PieChartResponse,
   TimeSeriesPercentageResponse,
+  ExpressLaneNetProfitResponse,
+  ExpressLaneProfitByControllerResponse,
+  TimeboostRevenueResponse,
 } from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
@@ -282,6 +285,69 @@ export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQuery
     queryKey: ['liquidation-timeboosted', timeRange],
     queryFn: async () => {
       const data = await apiClient.getLiquidationTimeboosted(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Express Lane Net Profit
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Express Lane Net Profit data
+ */
+export function useExpressLaneNetProfit(timeRange: string = '15min'): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
+  return useQuery({
+    queryKey: ['express-lane-net-profit', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getExpressLaneNetProfit(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Express Lane Profit by Controller
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Express Lane Profit by Controller data
+ */
+export function useExpressLaneProfitByController(timeRange: string = '15min'): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
+  return useQuery({
+    queryKey: ['express-lane-profit-by-controller', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getExpressLaneProfitByController(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Timeboost Gross Revenue (all-time)
+ * @returns Query result with Timeboost Revenue data
+ */
+export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueResponse, Error> {
+  return useQuery({
+    queryKey: ['timeboost-gross-revenue'],
+    queryFn: async () => {
+      const data = await apiClient.getTimeboostGrossRevenue()
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Timeboost Revenue (time-ranged)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Timeboost Revenue data
+ */
+export function useTimeboostRevenue(timeRange: string = '15min'): UseQueryResult<TimeboostRevenueResponse, Error> {
+  return useQuery({
+    queryKey: ['timeboost-revenue', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getTimeboostRevenue(timeRange)
       return data
     },
     refetchInterval: 30000,

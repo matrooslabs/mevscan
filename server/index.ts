@@ -17,6 +17,11 @@ import type {
   PieChartResponse,
   TimeSeriesPercentageResponse,
   TimeSeriesPercentageDataPoint,
+  ExpressLaneNetProfitResponse,
+  ExpressLaneNetProfitDataPoint,
+  ExpressLaneProfitByControllerResponse,
+  ExpressLaneProfitByControllerDataPoint,
+  TimeboostRevenueResponse,
 } from '../shared/types';
 
 dotenv.config();
@@ -174,6 +179,29 @@ function getTimeRangeFilter(timeRange: string): string {
       return `e.block_timestamp >= now() - INTERVAL 1 HOUR`;
     default:
       return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
+  }
+}
+
+// Helper function to convert timeRange string to ClickHouse interval for timestamp column
+function getTimestampTimeRangeFilter(timeRange: string): string {
+  const validRanges = ['5min', '15min', '30min', '1hour'];
+  const range = timeRange || '15min';
+  
+  if (!validRanges.includes(range)) {
+    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
+  }
+  
+  switch (range) {
+    case '5min':
+      return `timestamp >= now() - INTERVAL 5 MINUTE`;
+    case '15min':
+      return `timestamp >= now() - INTERVAL 15 MINUTE`;
+    case '30min':
+      return `timestamp >= now() - INTERVAL 30 MINUTE`;
+    case '1hour':
+      return `timestamp >= now() - INTERVAL 1 HOUR`;
+    default:
+      return `timestamp >= now() - INTERVAL 15 MINUTE`;
   }
 }
 
@@ -1455,6 +1483,256 @@ app.get('/api/express-lane/mev-percentage-per-minute', async (
   }
 });
 
+// Get Express Lane Net Profit
+app.get('/api/express-lane/net-profit', async (
+  req: Request,
+  res: Response<ExpressLaneNetProfitResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        bh.express_lane_round AS round,
+        bh.express_lane_controller AS controller,
+        any(bh.express_lane_price_usd) AS price,
+        sum(bh.profit_usd) AS profit,
+        sum(bh.profit_usd) - any(bh.express_lane_price_usd) AS net_profit
+      FROM
+        mev.bundle_header AS bh 
+      LEFT JOIN
+        ethereum.blocks AS e
+        ON
+        bh.block_number = e.block_number
+      WHERE
+        bh.express_lane_price_usd IS NOT NULL
+        AND bh.timeboosted = true
+        AND (bh.mev_type='CexDexQuotes' OR bh.mev_type='AtomicArb' OR bh.mev_type='Liquidation')
+        AND ${timeFilter}
+      GROUP BY
+        bh.express_lane_round, bh.express_lane_controller
+      ORDER BY
+        bh.express_lane_round DESC
+      LIMIT 100
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      round: number;
+      controller: string;
+      price: number;
+      profit: number;
+      net_profit: number;
+    }>>();
+
+    const response: ExpressLaneNetProfitResponse = data.map((row) => ({
+      round: row.round || 0,
+      controller: row.controller || '',
+      price: row.price || 0,
+      profit: row.profit || 0,
+      net_profit: row.net_profit || 0,
+    }));
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Express Lane Net Profit:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Net Profit',
+    });
+  }
+});
+
+// Get Express Lane Profit by Controller
+app.get('/api/express-lane/profit-by-controller', async (
+  req: Request,
+  res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT 
+        controller,
+        sum(net_profit) as net_profit_total
+      FROM
+        (
+        SELECT
+          bh.express_lane_controller AS controller,
+          bh.express_lane_round AS round,
+          sum(bh.profit_usd) as profit,
+          any(bh.express_lane_price_usd) as price,
+          sum(bh.profit_usd) - any(bh.express_lane_price_usd) AS net_profit
+        FROM
+          mev.bundle_header bh
+        LEFT JOIN ethereum.blocks AS e
+               ON
+          bh.block_number = e.block_number
+        WHERE
+          bh.express_lane_price_usd IS NOT NULL
+          AND bh.express_lane_controller IS NOT NULL
+          AND bh.timeboosted = TRUE
+          AND (bh.mev_type='CexDexQuotes' OR bh.mev_type='AtomicArb' OR bh.mev_type='Liquidation')
+          AND ${timeFilter}
+        GROUP BY
+          round,
+          controller
+        ORDER BY
+          bh.express_lane_round DESC
+      ) AS per_round
+      GROUP BY
+        controller
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      controller: string;
+      net_profit_total: number;
+    }>>();
+
+    const response: ExpressLaneProfitByControllerResponse = data.map((row) => ({
+      controller: row.controller || '',
+      net_profit_total: row.net_profit_total || 0,
+    }));
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Express Lane Profit by Controller:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Profit by Controller',
+    });
+  }
+});
+
+// Get Timeboost Gross Revenue (all-time, no timeRange)
+app.get('/api/timeboost/gross-revenue', async (
+  req: Request,
+  res: Response<TimeboostRevenueResponse | ErrorResponse>
+) => {
+  try {
+    const query = `
+      SELECT
+        sum(first_price) AS total_first_price,
+        sum(second_price) AS total_second_price
+      FROM (
+        SELECT
+          round,
+          maxIf(price, rank = 1) AS first_price,
+          anyIf(bidder, rank = 1) AS winner,
+          maxIf(price, rank = 2) AS second_price,
+          anyIf(bidder, rank = 2) AS second_place
+        FROM (
+          SELECT
+            round,
+            toFloat64(amount) / 1e18 AS price,
+            bidder,
+            row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+          FROM timeboost.bids
+        )
+        GROUP BY round
+      )
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      total_first_price: number;
+      total_second_price: number;
+    }>>();
+
+    const response: TimeboostRevenueResponse = data.length > 0 ? {
+      total_first_price: data[0].total_first_price || 0,
+      total_second_price: data[0].total_second_price || 0,
+    } : {
+      total_first_price: 0,
+      total_second_price: 0,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Timeboost Gross Revenue:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Gross Revenue',
+    });
+  }
+});
+
+// Get Timeboost Revenue (time-ranged)
+app.get('/api/timeboost/revenue', async (
+  req: Request,
+  res: Response<TimeboostRevenueResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        sum(first_price) AS total_first_price,
+        sum(second_price) AS total_second_price
+      FROM (
+        SELECT
+          round,
+          maxIf(price, rank = 1) AS first_price,
+          anyIf(bidder, rank = 1) AS winner,
+          maxIf(price, rank = 2) AS second_price,
+          anyIf(bidder, rank = 2) AS second_place
+        FROM (
+          SELECT
+            round,
+            toFloat64(amount) / 1e18 AS price,
+            bidder,
+            row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+          FROM timeboost.bids
+          WHERE ${timeFilter}
+        )
+        GROUP BY round
+      )
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      total_first_price: number;
+      total_second_price: number;
+    }>>();
+
+    const response: TimeboostRevenueResponse = data.length > 0 ? {
+      total_first_price: data[0].total_first_price || 0,
+      total_second_price: data[0].total_second_price || 0,
+    } : {
+      total_first_price: 0,
+      total_second_price: 0,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Timeboost Revenue:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Revenue',
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req: Request, res: Response<HealthResponse>) => {
   res.json({ status: 'ok', message: 'Server is running' });
@@ -1478,6 +1756,10 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
       'GET /api/protocols/atomic-mev/timeboosted?timeRange=15min',
       'GET /api/express-lane/mev-percentage?timeRange=15min',
       'GET /api/express-lane/mev-percentage-per-minute?timeRange=15min',
+      'GET /api/express-lane/net-profit?timeRange=15min',
+      'GET /api/express-lane/profit-by-controller?timeRange=15min',
+      'GET /api/timeboost/gross-revenue',
+      'GET /api/timeboost/revenue?timeRange=15min',
       'GET /health'
     ]
   });

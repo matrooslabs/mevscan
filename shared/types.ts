@@ -170,3 +170,45 @@ export interface TimeSeriesPercentageDataPoint {
  */
 export type TimeSeriesPercentageResponse = TimeSeriesPercentageDataPoint[];
 
+/**
+ * Express Lane Net Profit data point
+ */
+export interface ExpressLaneNetProfitDataPoint {
+  round: number;
+  controller: string;
+  price: number;
+  profit: number;
+  net_profit: number;
+}
+
+/**
+ * Express Lane Net Profit response type
+ */
+export type ExpressLaneNetProfitResponse = ExpressLaneNetProfitDataPoint[];
+
+/**
+ * Express Lane Profit by Controller data point
+ */
+export interface ExpressLaneProfitByControllerDataPoint {
+  controller: string;
+  net_profit_total: number;
+}
+
+/**
+ * Express Lane Profit by Controller response type
+ */
+export type ExpressLaneProfitByControllerResponse = ExpressLaneProfitByControllerDataPoint[];
+
+/**
+ * Timeboost Revenue data point
+ */
+export interface TimeboostRevenueDataPoint {
+  total_first_price: number;
+  total_second_price: number;
+}
+
+/**
+ * Timeboost Revenue response type
+ */
+export type TimeboostRevenueResponse = TimeboostRevenueDataPoint;
+
