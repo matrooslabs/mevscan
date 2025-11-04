@@ -164,7 +164,7 @@ function Dashboard() {
   const transformPieChartData = useMemo((): PieChartData[] => {
     if (!expressLaneMEVPercentage.data) return []
     
-    const { total, timeboost, percentage } = expressLaneMEVPercentage.data
+    const { total, timeboost } = expressLaneMEVPercentage.data
     const normal = total - timeboost
     
     return [
@@ -180,20 +180,6 @@ function Dashboard() {
       },
     ]
   }, [expressLaneMEVPercentage.data])
-
-  // Check if any query is loading
-  const isLoading = 
-    grossMEV.isLoading ||
-    grossAtomicArb.isLoading ||
-    grossCexDexQuotes.isLoading ||
-    grossLiquidation.isLoading ||
-    atomicMEVTimeboosted.isLoading ||
-    expressLaneMEVPercentage.isLoading ||
-    atomicMEV.isLoading ||
-    cexDex.isLoading ||
-    cexDexTimeboosted.isLoading ||
-    liquidation.isLoading ||
-    liquidationTimeboosted.isLoading
 
   // Check if any query has error
   const hasError = 

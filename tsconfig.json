@@ -22,10 +22,8 @@
     "checkJs": false,
     "baseUrl": ".",
     "paths": {
-      "*": ["./node_modules/*"],
       "@/shared/*": ["./shared/*"]
     }
   },
-  "include": ["src", "shared/types.ts"]
+  "include": ["src", "shared/types.ts", "src/vite-env.d.ts"]
 }
-
