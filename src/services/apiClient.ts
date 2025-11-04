@@ -165,7 +165,7 @@ class ApiClient {
    */
   async getAtomicMEVTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/atomic-mev-timeboosted', {
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted', {
         params: { timeRange },
       });
       return response.data;

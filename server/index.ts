@@ -827,7 +827,7 @@ app.get('/api/gross-liquidation', async (
 });
 
 // Get Atomic MEV Timeboosted time series by protocol
-app.get('/api/atomic-mev-timeboosted', async (
+app.get('/api/protocols/atomic-mev/timeboosted', async (
   req: Request,
   res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
 ) => {
@@ -836,43 +836,21 @@ app.get('/api/atomic-mev-timeboosted', async (
     const timeFilter = getTimeRangeFilter(timeRange);
     
     const query = `
-      WITH
-        proto_list AS (
-          SELECT DISTINCT
-            proto
-          FROM mev.atomic_arbs
-          ARRAY JOIN protocols AS proto
-        ),
-        real AS (
-          SELECT
-            toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
-            proto,
-            sum(a.profit_usd / length(a.protocols)) AS profit_usd
-          FROM mev.bundle_header AS b
-          JOIN mev.atomic_arbs AS a ON a.tx_hash = b.tx_hash
-          JOIN ethereum.blocks AS e ON e.block_number = b.block_number
-          ARRAY JOIN a.protocols AS proto
-          WHERE 
-            b.mev_type = 'AtomicArb'
-            AND b.timeboosted = true
-            AND replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
-            AND ${timeFilter}
-          GROUP BY
-            time,
-            proto
-        )
-      SELECT
-        t.time,
-        p.proto,
-        ifNull(r.profit_usd, 0) AS profit_usd
-      FROM (SELECT DISTINCT time FROM real) AS t
-      CROSS JOIN proto_list AS p
-      LEFT JOIN real AS r
-        ON r.time = t.time
-        AND r.proto = p.proto
-      ORDER BY
-        t.time ASC,
-        p.proto
+SELECT
+  toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+  proto,
+  sum(a.profit_usd / length(a.protocols)) AS profit_usd
+FROM mev.bundle_header AS b
+JOIN mev.atomic_arbs AS a ON a.tx_hash = b.tx_hash AND a.block_number = b.block_number
+JOIN ethereum.blocks AS e ON e.block_number = b.block_number
+ARRAY JOIN a.protocols AS proto
+WHERE 
+  b.mev_type = 'AtomicArb'
+  AND b.timeboosted = true
+  AND a.arb_type = 'Triangular Arbitrage\n'
+  AND ${timeFilter}
+GROUP BY time, proto
+ORDER BY time ASC, proto
     `;
 
     const result = await req.clickhouse.query({
@@ -997,7 +975,7 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
       'GET /api/gross-atomic-arb?timeRange=15min',
       'GET /api/gross-cex-dex-quotes?timeRange=15min',
       'GET /api/gross-liquidation?timeRange=15min',
-      'GET /api/atomic-mev-timeboosted?timeRange=15min',
+      'GET /api/protocols/atomic-mev/timeboosted?timeRange=15min',
       'GET /api/express-lane-mev-percentage?timeRange=15min',
       'GET /health'
     ]
