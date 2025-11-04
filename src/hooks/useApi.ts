@@ -6,6 +6,9 @@ import type {
   Block,
   BlockListItem,
   Address,
+  TimeSeriesResponse,
+  TimeSeriesByProtocolResponse,
+  PieChartResponse,
 } from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
@@ -88,6 +91,102 @@ export function useAddress(address: string): UseQueryResult<Address, Error> {
       return data
     },
     enabled: !!address, // Only run query if address is provided
+  })
+}
+
+/**
+ * Query hook for fetching Gross MEV time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data
+ */
+export function useGrossMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
+  return useQuery({
+    queryKey: ['gross-mev', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getGrossMEV(timeRange)
+      return data
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
+}
+
+/**
+ * Query hook for fetching Gross Atomic Arb time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data
+ */
+export function useGrossAtomicArb(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
+  return useQuery({
+    queryKey: ['gross-atomic-arb', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getGrossAtomicArb(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Gross CexDexQuotes time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data
+ */
+export function useGrossCexDexQuotes(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
+  return useQuery({
+    queryKey: ['gross-cex-dex-quotes', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getGrossCexDexQuotes(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Gross Liquidation time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data
+ */
+export function useGrossLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
+  return useQuery({
+    queryKey: ['gross-liquidation', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getGrossLiquidation(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Atomic MEV Timeboosted time series
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with time series data by protocol
+ */
+export function useAtomicMEVTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+  return useQuery({
+    queryKey: ['atomic-mev-timeboosted', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getAtomicMEVTimeboosted(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
+  })
+}
+
+/**
+ * Query hook for fetching Express Lane MEV Percentage
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with pie chart data
+ */
+export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQueryResult<PieChartResponse, Error> {
+  return useQuery({
+    queryKey: ['express-lane-mev-percentage', timeRange],
+    queryFn: async () => {
+      const data = await apiClient.getExpressLaneMEVPercentage(timeRange)
+      return data
+    },
+    refetchInterval: 30000,
   })
 }
 

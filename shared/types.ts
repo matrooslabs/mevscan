@@ -117,3 +117,41 @@ export interface ApiErrorResponse {
  */
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
+/**
+ * Time series data point for chart visualization
+ */
+export interface TimeSeriesDataPoint {
+  time: string;
+  total: number;
+  normal: number;
+  timeboost: number;
+}
+
+/**
+ * Time series response type
+ */
+export type TimeSeriesResponse = TimeSeriesDataPoint[];
+
+/**
+ * Time series data point by protocol for Atomic MEV Timeboosted
+ */
+export interface TimeSeriesByProtocolDataPoint {
+  time: string;
+  proto: string;
+  profit_usd: number;
+}
+
+/**
+ * Time series by protocol response type
+ */
+export type TimeSeriesByProtocolResponse = TimeSeriesByProtocolDataPoint[];
+
+/**
+ * Pie chart response type for Express Lane MEV Percentage
+ */
+export interface PieChartResponse {
+  total: number;
+  timeboost: number;
+  percentage: number;
+}
+

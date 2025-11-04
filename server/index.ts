@@ -10,6 +10,11 @@ import type {
   ErrorResponse,
   HealthResponse,
   RootResponse,
+  TimeSeriesResponse,
+  TimeSeriesDataPoint,
+  TimeSeriesByProtocolResponse,
+  TimeSeriesByProtocolDataPoint,
+  PieChartResponse,
 } from '../shared/types';
 
 dotenv.config();
@@ -96,6 +101,29 @@ function formatEthValue(wei: string | number): string {
   const value = typeof wei === 'string' ? BigInt(wei) : BigInt(wei);
   const eth = Number(value) / 1e18;
   return eth.toFixed(5);
+}
+
+// Helper function to convert timeRange string to ClickHouse interval
+function getTimeRangeFilter(timeRange: string): string {
+  const validRanges = ['5min', '15min', '30min', '1hour'];
+  const range = timeRange || '15min';
+  
+  if (!validRanges.includes(range)) {
+    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
+  }
+  
+  switch (range) {
+    case '5min':
+      return `e.block_timestamp >= now() - INTERVAL 5 MINUTE`;
+    case '15min':
+      return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
+    case '30min':
+      return `e.block_timestamp >= now() - INTERVAL 30 MINUTE`;
+    case '1hour':
+      return `e.block_timestamp >= now() - INTERVAL 1 HOUR`;
+    default:
+      return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
+  }
 }
 
 // Routes
@@ -455,6 +483,451 @@ app.get('/addresses/:address', async (
   res.json(addressData);
 });
 
+// Dashboard visualization endpoints
+
+// Get Gross MEV time series
+app.get('/api/gross-mev', async (
+  req: Request,
+  res: Response<TimeSeriesResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) as time,
+        sum(m.profit_usd) as total,
+        sumIf(m.profit_usd, m.timeboosted = false) as normal,
+        sumIf(m.profit_usd, m.timeboosted = true) as timeboost
+      FROM
+        mev.bundle_header AS m
+      LEFT JOIN ethereum.blocks AS e
+        ON m.block_number = e.block_number
+      LEFT JOIN mev.atomic_arbs AS a
+        ON a.tx_hash = m.tx_hash
+      WHERE
+        (m.mev_type = 'CexDexQuotes' OR m.mev_type = 'AtomicArb' OR m.mev_type = 'Liquidation')
+        AND (replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
+          or a.arb_type = '')
+        AND ${timeFilter}
+      GROUP BY
+        time
+      ORDER BY
+        time DESC
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      total: number;
+      normal: number;
+      timeboost: number;
+    }>>();
+
+    const response: TimeSeriesResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          total: row.total || 0,
+          normal: row.normal || 0,
+          timeboost: row.timeboost || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Gross MEV:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Gross MEV',
+    });
+  }
+});
+
+// Get Gross Atomic Arb time series
+app.get('/api/gross-atomic-arb', async (
+  req: Request,
+  res: Response<TimeSeriesResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) as time,
+        sum(m.profit_usd) as total,
+        sumIf(m.profit_usd, m.timeboosted = false) as normal,
+        sumIf(m.profit_usd, m.timeboosted = true) as timeboost
+      FROM
+        mev.bundle_header m
+      LEFT JOIN ethereum.blocks AS e ON
+        m.block_number = e.block_number
+      INNER JOIN mev.atomic_arbs AS a ON
+        m.tx_hash = a.tx_hash
+      WHERE
+        m.mev_type = 'AtomicArb'
+        AND
+        (replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage')
+        AND
+        ${timeFilter}
+      GROUP BY
+        time
+      ORDER BY
+        time DESC
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      total: number;
+      normal: number;
+      timeboost: number;
+    }>>();
+
+    const response: TimeSeriesResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          total: row.total || 0,
+          normal: row.normal || 0,
+          timeboost: row.timeboost || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Gross Atomic Arb:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Gross Atomic Arb',
+    });
+  }
+});
+
+// Get Gross CexDexQuotes time series
+app.get('/api/gross-cex-dex-quotes', async (
+  req: Request,
+  res: Response<TimeSeriesResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+        sum(m.profit_usd) AS total,
+        sumIf(m.profit_usd, m.timeboosted = false) as normal,
+        sumIf(
+          m.profit_usd,
+          m.timeboosted = true            
+        ) AS timeboost
+      FROM
+        mev.bundle_header AS m
+      LEFT JOIN ethereum.blocks AS e
+        ON m.block_number = e.block_number
+      WHERE
+        m.mev_type = 'CexDexQuotes'
+        AND 
+        ${timeFilter}
+      GROUP BY
+        time
+      ORDER BY
+        time DESC
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      total: number;
+      normal: number;
+      timeboost: number;
+    }>>();
+
+    const response: TimeSeriesResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          total: row.total || 0,
+          normal: row.normal || 0,
+          timeboost: row.timeboost || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Gross CexDexQuotes:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Gross CexDexQuotes',
+    });
+  }
+});
+
+// Get Gross Liquidation time series
+app.get('/api/gross-liquidation', async (
+  req: Request,
+  res: Response<TimeSeriesResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+        sum(m.profit_usd) AS total,
+        sumIf(
+          m.profit_usd,
+          m.timeboosted = false            
+        ) AS normal,
+        sumIf(
+          m.profit_usd,
+          m.timeboosted = true            
+        ) AS timeboost
+      FROM
+        mev.bundle_header AS m
+      LEFT JOIN ethereum.blocks AS e
+        ON m.block_number = e.block_number
+      WHERE
+        m.mev_type = 'Liquidation'
+        AND 
+        ${timeFilter}
+      GROUP BY
+        time
+      ORDER BY
+        time DESC
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      total: number;
+      normal: number;
+      timeboost: number;
+    }>>();
+
+    const response: TimeSeriesResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          total: row.total || 0,
+          normal: row.normal || 0,
+          timeboost: row.timeboost || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Gross Liquidation:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Gross Liquidation',
+    });
+  }
+});
+
+// Get Atomic MEV Timeboosted time series by protocol
+app.get('/api/atomic-mev-timeboosted', async (
+  req: Request,
+  res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      WITH
+        proto_list AS (
+          SELECT DISTINCT
+            proto
+          FROM mev.atomic_arbs
+          ARRAY JOIN protocols AS proto
+        ),
+        real AS (
+          SELECT
+            toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+            proto,
+            sum(a.profit_usd / length(a.protocols)) AS profit_usd
+          FROM mev.bundle_header AS b
+          JOIN mev.atomic_arbs AS a ON a.tx_hash = b.tx_hash
+          JOIN ethereum.blocks AS e ON e.block_number = b.block_number
+          ARRAY JOIN a.protocols AS proto
+          WHERE 
+            b.mev_type = 'AtomicArb'
+            AND b.timeboosted = true
+            AND replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
+            AND ${timeFilter}
+          GROUP BY
+            time,
+            proto
+        )
+      SELECT
+        t.time,
+        p.proto,
+        ifNull(r.profit_usd, 0) AS profit_usd
+      FROM (SELECT DISTINCT time FROM real) AS t
+      CROSS JOIN proto_list AS p
+      LEFT JOIN real AS r
+        ON r.time = t.time
+        AND r.proto = p.proto
+      ORDER BY
+        t.time ASC,
+        p.proto
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      time: number;
+      proto: string;
+      profit_usd: number;
+    }>>();
+
+    const response: TimeSeriesByProtocolResponse = data
+      .filter((row) => row.time != null && !isNaN(row.time))
+      .map((row) => {
+        const date = new Date(row.time * 1000);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        return {
+          time: `${hours}:${mins}`,
+          proto: row.proto || '',
+          profit_usd: row.profit_usd || 0,
+        };
+      })
+      .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Atomic MEV Timeboosted:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Atomic MEV Timeboosted',
+    });
+  }
+});
+
+// Get Express Lane MEV Percentage
+app.get('/api/express-lane-mev-percentage', async (
+  req: Request,
+  res: Response<PieChartResponse | ErrorResponse>
+) => {
+  try {
+    const timeRange = (req.query.timeRange as string) || '15min';
+    const timeFilter = getTimeRangeFilter(timeRange);
+    
+    const query = `
+      SELECT
+        sum(m.profit_usd) AS total,
+        sumIf(m.profit_usd, m.timeboosted = 1) AS timeboost,
+        timeboost / total * 100 AS percentage
+      FROM ethereum.blocks AS e
+      LEFT JOIN mev.bundle_header AS m
+        ON m.block_number = e.block_number
+      LEFT JOIN mev.atomic_arbs AS a
+        ON a.tx_hash = m.tx_hash
+      WHERE (m.mev_type = 'CexDexQuotes' OR m.mev_type='AtomicArb' OR m.mev_type='Liquidation')
+        AND (
+          a.arb_type = ''
+          OR replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
+        )
+        AND ${timeFilter}
+    `;
+
+    const result = await req.clickhouse.query({
+      query,
+      format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{
+      total: number;
+      timeboost: number;
+      percentage: number;
+    }>>();
+
+    if (data.length === 0) {
+      res.json({
+        total: 0,
+        timeboost: 0,
+        percentage: 0,
+      });
+      return;
+    }
+
+    const row = data[0];
+    const response: PieChartResponse = {
+      total: row.total || 0,
+      timeboost: row.timeboost || 0,
+      percentage: row.percentage || 0,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching Express Lane MEV Percentage:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch Express Lane MEV Percentage',
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req: Request, res: Response<HealthResponse>) => {
   res.json({ status: 'ok', message: 'Server is running' });
@@ -471,6 +944,12 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
       'GET /blocks/:blockId',
       'GET /transactions/:transactionId',
       'GET /addresses/:address',
+      'GET /api/gross-mev?timeRange=15min',
+      'GET /api/gross-atomic-arb?timeRange=15min',
+      'GET /api/gross-cex-dex-quotes?timeRange=15min',
+      'GET /api/gross-liquidation?timeRange=15min',
+      'GET /api/atomic-mev-timeboosted?timeRange=15min',
+      'GET /api/express-lane-mev-percentage?timeRange=15min',
       'GET /health'
     ]
   });

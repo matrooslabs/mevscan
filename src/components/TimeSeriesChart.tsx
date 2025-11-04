@@ -7,7 +7,7 @@ export interface TimeSeriesDataPoint {
   time: string;
   total: number;
   normal: number;
-  express: number;
+  timeboost: number;
 }
 
 /**

@@ -70,3 +70,4 @@ When adding new API endpoints:
 3. Update client API client methods with JSDoc type annotations
 4. Update React Query hooks if needed
 
+
