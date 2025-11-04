@@ -287,10 +287,27 @@ function Dashboard() {
           component="h2" 
           sx={{ 
             marginBottom: 'var(--spacing-2xl)',
-            padding: '0 var(--spacing-lg)',
-            fontWeight: 600,
-            color: 'var(--color-text-primary)',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+            padding: 'var(--spacing-lg)',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            fontSize: '2rem',
+            letterSpacing: '-0.5px',
+            position: 'relative',
+            display: 'inline-block',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '8px',
+              left: 'var(--spacing-lg)',
+              width: '80px',
+              height: '4px',
+              background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+              borderRadius: '2px',
+            }
           }}
         >
           Gross MEV Statistics

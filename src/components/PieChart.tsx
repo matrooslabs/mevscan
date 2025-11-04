@@ -67,13 +67,17 @@ function PieChart({
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart>
           <Pie
-            data={data}
+            data={data as unknown as Array<Record<string, unknown>>}
             cx="50%"
             cy="50%"
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             dataKey="value"
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+            label={(props: { name?: string; percent?: number }) => {
+              const name = props.name || ''
+              const percent = typeof props.percent === 'number' ? props.percent : 0
+              return `${name}: ${(percent * 100).toFixed(1)}%`
+            }}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
