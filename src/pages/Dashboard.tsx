@@ -310,7 +310,7 @@ function Dashboard() {
             }
           }}
         >
-          Gross MEV Statistics
+          MEV
         </Typography>
         <Box className="dashboard-section">
           {/* Gross MEV */}
@@ -651,7 +651,41 @@ function Dashboard() {
             )}
           </CardContent>
         </Card>
+      </Box>
 
+      {/* Express Lane Section */}
+      <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            marginBottom: 'var(--spacing-2xl)',
+            padding: 'var(--spacing-lg)',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            fontSize: '2rem',
+            letterSpacing: '-0.5px',
+            position: 'relative',
+            display: 'inline-block',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '8px',
+              left: 'var(--spacing-lg)',
+              width: '80px',
+              height: '4px',
+              background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+              borderRadius: '2px',
+            }
+          }}
+        >
+          Express Lane
+        </Typography>
+        <Box className="dashboard-section">
         {/* Express Lane MEV Percentage */}
         <Card className="dashboard-box dashboard-box-half">
           <CardContent 
@@ -720,6 +754,7 @@ function Dashboard() {
             )}
           </CardContent>
         </Card>
+      </Box>
       </Box>
     </div>
   )
