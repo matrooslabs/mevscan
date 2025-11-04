@@ -249,147 +249,169 @@ function Dashboard() {
         </Box>
       )}
 
-      <div className="dashboard-section">
-        {/* Gross MEV */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
+      {/* Gross MEV Statistics Section */}
+      <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            marginBottom: 'var(--spacing-2xl)',
+            padding: '0 var(--spacing-lg)',
+            fontWeight: 600,
+            color: 'var(--color-text-primary)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+          }}
+        >
+          Gross MEV Statistics
+        </Typography>
+        <Box className="dashboard-section">
+          {/* Gross MEV */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
             >
-              Gross MEV
-            </Typography>
-            {grossMEV.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : grossMEV.isError ? (
-              <Alert severity="error">{grossMEV.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformTimeSeriesData(grossMEV.data || [])}
-                xAxisKey="time"
-                yAxisLabel="Profit (USD)"
-                showArea={true}
-                lines={[
-                  { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
-                  { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
-                  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Gross MEV
+              </Typography>
+              {grossMEV.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : grossMEV.isError ? (
+                <Alert severity="error">{grossMEV.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformTimeSeriesData(grossMEV.data || [])}
+                  xAxisKey="time"
+                  yAxisLabel="Profit (USD)"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
+                    { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
+                    { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Gross Atomic Arb */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
+          {/* Gross Atomic Arb */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
             >
-              Gross Atomic Arb
-            </Typography>
-            {grossAtomicArb.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : grossAtomicArb.isError ? (
-              <Alert severity="error">{grossAtomicArb.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformTimeSeriesData(grossAtomicArb.data || [])}
-                xAxisKey="time"
-                yAxisLabel="Profit (USD)"
-                showArea={true}
-                lines={[
-                  { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
-                  { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
-                  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Gross Atomic Arb
+              </Typography>
+              {grossAtomicArb.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : grossAtomicArb.isError ? (
+                <Alert severity="error">{grossAtomicArb.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformTimeSeriesData(grossAtomicArb.data || [])}
+                  xAxisKey="time"
+                  yAxisLabel="Profit (USD)"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
+                    { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
+                    { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Gross CexDexQuotes */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
+          {/* Gross CexDexQuotes */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
             >
-              Gross CexDexQuotes
-            </Typography>
-            {grossCexDexQuotes.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : grossCexDexQuotes.isError ? (
-              <Alert severity="error">{grossCexDexQuotes.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformTimeSeriesData(grossCexDexQuotes.data || [])}
-                xAxisKey="time"
-                yAxisLabel="Profit (USD)"
-                showArea={true}
-                lines={[
-                  { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
-                  { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
-                  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Gross CexDexQuotes
+              </Typography>
+              {grossCexDexQuotes.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : grossCexDexQuotes.isError ? (
+                <Alert severity="error">{grossCexDexQuotes.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformTimeSeriesData(grossCexDexQuotes.data || [])}
+                  xAxisKey="time"
+                  yAxisLabel="Profit (USD)"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
+                    { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
+                    { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Gross Liquidation */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
+          {/* Gross Liquidation */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
             >
-              Gross Liquidation
-            </Typography>
-            {grossLiquidation.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : grossLiquidation.isError ? (
-              <Alert severity="error">{grossLiquidation.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformTimeSeriesData(grossLiquidation.data || [])}
-                xAxisKey="time"
-                yAxisLabel="Profit (USD)"
-                showArea={true}
-                lines={[
-                  { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
-                  { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
-                  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Gross Liquidation
+              </Typography>
+              {grossLiquidation.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : grossLiquidation.isError ? (
+                <Alert severity="error">{grossLiquidation.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformTimeSeriesData(grossLiquidation.data || [])}
+                  xAxisKey="time"
+                  yAxisLabel="Profit (USD)"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
+                    { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
+                    { dataKey: 'timeboost', name: 'Timeboost', strokeColor: '#82ca9d' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
 
+      <Box className="dashboard-section">
         {/* Atomic MEV Timeboosted */}
         <Card className="dashboard-box dashboard-box-full">
           <CardContent 
@@ -415,6 +437,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={atomicMEVLineConfigs}
               />
             )}
@@ -446,6 +469,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={atomicMEVTransformed.lineConfigs}
               />
             )}
@@ -477,6 +501,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={cexDexTransformed.lineConfigs}
               />
             )}
@@ -508,6 +533,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={cexDexTimeboostedTransformed.lineConfigs}
               />
             )}
@@ -539,6 +565,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={liquidationTransformed.lineConfigs}
               />
             )}
@@ -570,6 +597,7 @@ function Dashboard() {
                 xAxisKey="time"
                 yAxisLabel="Profit (USD)"
                 showArea={true}
+                hideZeroValues={true}
                 lines={liquidationTimeboostedTransformed.lineConfigs}
               />
             )}
@@ -611,7 +639,7 @@ function Dashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </Box>
     </div>
   )
 }

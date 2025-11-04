@@ -48,6 +48,7 @@ export interface TimeSeriesChartProps {
   yAxisLabel?: string;
   showArea?: boolean;
   fillOpacity?: number;
+  hideZeroValues?: boolean;
 }
 
 interface TooltipPayloadEntry {
@@ -189,6 +190,7 @@ function formatValue(value: string | number | undefined): string {
 interface TooltipContentProps {
   active?: boolean;
   payload?: TooltipPayloadEntry[];
+  hideZeroValues?: boolean;
 }
 
 interface LegendContentProps {
@@ -197,7 +199,7 @@ interface LegendContentProps {
 }
 
 // Custom Tooltip Component
-function CustomTooltip({ active, payload }: TooltipContentProps) {
+function CustomTooltip({ active, payload, hideZeroValues = false }: TooltipContentProps) {
   if (!active || !payload || payload.length === 0) {
     return null;
   }
@@ -208,7 +210,29 @@ function CustomTooltip({ active, payload }: TooltipContentProps) {
     return null;
   }
 
-  const uniqueEntries = deduplicateEntries(lineEntries);
+  let uniqueEntries = deduplicateEntries(lineEntries);
+  
+  // Filter out entries with value 0 if hideZeroValues is enabled
+  if (hideZeroValues) {
+    uniqueEntries = uniqueEntries.filter(entry => {
+      const value = entry.value;
+      if (typeof value === 'number') {
+        return value !== 0;
+      }
+      // For string values, check if they represent zero
+      if (typeof value === 'string') {
+        const numValue = parseFloat(value);
+        return !isNaN(numValue) && numValue !== 0;
+      }
+      return true; // Keep entries with undefined/null values
+    });
+  }
+  
+  // If all entries were filtered out, return null
+  if (uniqueEntries.length === 0) {
+    return null;
+  }
+
   const timeValue = uniqueEntries[0]?.payload?.time as string | undefined;
 
   return (
@@ -320,6 +344,7 @@ function TimeSeriesChart({
   yAxisLabel,
   showArea = true,
   fillOpacity = DEFAULT_FILL_OPACITY,
+  hideZeroValues = false,
 }: TimeSeriesChartProps) {
   const lineConfigs = createLineConfigs(
     lines,
@@ -339,7 +364,7 @@ function TimeSeriesChart({
           <XAxis {...createXAxisProps(xAxisKey, xAxisLabel)} />
           <YAxis {...createYAxisProps(yAxisLabel)} />
           
-          <Tooltip content={(props) => <CustomTooltip {...props} />} />
+          <Tooltip content={(props) => <CustomTooltip {...props} hideZeroValues={hideZeroValues} />} />
           
           {showLegend && (
             <Legend 
