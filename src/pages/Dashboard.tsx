@@ -157,6 +157,8 @@ function Dashboard() {
               <TimeSeriesChart 
                 data={transformTimeSeriesData(grossMEV.data || [])}
                 xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
                 lines={[
                   { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
                   { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
@@ -190,6 +192,8 @@ function Dashboard() {
               <TimeSeriesChart 
                 data={transformTimeSeriesData(grossAtomicArb.data || [])}
                 xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
                 lines={[
                   { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
                   { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
@@ -223,6 +227,8 @@ function Dashboard() {
               <TimeSeriesChart 
                 data={transformTimeSeriesData(grossCexDexQuotes.data || [])}
                 xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
                 lines={[
                   { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
                   { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
@@ -256,6 +262,8 @@ function Dashboard() {
               <TimeSeriesChart 
                 data={transformTimeSeriesData(grossLiquidation.data || [])}
                 xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
                 lines={[
                   { dataKey: 'total', name: 'Total', strokeColor: '#555555' },
                   { dataKey: 'normal', name: 'Normal', strokeColor: '#ffc658' },
@@ -289,6 +297,8 @@ function Dashboard() {
               <TimeSeriesChart 
                 data={transformAtomicMEVData}
                 xAxisKey="time"
+                yAxisLabel="Profit (USD)"
+                showArea={true}
                 lines={[
                   { dataKey: 'timeboost', name: 'Total Timeboosted', strokeColor: '#82ca9d' },
                 ]}
