@@ -46,7 +46,8 @@ function Dashboard() {
   const timeboostGrossRevenue = useTimeboostGrossRevenue()
   const timeboostRevenue = useTimeboostRevenue(timeRange)
 
-  // Periodic refresh - refresh all queries every 1 minute
+  // Periodic refresh - refresh all queries every 1 minute with staggered refreshes
+  // Stagger refreshes by 200ms to avoid overwhelming the server
   usePeriodicApiRefreshByKeys(
     useMemo(
       () => [
@@ -70,7 +71,8 @@ function Dashboard() {
       [timeRange]
     ),
     60000, // 1 minute
-    true // enabled by default
+    true, // enabled by default
+    200 // 200ms stagger between refreshes
   )
 
   // Use time series data directly without transformation

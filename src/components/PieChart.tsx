@@ -1,3 +1,4 @@
+import React from 'react'
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
 export interface PieChartData {
@@ -112,6 +113,6 @@ function PieChart({
   )
 }
 
-export default PieChart
+export default React.memo(PieChart)
 
 

@@ -1,3 +1,4 @@
+import React from 'react'
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 export interface BarChartData {
@@ -98,5 +99,5 @@ function BarChart({
   )
 }
 
-export default BarChart
+export default React.memo(BarChart)
 

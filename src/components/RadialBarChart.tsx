@@ -1,3 +1,4 @@
+import React from 'react'
 import { RadialBarChart as RechartsRadialBarChart, RadialBar, ResponsiveContainer, Legend, Tooltip, Cell } from 'recharts'
 
 export interface RadialBarChartData {
@@ -175,5 +176,5 @@ function RadialBarChart({
   )
 }
 
-export default RadialBarChart
+export default React.memo(RadialBarChart)
 

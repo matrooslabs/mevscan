@@ -1,3 +1,4 @@
+import React from 'react'
 import { 
   ComposedChart, 
   Line, 
@@ -407,5 +408,5 @@ function TimeSeriesChart({
   );
 }
 
-export default TimeSeriesChart
+export default React.memo(TimeSeriesChart)
 

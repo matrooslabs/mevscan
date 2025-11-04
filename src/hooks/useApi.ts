@@ -20,6 +20,73 @@ import type {
 const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001')
 
 /**
+ * Query priority levels for staggered loading
+ */
+export enum QueryPriority {
+  CRITICAL = 0,    // Load immediately (0ms delay)
+  HIGH = 1,        // Load after 100ms
+  MEDIUM = 2,      // Load after 300ms
+  LOW = 3,         // Load after 600ms
+}
+
+/**
+ * Stagger delay configuration in milliseconds
+ */
+const STAGGER_DELAYS = {
+  [QueryPriority.CRITICAL]: 0,
+  [QueryPriority.HIGH]: 100,
+  [QueryPriority.MEDIUM]: 300,
+  [QueryPriority.LOW]: 600,
+}
+
+/**
+ * React Query configuration constants
+ */
+const QUERY_CONFIG = {
+  // Cache time: how long to keep unused data in cache (5 minutes)
+  cacheTime: 5 * 60 * 1000,
+  // Stale time: how long data is considered fresh (30 seconds)
+  staleTime: 30 * 1000,
+  // Refetch interval: how often to refetch (60 seconds)
+  refetchInterval: 60 * 1000,
+  // Prevent refetch on window focus
+  refetchOnWindowFocus: false,
+  // Keep previous data while refetching to prevent flicker
+  keepPreviousData: true,
+}
+
+/**
+ * Hook to enable query after delay (for staggered loading)
+ */
+function useStaggeredQuery<T>(
+  queryKey: unknown[],
+  queryFn: () => Promise<T>,
+  priority: QueryPriority = QueryPriority.MEDIUM,
+  customConfig?: Partial<typeof QUERY_CONFIG>
+) {
+  const delay = STAGGER_DELAYS[priority]
+  const [enabled, setEnabled] = useState(delay === 0)
+
+  useEffect(() => {
+    if (delay > 0 && !enabled) {
+      const timer = setTimeout(() => {
+        setEnabled(true)
+      }, delay)
+      return () => clearTimeout(timer)
+    }
+  }, [delay, enabled])
+
+  const config = { ...QUERY_CONFIG, ...customConfig }
+  
+  return useQuery({
+    queryKey,
+    queryFn,
+    enabled,
+    ...config,
+  })
+}
+
+/**
  * Query hook for fetching latest blocks
  * @param limit - Optional limit for number of blocks to retrieve (default: 20)
  * @returns Query result with array of block list items
@@ -101,257 +168,289 @@ export function useAddress(address: string): UseQueryResult<Address, Error> {
 
 /**
  * Query hook for fetching Gross MEV time series
+ * Priority: CRITICAL - Loads immediately (main overview metric)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data
  */
 export function useGrossMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
-  return useQuery({
-    queryKey: ['gross-mev', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesResponse>(
+    ['gross-mev', timeRange],
+    async () => {
       const data = await apiClient.getGrossMEV(timeRange)
       return data
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
-  })
+    QueryPriority.CRITICAL,
+    { refetchInterval: 60000 } // 60 seconds
+  )
 }
 
 /**
  * Query hook for fetching Gross Atomic Arb time series
+ * Priority: CRITICAL - Loads immediately (main overview metric)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data
  */
 export function useGrossAtomicArb(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
-  return useQuery({
-    queryKey: ['gross-atomic-arb', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesResponse>(
+    ['gross-atomic-arb', timeRange],
+    async () => {
       const data = await apiClient.getGrossAtomicArb(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.CRITICAL,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Gross CexDexQuotes time series
+ * Priority: CRITICAL - Loads immediately (main overview metric)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data
  */
 export function useGrossCexDexQuotes(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
-  return useQuery({
-    queryKey: ['gross-cex-dex-quotes', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesResponse>(
+    ['gross-cex-dex-quotes', timeRange],
+    async () => {
       const data = await apiClient.getGrossCexDexQuotes(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.CRITICAL,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Gross Liquidation time series
+ * Priority: CRITICAL - Loads immediately (main overview metric)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data
  */
 export function useGrossLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
-  return useQuery({
-    queryKey: ['gross-liquidation', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesResponse>(
+    ['gross-liquidation', timeRange],
+    async () => {
       const data = await apiClient.getGrossLiquidation(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.CRITICAL,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Atomic MEV Timeboosted time series
+ * Priority: HIGH - Loads after 100ms (important protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useAtomicMEVTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['atomic-mev-timeboosted', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['atomic-mev-timeboosted', timeRange],
+    async () => {
       const data = await apiClient.getAtomicMEVTimeboosted(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.HIGH,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Express Lane MEV Percentage
+ * Priority: HIGH - Loads after 100ms (important summary metric)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with pie chart data
  */
 export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQueryResult<PieChartResponse, Error> {
-  return useQuery({
-    queryKey: ['express-lane-mev-percentage', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<PieChartResponse>(
+    ['express-lane-mev-percentage', timeRange],
+    async () => {
       const data = await apiClient.getExpressLaneMEVPercentage(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.HIGH,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Express Lane MEV Percentage per minute time series
+ * Priority: MEDIUM - Loads after 300ms (detailed time series)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series percentage data
  */
 export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): UseQueryResult<TimeSeriesPercentageResponse, Error> {
-  return useQuery({
-    queryKey: ['express-lane-mev-percentage-per-minute', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesPercentageResponse>(
+    ['express-lane-mev-percentage-per-minute', timeRange],
+    async () => {
       const data = await apiClient.getExpressLaneMEVPercentagePerMinute(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Atomic Arb MEV time series by protocol
+ * Priority: HIGH - Loads after 100ms (important protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useAtomicMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['atomic-mev', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['atomic-mev', timeRange],
+    async () => {
       const data = await apiClient.getAtomicMEV(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.HIGH,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching CexDex Arb time series by protocol
+ * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useCexDex(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['cexdex', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['cexdex', timeRange],
+    async () => {
       const data = await apiClient.getCexDex(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching CexDex MEV Timeboosted time series by protocol
+ * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useCexDexTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['cexdex-timeboosted', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['cexdex-timeboosted', timeRange],
+    async () => {
       const data = await apiClient.getCexDexTimeboosted(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Liquidation time series by protocol
+ * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['liquidation', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['liquidation', timeRange],
+    async () => {
       const data = await apiClient.getLiquidation(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Liquidation Timeboosted time series by protocol
+ * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with time series data by protocol
  */
 export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
-  return useQuery({
-    queryKey: ['liquidation-timeboosted', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeSeriesByProtocolResponse>(
+    ['liquidation-timeboosted', timeRange],
+    async () => {
       const data = await apiClient.getLiquidationTimeboosted(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Express Lane Net Profit
+ * Priority: LOW - Loads after 600ms (detailed breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with Express Lane Net Profit data
  */
 export function useExpressLaneNetProfit(timeRange: string = '15min'): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
-  return useQuery({
-    queryKey: ['express-lane-net-profit', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<ExpressLaneNetProfitResponse>(
+    ['express-lane-net-profit', timeRange],
+    async () => {
       const data = await apiClient.getExpressLaneNetProfit(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.LOW,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Express Lane Profit by Controller
+ * Priority: LOW - Loads after 600ms (detailed breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with Express Lane Profit by Controller data
  */
 export function useExpressLaneProfitByController(timeRange: string = '15min'): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
-  return useQuery({
-    queryKey: ['express-lane-profit-by-controller', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<ExpressLaneProfitByControllerResponse>(
+    ['express-lane-profit-by-controller', timeRange],
+    async () => {
       const data = await apiClient.getExpressLaneProfitByController(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.LOW,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
  * Query hook for fetching Timeboost Gross Revenue (all-time)
+ * Priority: LOW - Loads after 600ms (summary metric, less critical)
  * @returns Query result with Timeboost Revenue data
  */
 export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueResponse, Error> {
-  return useQuery({
-    queryKey: ['timeboost-gross-revenue'],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeboostRevenueResponse>(
+    ['timeboost-gross-revenue'],
+    async () => {
       const data = await apiClient.getTimeboostGrossRevenue()
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.LOW,
+    { refetchInterval: 120000 } // 2 minutes - all-time data changes less frequently
+  )
 }
 
 /**
  * Query hook for fetching Timeboost Revenue (time-ranged)
+ * Priority: LOW - Loads after 600ms (detailed breakdown)
  * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
  * @returns Query result with Timeboost Revenue data
  */
 export function useTimeboostRevenue(timeRange: string = '15min'): UseQueryResult<TimeboostRevenueResponse, Error> {
-  return useQuery({
-    queryKey: ['timeboost-revenue', timeRange],
-    queryFn: async () => {
+  return useStaggeredQuery<TimeboostRevenueResponse>(
+    ['timeboost-revenue', timeRange],
+    async () => {
       const data = await apiClient.getTimeboostRevenue(timeRange)
       return data
     },
-    refetchInterval: 30000,
-  })
+    QueryPriority.LOW,
+    { refetchInterval: 60000 }
+  )
 }
 
 /**
@@ -499,11 +598,12 @@ export function usePeriodicApiRefresh(
 }
 
 /**
- * Hook to periodically refresh API queries by query keys
+ * Hook to periodically refresh API queries by query keys with staggered refreshes
  * Useful when you want to refresh queries without having access to the query results
- * @param queryKeys - Array of query keys to refresh
- * @param intervalMs - Refresh interval in milliseconds (default: 30000)
+ * @param queryKeys - Array of query keys to refresh, optionally with priority info
+ * @param intervalMs - Refresh interval in milliseconds (default: 60000)
  * @param enabled - Whether periodic refresh is enabled (default: true)
+ * @param staggerMs - Delay between each query refresh in milliseconds (default: 200)
  * @returns Object with refresh function, loading state, and controls
  * 
  * @example
@@ -513,8 +613,9 @@ export function usePeriodicApiRefresh(
  *     ['gross-mev', timeRange],
  *     ['atomic-mev', timeRange]
  *   ],
- *   30000, // 30 seconds
- *   true // enabled by default
+ *   60000, // 60 seconds
+ *   true, // enabled by default
+ *   200 // 200ms stagger between refreshes
  * )
  * 
  * // Pause/resume periodic refresh
@@ -525,8 +626,9 @@ export function usePeriodicApiRefresh(
  */
 export function usePeriodicApiRefreshByKeys(
   queryKeys: unknown[][],
-  intervalMs: number = 30000,
-  enabled: boolean = true
+  intervalMs: number = 60000,
+  enabled: boolean = true,
+  staggerMs: number = 200
 ): {
   refresh: () => Promise<void>
   isRefreshing: boolean
@@ -539,10 +641,15 @@ export function usePeriodicApiRefreshByKeys(
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const refresh = useCallback(async () => {
-    await Promise.all(
-      queryKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
-    )
-  }, [queryClient, queryKeys])
+    // Stagger refreshes to avoid overwhelming the server
+    for (let i = 0; i < queryKeys.length; i++) {
+      queryClient.invalidateQueries({ queryKey: queryKeys[i] })
+      // Wait before next refresh (except for the last one)
+      if (i < queryKeys.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, staggerMs))
+      }
+    }
+  }, [queryClient, queryKeys, staggerMs])
 
   const pause = useCallback(() => {
     setIsPaused(true)
