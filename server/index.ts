@@ -22,6 +22,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy for accurate client IP (useful when behind nginx, load balancer, etc.)
+app.set('trust proxy', true);
+
 // Initialize ClickHouse client once
 let clickhouseClient: ClickHouseClient | null = null;
 
@@ -84,6 +87,52 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Logging middleware (after express.json() to capture request body)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+  
+  // Log request
+  const clientIP = req.ip || req.socket.remoteAddress || 'unknown';
+  
+  // Build parameter string
+  const params: string[] = [];
+  
+  // Query parameters
+  const queryParams = Object.keys(req.query);
+  if (queryParams.length > 0) {
+    params.push(`query: ${JSON.stringify(req.query)}`);
+  }
+  
+  // URL parameters (available after routing, but logged here for consistency)
+  const urlParams = Object.keys(req.params);
+  if (urlParams.length > 0) {
+    params.push(`params: ${JSON.stringify(req.params)}`);
+  }
+  
+  // Request body (for POST/PUT/PATCH)
+  if (req.body && Object.keys(req.body).length > 0 && ['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    params.push(`body: ${JSON.stringify(req.body)}`);
+  }
+  
+  const paramString = params.length > 0 ? ` | ${params.join(' | ')}` : '';
+  
+  console.log(`[${timestamp}] ${req.method} ${req.path}${paramString} - IP: ${clientIP}`);
+  
+  // Log response when finished
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const statusColor = res.statusCode >= 400 ? '\x1b[31m' : res.statusCode >= 300 ? '\x1b[33m' : '\x1b[32m';
+    const resetColor = '\x1b[0m';
+    
+    console.log(
+      `[${timestamp}] ${req.method} ${req.path}${paramString} - ${statusColor}${res.statusCode}${resetColor} - ${duration}ms - ${clientIP}`
+    );
+  });
+  
+  next();
+});
 
 // Helper function to format relative time
 function formatRelativeTime(timestamp: number): string {
