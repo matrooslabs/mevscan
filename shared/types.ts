@@ -38,6 +38,22 @@ export interface BlockListItem {
 }
 
 /**
+ * Block bundle/transaction item
+ */
+export interface BlockBundle {
+  txHash: string;
+  txIndex: number;
+  profitUsd: number;
+  bribeUsd: number;
+  mevType: string;
+  mevContract: string | null;
+  timeboosted: boolean;
+  expressLaneController: string | null;
+  expressLanePriceUsd: number | null;
+  expressLaneRound: number | null;
+}
+
+/**
  * Block response type (detailed)
  */
 export interface Block {
@@ -52,6 +68,7 @@ export interface Block {
   ethValue?: string;
   gasUsed?: number | string;
   transactions?: string[];
+  bundles?: BlockBundle[];
 }
 
 /**
