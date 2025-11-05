@@ -1,26 +1,34 @@
 /* CSS Custom Properties (Variables) */
 :root {
-  /* Colors - Primary */
-  --color-primary: #FFA726;
-  --color-primary-hover: #FF9800;
-  
+  /* Colors - Primary (Matroos compass yellow) */
+  --color-primary: #ffb200;            /* was #FFA726 */
+  --color-primary-hover: #e59400;      /* a bit deeper on hover */
+
+  /* Brand-specific helpers */
+  --color-brand-compass: #ffb200;      /* compass icon */
+  --color-brand-ink: #000000;          /* logo text / strong text */
+
   /* Colors - Neutral */
   --color-white: #ffffff;
   --color-black: #000000;
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
   --color-text-tertiary: #333;
-  
+
   /* Colors - Background */
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f5f5f5;
   --color-bg-tertiary: #f3f4f6;
   --color-bg-quaternary: #f9fafb;
-  
+
+  /* "Surface" backgrounds for cards / panels (slightly emphasized) */
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-alt: #f9fafb;
+
   /* Colors - Borders */
   --color-border-primary: #e5e7eb;
   --color-border-secondary: #d1d5db;
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -28,31 +36,33 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
+
   /* Border Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  
+  --radius-pill: 9999px; /* for chips / CTA buttons */
+
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
-  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.05);
-  
+  --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06);
+  --shadow-elevated: 0 16px 40px rgba(15, 23, 42, 0.12);
+
   /* Layout */
   --max-width-container: 1400px;
   --max-width-content: 1200px;
-  
+
   /* Typography */
   --font-family-base: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   --font-family-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  
+
   /* Transitions */
   --transition-fast: 0.1s;
   --transition-base: 0.2s;
   --transition-slow: 0.3s;
-  
+
   /* Z-index */
   --z-index-navbar: 100;
 }
@@ -143,3 +153,25 @@ button:disabled {
   background-color: var(--color-bg-secondary);
 }
 
+/* Matroos-specific UI helpers (optional) */
+.ml-card {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-primary);
+  padding: var(--spacing-lg);
+}
+
+.ml-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 178, 0, 0.12);
+  color: var(--color-brand-compass);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

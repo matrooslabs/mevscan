@@ -1,6 +1,7 @@
 import './Dashboard.css'
 import { useState, useMemo } from 'react'
 import { Card, CardContent, Typography, Select, MenuItem, FormControl, InputLabel, CircularProgress, Alert, Box } from '@mui/material'
+import { chartColorPalette } from '../theme'
 import TimeSeriesChart, { type TimeSeriesData } from '../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../components/PieChart'
 import BarChart from '../components/BarChart'
@@ -121,17 +122,10 @@ function Dashboard() {
       return dataPoint
     })
     
-    // Generate distinct colors for each protocol
-    const colorPalette = [
-      '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe',
-      '#00c49f', '#ffbb28', '#ff8042', '#8884d8', '#82ca9d',
-      '#ffc658', '#ff7300', '#0088fe', '#00c49f', '#ffbb28'
-    ]
-    
     const lineConfigs = protocols.map((proto, index) => ({
       dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
       name: proto,
-      strokeColor: colorPalette[index % colorPalette.length],
+      strokeColor: chartColorPalette[index % chartColorPalette.length],
     }))
     
     return {
@@ -142,12 +136,6 @@ function Dashboard() {
 
   // Helper function to transform protocol-based data
   const transformProtocolData = useMemo(() => {
-    const colorPalette = [
-      '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe',
-      '#00c49f', '#ffbb28', '#ff8042', '#8884d8', '#82ca9d',
-      '#ffc658', '#ff7300', '#0088fe', '#00c49f', '#ffbb28'
-    ]
-    
     return (data: typeof atomicMEV.data) => {
       if (!data || data.length === 0) {
         return { transformedData: [], lineConfigs: [] }
@@ -185,7 +173,7 @@ function Dashboard() {
       const lineConfigs = protocols.map((proto, index) => ({
         dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
         name: proto,
-        strokeColor: colorPalette[index % colorPalette.length],
+        strokeColor: chartColorPalette[index % chartColorPalette.length],
       }))
       
       return {
