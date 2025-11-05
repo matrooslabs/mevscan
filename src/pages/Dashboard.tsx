@@ -23,6 +23,12 @@ import {
   useExpressLaneProfitByController,
   useTimeboostGrossRevenue,
   useTimeboostRevenue,
+  useBidsPerAddress,
+  useAuctionWinCount,
+  useTimeboostedTxPerSecond,
+  useTimeboostedTxPerBlock,
+  useBidsPerRound,
+  useExpressLanePrice,
   usePeriodicApiRefreshByKeys,
 } from '../hooks/useApi'
 
@@ -46,6 +52,12 @@ function Dashboard() {
   const expressLaneProfitByController = useExpressLaneProfitByController(timeRange)
   const timeboostGrossRevenue = useTimeboostGrossRevenue()
   const timeboostRevenue = useTimeboostRevenue(timeRange)
+  const bidsPerAddress = useBidsPerAddress(timeRange)
+  const auctionWinCount = useAuctionWinCount(timeRange)
+  const timeboostedTxPerSecond = useTimeboostedTxPerSecond(timeRange)
+  const timeboostedTxPerBlock = useTimeboostedTxPerBlock(timeRange)
+  const bidsPerRound = useBidsPerRound()
+  const expressLanePrice = useExpressLanePrice(timeRange)
 
   // Periodic refresh - refresh all queries every 1 minute with staggered refreshes
   // Stagger refreshes by 200ms to avoid overwhelming the server
@@ -68,6 +80,12 @@ function Dashboard() {
         ['express-lane-profit-by-controller', timeRange],
         ['timeboost-gross-revenue'],
         ['timeboost-revenue', timeRange],
+        ['bids-per-address', timeRange],
+        ['auction-win-count', timeRange],
+        ['timeboosted-tx-per-second', timeRange],
+        ['timeboosted-tx-per-block', timeRange],
+        ['bids-per-round'],
+        ['express-lane-price', timeRange],
       ],
       [timeRange]
     ),
@@ -261,6 +279,85 @@ function Dashboard() {
       .sort((a, b) => b.value - a.value) // Sort descending
   }, [expressLaneProfitByController.data])
 
+  // Transform Bids per Address data for pie chart
+  const transformBidsPerAddressData = useMemo((): PieChartData[] => {
+    if (!bidsPerAddress.data || bidsPerAddress.data.length === 0) {
+      return []
+    }
+    // Limit to top 10 addresses for readability
+    const topAddresses = bidsPerAddress.data
+      .sort((a, b) => b.bid_count - a.bid_count)
+      .slice(0, 10)
+    
+    return topAddresses.map((item, index) => ({
+      name: item.bidder || 'Unknown',
+      value: item.bid_count || 0,
+      color: chartColorPalette[index % chartColorPalette.length],
+    }))
+  }, [bidsPerAddress.data])
+
+  // Transform Auction Win Count data for pie chart
+  const transformAuctionWinCountData = useMemo((): PieChartData[] => {
+    if (!auctionWinCount.data || auctionWinCount.data.length === 0) {
+      return []
+    }
+    return auctionWinCount.data.map((item, index) => ({
+      name: item.address || 'Unknown',
+      value: item.wins || 0,
+      color: chartColorPalette[index % chartColorPalette.length],
+    }))
+  }, [auctionWinCount.data])
+
+  // Transform Timeboosted Tx per Second data for timeseries chart
+  const transformTimeboostedTxPerSecondData = useMemo((): TimeSeriesData => {
+    if (!timeboostedTxPerSecond.data || timeboostedTxPerSecond.data.length === 0) {
+      return []
+    }
+    return timeboostedTxPerSecond.data.map((item) => ({
+      time: item.time,
+      total: item.tx_count || 0,
+      normal: 0,
+      timeboost: item.tx_count || 0,
+    }))
+  }, [timeboostedTxPerSecond.data])
+
+  // Transform Timeboosted Tx per Block data for bar chart
+  const transformTimeboostedTxPerBlockData = useMemo(() => {
+    if (!timeboostedTxPerBlock.data || timeboostedTxPerBlock.data.length === 0) {
+      return []
+    }
+    return timeboostedTxPerBlock.data.map((item) => ({
+      name: item.block_number.toString(),
+      value: item.tx_count || 0,
+    }))
+  }, [timeboostedTxPerBlock.data])
+
+  // Transform Bids per Round data for bar chart
+  const transformBidsPerRoundData = useMemo(() => {
+    if (!bidsPerRound.data || bidsPerRound.data.length === 0) {
+      return []
+    }
+    return bidsPerRound.data.map((item) => ({
+      name: item.round.toString(),
+      value: item.bid_count || 0,
+    }))
+  }, [bidsPerRound.data])
+
+  // Transform Express Lane Price data for timeseries chart
+  const transformExpressLanePriceData = useMemo((): TimeSeriesData => {
+    if (!expressLanePrice.data || expressLanePrice.data.length === 0) {
+      return []
+    }
+    // Sort by round ascending for proper time series display
+    const sortedData = [...expressLanePrice.data].sort((a, b) => a.round - b.round)
+    return sortedData.map((item) => ({
+      time: item.round.toString(),
+      total: item.first_price || 0,
+      normal: item.second_price || 0,
+      timeboost: item.first_price || 0,
+    }))
+  }, [expressLanePrice.data])
+
   // Check if any query has error
   const hasError = 
     grossMEV.isError ||
@@ -278,7 +375,13 @@ function Dashboard() {
     expressLaneNetProfit.isError ||
     expressLaneProfitByController.isError ||
     timeboostGrossRevenue.isError ||
-    timeboostRevenue.isError
+    timeboostRevenue.isError ||
+    bidsPerAddress.isError ||
+    auctionWinCount.isError ||
+    timeboostedTxPerSecond.isError ||
+    timeboostedTxPerBlock.isError ||
+    bidsPerRound.isError ||
+    expressLanePrice.isError
 
   const errorMessage = 
     grossMEV.error?.message ||
@@ -297,6 +400,12 @@ function Dashboard() {
     expressLaneProfitByController.error?.message ||
     timeboostGrossRevenue.error?.message ||
     timeboostRevenue.error?.message ||
+    bidsPerAddress.error?.message ||
+    auctionWinCount.error?.message ||
+    timeboostedTxPerSecond.error?.message ||
+    timeboostedTxPerBlock.error?.message ||
+    bidsPerRound.error?.message ||
+    expressLanePrice.error?.message ||
     'An error occurred while fetching data'
 
   return (
@@ -928,14 +1037,18 @@ function Dashboard() {
             ) : timeboostGrossRevenue.isError ? (
               <Alert severity="error">{timeboostGrossRevenue.error?.message || 'Failed to load data'}</Alert>
             ) : (
-              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
-                <Box style={{ width: '100%', height: '250px', flex: 1 }}>
-                  <RadialBarChart 
-                    data={timeboostGrossRevenue.data || { total_first_price: 0, total_second_price: 0 }}
-                    showLegend={true}
-                    showTooltip={true}
-                  />
-                </Box>
+              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', flex: 1 }}>
+                <Typography 
+                  variant="h4" 
+                  component="div"
+                  sx={{ 
+                    fontSize: '2rem',
+                    fontWeight: 600,
+                    color: 'text.primary'
+                  }}
+                >
+                  {timeboostGrossRevenue.data?.total_second_price?.toFixed(2) || '0.00'}
+                </Typography>
               </Box>
             )}
           </CardContent>
@@ -975,6 +1088,246 @@ function Dashboard() {
           </CardContent>
         </Card>
       </Box>
+      </Box>
+
+      {/* Timeboost Bids Section */}
+      <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            marginBottom: 'var(--spacing-2xl)',
+            padding: 'var(--spacing-lg)',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            fontSize: '2rem',
+            letterSpacing: '-0.5px',
+            position: 'relative',
+            display: 'inline-block',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '8px',
+              left: 'var(--spacing-lg)',
+              width: '80px',
+              height: '4px',
+              background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+              borderRadius: '2px',
+            }
+          }}
+        >
+          Timeboost Bids
+        </Typography>
+        <Box className="dashboard-section">
+          {/* Bids per Address */}
+          <Card className="dashboard-box dashboard-box-half">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+                style={{ marginBottom: 'var(--spacing-lg)' }}
+              >
+                Number of Bids per Address
+              </Typography>
+              {bidsPerAddress.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : bidsPerAddress.isError ? (
+                <Alert severity="error">{bidsPerAddress.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
+                  <Box style={{ width: '100%', height: '250px', flex: 1 }}>
+                    <PieChart 
+                      data={transformBidsPerAddressData}
+                      innerRadius={40}
+                      outerRadius={80}
+                      showLegend={true}
+                    />
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Auction Win Count */}
+          <Card className="dashboard-box dashboard-box-half">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+                style={{ marginBottom: 'var(--spacing-lg)' }}
+              >
+                Auction Win Count
+              </Typography>
+              {auctionWinCount.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : auctionWinCount.isError ? (
+                <Alert severity="error">{auctionWinCount.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
+                  <Box style={{ width: '100%', height: '250px', flex: 1 }}>
+                    <PieChart 
+                      data={transformAuctionWinCountData}
+                      innerRadius={40}
+                      outerRadius={80}
+                      showLegend={true}
+                    />
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Timeboosted Tx per Second */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Timeboosted Tx per Second
+              </Typography>
+              {timeboostedTxPerSecond.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : timeboostedTxPerSecond.isError ? (
+                <Alert severity="error">{timeboostedTxPerSecond.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformTimeboostedTxPerSecondData}
+                  xAxisKey="time"
+                  yAxisLabel="Tx Count"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'Tx Count', strokeColor: '#82ca9d' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Timeboosted Tx per Block */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Timeboosted Tx per Block
+              </Typography>
+              {timeboostedTxPerBlock.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : timeboostedTxPerBlock.isError ? (
+                <Alert severity="error">{timeboostedTxPerBlock.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <BarChart 
+                  data={transformTimeboostedTxPerBlockData}
+                  xAxisKey="name"
+                  yAxisLabel="Tx Count"
+                  showGrid={true}
+                  showLegend={false}
+                  showTooltip={true}
+                  barColor="#82ca9d"
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Bids per Round */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Number of Bids per Round
+              </Typography>
+              {bidsPerRound.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : bidsPerRound.isError ? (
+                <Alert severity="error">{bidsPerRound.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <BarChart 
+                  data={transformBidsPerRoundData}
+                  xAxisKey="name"
+                  yAxisLabel="Bid Count"
+                  showGrid={true}
+                  showLegend={false}
+                  showTooltip={true}
+                  barColor="#8884d8"
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Express Lane Price */}
+          <Card className="dashboard-box dashboard-box-full">
+            <CardContent 
+              className="chart-card-content"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
+            >
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                className="chard-card-title"
+              >
+                Express Lane Price (ETH)
+              </Typography>
+              {expressLanePrice.isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                  <CircularProgress />
+                </Box>
+              ) : expressLanePrice.isError ? (
+                <Alert severity="error">{expressLanePrice.error?.message || 'Failed to load data'}</Alert>
+              ) : (
+                <TimeSeriesChart 
+                  data={transformExpressLanePriceData}
+                  xAxisKey="time"
+                  yAxisLabel="Price (ETH)"
+                  showArea={true}
+                  hideZeroValues={true}
+                  lines={[
+                    { dataKey: 'total', name: 'First Price', strokeColor: '#8884d8' },
+                    { dataKey: 'normal', name: 'Second Price', strokeColor: '#ffc658' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
     </div>
   )

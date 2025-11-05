@@ -212,3 +212,84 @@ export interface TimeboostRevenueDataPoint {
  */
 export type TimeboostRevenueResponse = TimeboostRevenueDataPoint;
 
+/**
+ * Bids per address data point
+ */
+export interface BidsPerAddressDataPoint {
+  bidder: string;
+  bid_count: number;
+}
+
+/**
+ * Bids per address response type
+ */
+export type BidsPerAddressResponse = BidsPerAddressDataPoint[];
+
+/**
+ * Auction win count data point
+ */
+export interface AuctionWinCountDataPoint {
+  address: string;
+  wins: number;
+}
+
+/**
+ * Auction win count response type
+ */
+export type AuctionWinCountResponse = AuctionWinCountDataPoint[];
+
+/**
+ * Timeboosted tx per second data point
+ */
+export interface TimeboostedTxPerSecondDataPoint {
+  time: string;
+  tx_count: number;
+}
+
+/**
+ * Timeboosted tx per second response type
+ */
+export type TimeboostedTxPerSecondResponse = TimeboostedTxPerSecondDataPoint[];
+
+/**
+ * Timeboosted tx per block data point
+ */
+export interface TimeboostedTxPerBlockDataPoint {
+  block_number: number;
+  tx_count: number;
+}
+
+/**
+ * Timeboosted tx per block response type
+ */
+export type TimeboostedTxPerBlockResponse = TimeboostedTxPerBlockDataPoint[];
+
+/**
+ * Bids per round data point
+ */
+export interface BidsPerRoundDataPoint {
+  round: number;
+  bid_count: number;
+}
+
+/**
+ * Bids per round response type
+ */
+export type BidsPerRoundResponse = BidsPerRoundDataPoint[];
+
+/**
+ * Express lane price data point
+ */
+export interface ExpressLanePriceDataPoint {
+  round: number;
+  first_price: number;
+  second_price: number;
+  winner: string;
+  second_place: string;
+}
+
+/**
+ * Express lane price response type
+ */
+export type ExpressLanePriceResponse = ExpressLanePriceDataPoint[];
+

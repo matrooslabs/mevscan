@@ -14,6 +14,12 @@ import type {
   ExpressLaneNetProfitResponse,
   ExpressLaneProfitByControllerResponse,
   TimeboostRevenueResponse,
+  BidsPerAddressResponse,
+  AuctionWinCountResponse,
+  TimeboostedTxPerSecondResponse,
+  TimeboostedTxPerBlockResponse,
+  BidsPerRoundResponse,
+  ExpressLanePriceResponse,
 } from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
@@ -449,6 +455,113 @@ export function useTimeboostRevenue(timeRange: string = '15min'): UseQueryResult
       return data
     },
     QueryPriority.LOW,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Bids per Address
+ * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Bids per Address data
+ */
+export function useBidsPerAddress(timeRange: string = '15min'): UseQueryResult<BidsPerAddressResponse, Error> {
+  return useStaggeredQuery<BidsPerAddressResponse>(
+    ['bids-per-address', timeRange],
+    async () => {
+      const data = await apiClient.getBidsPerAddress(timeRange)
+      return data
+    },
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Auction Win Count
+ * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Auction Win Count data
+ */
+export function useAuctionWinCount(timeRange: string = '15min'): UseQueryResult<AuctionWinCountResponse, Error> {
+  return useStaggeredQuery<AuctionWinCountResponse>(
+    ['auction-win-count', timeRange],
+    async () => {
+      const data = await apiClient.getAuctionWinCount(timeRange)
+      return data
+    },
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Timeboosted Tx per Second
+ * Priority: MEDIUM - Loads after 300ms (time series data)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Timeboosted Tx per Second data
+ */
+export function useTimeboostedTxPerSecond(timeRange: string = '15min'): UseQueryResult<TimeboostedTxPerSecondResponse, Error> {
+  return useStaggeredQuery<TimeboostedTxPerSecondResponse>(
+    ['timeboosted-tx-per-second', timeRange],
+    async () => {
+      const data = await apiClient.getTimeboostedTxPerSecond(timeRange)
+      return data
+    },
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Timeboosted Tx per Block
+ * Priority: MEDIUM - Loads after 300ms (time series data)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Timeboosted Tx per Block data
+ */
+export function useTimeboostedTxPerBlock(timeRange: string = '15min'): UseQueryResult<TimeboostedTxPerBlockResponse, Error> {
+  return useStaggeredQuery<TimeboostedTxPerBlockResponse>(
+    ['timeboosted-tx-per-block', timeRange],
+    async () => {
+      const data = await apiClient.getTimeboostedTxPerBlock(timeRange)
+      return data
+    },
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Bids per Round
+ * Priority: MEDIUM - Loads after 300ms (detailed breakdown, no timeRange)
+ * @returns Query result with Bids per Round data
+ */
+export function useBidsPerRound(): UseQueryResult<BidsPerRoundResponse, Error> {
+  return useStaggeredQuery<BidsPerRoundResponse>(
+    ['bids-per-round'],
+    async () => {
+      const data = await apiClient.getBidsPerRound()
+      return data
+    },
+    QueryPriority.MEDIUM,
+    { refetchInterval: 60000 }
+  )
+}
+
+/**
+ * Query hook for fetching Express Lane Price
+ * Priority: MEDIUM - Loads after 300ms (time series data)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @returns Query result with Express Lane Price data
+ */
+export function useExpressLanePrice(timeRange: string = '15min'): UseQueryResult<ExpressLanePriceResponse, Error> {
+  return useStaggeredQuery<ExpressLanePriceResponse>(
+    ['express-lane-price', timeRange],
+    async () => {
+      const data = await apiClient.getExpressLanePrice(timeRange)
+      return data
+    },
+    QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
   )
 }

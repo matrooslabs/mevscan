@@ -11,6 +11,12 @@ import type {
   ExpressLaneNetProfitResponse,
   ExpressLaneProfitByControllerResponse,
   TimeboostRevenueResponse,
+  BidsPerAddressResponse,
+  AuctionWinCountResponse,
+  TimeboostedTxPerSecondResponse,
+  TimeboostedTxPerBlockResponse,
+  BidsPerRoundResponse,
+  ExpressLanePriceResponse,
 } from '../../shared/types';
 
 class ApiClient {
@@ -343,6 +349,99 @@ class ApiClient {
   async getTimeboostRevenue(timeRange: string = '15min'): Promise<TimeboostRevenueResponse> {
     try {
       const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Bids per Address
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Bids per Address data
+   */
+  async getBidsPerAddress(timeRange: string = '15min'): Promise<BidsPerAddressResponse> {
+    try {
+      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Auction Win Count
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Auction Win Count data
+   */
+  async getAuctionWinCount(timeRange: string = '15min'): Promise<AuctionWinCountResponse> {
+    try {
+      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Timeboosted Tx per Second
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Timeboosted Tx per Second data
+   */
+  async getTimeboostedTxPerSecond(timeRange: string = '15min'): Promise<TimeboostedTxPerSecondResponse> {
+    try {
+      const response = await this.client.get<TimeboostedTxPerSecondResponse>('/api/timeboost/tx-per-second', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Timeboosted Tx per Block
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Timeboosted Tx per Block data
+   */
+  async getTimeboostedTxPerBlock(timeRange: string = '15min'): Promise<TimeboostedTxPerBlockResponse> {
+    try {
+      const response = await this.client.get<TimeboostedTxPerBlockResponse>('/api/timeboost/tx-per-block', {
+        params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Bids per Round (no timeRange parameter - uses last 15 rounds)
+   * @returns Promise resolving to Bids per Round data
+   */
+  async getBidsPerRound(): Promise<BidsPerRoundResponse> {
+    try {
+      const response = await this.client.get<BidsPerRoundResponse>('/api/timeboost/bids-per-round');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get Express Lane Price
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @returns Promise resolving to Express Lane Price data
+   */
+  async getExpressLanePrice(timeRange: string = '15min'): Promise<ExpressLanePriceResponse> {
+    try {
+      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price', {
         params: { timeRange },
       });
       return response.data;
