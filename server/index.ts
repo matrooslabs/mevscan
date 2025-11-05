@@ -214,7 +214,7 @@ function getTimestampTimeRangeFilter(timeRange: string): string {
 // Routes
 
 // Get latest transactions
-app.get('/latest-transactions', async (
+app.get('/api/latest-transactions', async (
   req: Request,
   res: Response<Transaction[] | ErrorResponse>
 ) => {
@@ -278,7 +278,7 @@ app.get('/latest-transactions', async (
 });
 
 // Get latest blocks
-app.get('/latest-blocks', async (
+app.get('/api/latest-blocks', async (
   req: Request,
   res: Response<BlockListItem[] | ErrorResponse>
 ) => {
@@ -335,7 +335,7 @@ app.get('/latest-blocks', async (
 });
 
 // Get a specific block by identifier (hash or number)
-app.get('/blocks/:blockId', async (
+app.get('/api/blocks/:blockId', async (
   req: Request<{ blockId: string }>,
   res: Response<Block | ErrorResponse>
 ) => {
@@ -451,7 +451,7 @@ app.get('/blocks/:blockId', async (
 });
 
 // Get a specific transaction by identifier
-app.get('/transactions/:transactionId', async (
+app.get('/api/transactions/:transactionId', async (
   req: Request<{ transactionId: string }>, 
   res: Response<Transaction | ErrorResponse>
 ) => {
@@ -548,7 +548,7 @@ app.get('/transactions/:transactionId', async (
 });
 
 // Get a specific address by identifier
-app.get('/addresses/:address', async (
+app.get('/api/addresses/:address', async (
   req: Request<{ address: string }>, 
   res: Response<Address>
 ) => {
@@ -2049,11 +2049,11 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
     message: 'MEV GPT API Server',
     version: '1.0.0',
     endpoints: [
-      'GET /latest-transactions',
-      'GET /latest-blocks',
-      'GET /blocks/:blockId',
-      'GET /transactions/:transactionId',
-      'GET /addresses/:address',
+      'GET /api/latest-transactions',
+      'GET /api/latest-blocks',
+      'GET /api/blocks/:blockId',
+      'GET /api/transactions/:transactionId',
+      'GET /api/addresses/:address',
       'GET /api/gross-mev?timeRange=15min',
       'GET /api/gross-atomic-arb?timeRange=15min',
       'GET /api/gross-cex-dex-quotes?timeRange=15min',

@@ -40,7 +40,7 @@ class ApiClient {
   async getLatestTransactions(limit?: number): Promise<Transaction[]> {
     try {
       const params = limit ? { limit } : {};
-      const response = await this.client.get<Transaction[]>('/latest-transactions', { params });
+      const response = await this.client.get<Transaction[]>('/api/latest-transactions', { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -55,7 +55,7 @@ class ApiClient {
   async getLatestBlocks(limit?: number): Promise<BlockListItem[]> {
     try {
       const params = limit ? { limit } : {};
-      const response = await this.client.get<BlockListItem[]>('/latest-blocks', { params });
+      const response = await this.client.get<BlockListItem[]>('/api/latest-blocks', { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -69,7 +69,7 @@ class ApiClient {
    */
   async getBlock(blockId: string): Promise<Block> {
     try {
-      const response = await this.client.get<Block>(`/blocks/${blockId}`);
+      const response = await this.client.get<Block>(`/api/blocks/${blockId}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -83,7 +83,7 @@ class ApiClient {
    */
   async getTransaction(transactionId: string): Promise<Transaction> {
     try {
-      const response = await this.client.get<Transaction>(`/transactions/${transactionId}`);
+      const response = await this.client.get<Transaction>(`/api/transactions/${transactionId}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -97,7 +97,7 @@ class ApiClient {
    */
   async getAddress(address: string): Promise<Address> {
     try {
-      const response = await this.client.get<Address>(`/addresses/${address}`);
+      const response = await this.client.get<Address>(`/api/addresses/${address}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
