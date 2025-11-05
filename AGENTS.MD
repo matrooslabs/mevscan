@@ -32,3 +32,16 @@ If any of the above is missing ask the user. Add the visualization to Dashboard 
 # Guidelines 
 
 - For the time range the given SQL should use should be the last 15 minutes. When you design the api endpoint, support the time range parameter and use that in the query. The option for time ranges are: 5min, 15min, 30min, 1 hour
+
+# Deployment
+
+Docker Compose setup: `docker-compose up --build` (or `-d` for detached). Stop with `docker-compose down`. View logs: `docker-compose logs -f [api|web]`.
+
+**Services:**
+- API: `localhost:3001` (health: `/health`)
+- Web: `localhost:80` (nginx proxies API requests)
+
+**Required `.env` variables:**
+- `CLICKHOUSE_URL`, `CLICKHOUSE_USERNAME`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DATABASE`
+
+**Architecture:** React app (Vite → nginx) + Express API server. React uses relative URLs; nginx proxies to backend.
