@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBlock } from '../hooks/useApi'
-import Navbar from '../components/Navbar'
 import type { Block } from '../../shared/types'
 import './Home.css'
 
@@ -23,7 +22,6 @@ function Block() {
   if (isLoading) {
     return (
       <div className="home-container">
-        <Navbar />
         <div className="loading-state">Loading block...</div>
       </div>
     )
@@ -32,7 +30,6 @@ function Block() {
   if (error) {
     return (
       <div className="home-container">
-        <Navbar />
         <div className="error-state">
           Error loading block: {error.message}
         </div>
@@ -59,8 +56,6 @@ function Block() {
 
   return (
     <div className="home-container">
-      <Navbar />
-
       <div className="search-section">
         <div className="search-container">
           <button

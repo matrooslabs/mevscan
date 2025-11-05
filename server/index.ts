@@ -344,55 +344,53 @@ app.get('/api/latest-blocks', async (
   }
 });
 
-// Get a specific block by identifier (hash or number)
-app.get('/api/blocks/:blockId', async (
-  req: Request<{ blockId: string }>,
+// Get a specific block by block number
+app.get('/api/blocks/:blockNumber', async (
+  req: Request<{ blockNumber: string }>,
   res: Response<Block | ErrorResponse>
 ) => {
   try {
-    const { blockId } = req.params;
-    const isBlockNumber = !blockId.startsWith('0x') && /^\d+$/.test(blockId);
+    const { blockNumber } = req.params;
     
-    let query: string;
-    if (isBlockNumber) {
-      // Query by block number using index (block_timestamp, block_number)
-      query = `
-        SELECT 
-          b.block_number,
-          b.block_hash,
-          b.block_timestamp,
-          COUNT(DISTINCT t.tx_hash) as total_txns,
-          COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
-          SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
-              THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
-              ELSE 0 END) as total_coinbase_transfer,
-          SUM(CAST(t.gas_details.gas_used AS UInt128)) as total_gas_used
-        FROM ethereum.blocks b
-        INNER JOIN brontes.tree t ON b.block_number = t.block_number
-        WHERE b.block_number = ${parseInt(blockId)} AND b.valid = 1
-        GROUP BY b.block_number, b.block_hash, b.block_timestamp
-        LIMIT 1
-      `;
-    } else {
-      // Query by block hash
-      query = `
-        SELECT 
-          b.block_number,
-          b.block_hash,
-          b.block_timestamp,
-          COUNT(DISTINCT t.tx_hash) as total_txns,
-          COUNT(DISTINCT CASE WHEN t.timeboosted = 1 THEN t.tx_hash END) as express_lane_txns,
-          SUM(CASE WHEN t.gas_details.coinbase_transfer IS NOT NULL 
-              THEN CAST(t.gas_details.coinbase_transfer AS UInt128) 
-              ELSE 0 END) as total_coinbase_transfer,
-          SUM(CAST(t.gas_details.gas_used AS UInt128)) as total_gas_used
-        FROM ethereum.blocks b
-        INNER JOIN brontes.tree t ON b.block_number = t.block_number
-        WHERE b.block_hash = '${blockId}' AND b.valid = 1
-        GROUP BY b.block_number, b.block_hash, b.block_timestamp
-        LIMIT 1
-      `;
+    // Validate block number is numeric
+    if (!/^\d+$/.test(blockNumber)) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Block number must be a numeric value',
+      });
+      return;
     }
+
+    const blockNum = parseInt(blockNumber, 10);
+    
+    // Query joining mev.mev_blocks and mev.bundle_header
+    // Focus on PnL and MEV types for each bundle
+    const query = `
+      SELECT 
+        bh.tx_hash as tx_hash,
+        bh.tx_index as tx_index,
+        mb.block_hash as block_hash,
+        mb.block_number as block_number,
+        mb.eth_price as eth_price,
+        mb.mev_count.mev_count as mev_count,
+        mb.total_mev_profit_usd as total_mev_profit_usd,
+        mb.timeboosted_tx_count as timeboosted_tx_count,
+        mb.timeboosted_tx_mev_count as timeboosted_tx_mev_count,
+        mb.total_bribe as total_bribe,
+        mb.total_mev_bribe as total_mev_bribe,
+        bh.profit_usd as bundle_profit_usd,
+        bh.bribe_usd as bundle_bribe_usd,
+        bh.mev_type as mev_type,
+        bh.timeboosted as timeboosted,
+        bh.express_lane_controller as express_lane_controller,
+        bh.express_lane_price_usd as express_lane_price_usd,
+        bh.express_lane_round as express_lane_round
+      FROM mev.mev_blocks mb 
+      INNER JOIN mev.bundle_header bh 
+        ON mb.block_number = bh.block_number 
+      WHERE mb.block_number = ${blockNum}
+      ORDER BY bh.tx_index ASC
+    `;
 
     const result = await req.clickhouse.query({
       query,
@@ -400,54 +398,83 @@ app.get('/api/blocks/:blockId', async (
     });
 
     const data = await result.json<Array<{
-      block_number: number;
+      tx_hash: string;
+      tx_index: number;
       block_hash: string;
-      block_timestamp: number;
-      total_txns: number;
-      express_lane_txns: number;
-      total_coinbase_transfer: string;
-      total_gas_used: string;
+      block_number: number;
+      eth_price: number;
+      mev_count: number;
+      total_mev_profit_usd: number;
+      timeboosted_tx_count: number;
+      timeboosted_tx_mev_count: number;
+      total_bribe: string;
+      total_mev_bribe: string;
+      bundle_profit_usd: number;
+      bundle_bribe_usd: number;
+      mev_type: string;
+      timeboosted: boolean;
+      express_lane_controller: string | null;
+      express_lane_price_usd: number | null;
+      express_lane_round: number | null;
     }>>();
 
     if (data.length === 0) {
       res.status(404).json({
         error: 'Not Found',
-        message: `Block ${blockId} not found`,
+        message: `Block ${blockNumber} not found`,
       });
       return;
     }
 
-    const row = data[0];
+    // Get block-level info from first row (all rows have same block info)
+    const firstRow = data[0];
     
-    // Get transaction hashes for this block
-    const txQuery = `
-      SELECT tx_hash
-      FROM brontes.tree
-      WHERE block_number = ${row.block_number}
-      ORDER BY tx_idx ASC
-    `;
-    
-    const txResult = await req.clickhouse.query({
-      query: txQuery,
-      format: 'JSONEachRow',
-    });
+    // Extract bundles with PnL and MEV types
+    const bundles = data.map(row => ({
+      txHash: row.tx_hash,
+      txIndex: row.tx_index,
+      profitUsd: row.bundle_profit_usd,
+      bribeUsd: row.bundle_bribe_usd,
+      mevType: row.mev_type,
+      timeboosted: row.timeboosted,
+      expressLaneController: row.express_lane_controller,
+      expressLanePriceUsd: row.express_lane_price_usd,
+      expressLaneRound: row.express_lane_round,
+    }));
 
-    const transactions = await txResult.json<Array<{ tx_hash: string }>>();
+    // Get timestamp from ethereum.blocks if needed
+    let blockTimestamp: number | null = null;
+    try {
+      const timestampQuery = `
+        SELECT block_timestamp
+        FROM ethereum.blocks
+        WHERE block_number = ${blockNum} AND valid = 1
+        LIMIT 1
+      `;
+      const timestampResult = await req.clickhouse.query({
+        query: timestampQuery,
+        format: 'JSONEachRow',
+      });
+      const timestampData = await timestampResult.json<Array<{ block_timestamp: number }>>();
+      if (timestampData.length > 0) {
+        blockTimestamp = timestampData[0].block_timestamp;
+      }
+    } catch (error) {
+      console.warn('Could not fetch block timestamp:', error);
+    }
 
     const block: Block = {
-      number: row.block_number,
-      hash: row.block_hash,
-      timestamp: formatRelativeTime(row.block_timestamp),
+      number: firstRow.block_number,
+      hash: firstRow.block_hash,
+      timestamp: blockTimestamp ? formatRelativeTime(blockTimestamp) : undefined,
       miner: null,
       minerAddress: '0x0000000000000000000000000000000000000000',
-      expressLaneTxns: row.express_lane_txns,
-      totalTxns: row.total_txns,
+      expressLaneTxns: firstRow.timeboosted_tx_count,
+      totalTxns: bundles.length,
       timeTaken: '12 secs',
-      ethValue: row.total_coinbase_transfer && row.total_coinbase_transfer !== '0'
-        ? formatEthValue(row.total_coinbase_transfer)
-        : '0.00000',
-      gasUsed: row.total_gas_used,
-      transactions: transactions.map(tx => tx.tx_hash),
+      ethValue: '0.00000', // Can be calculated from total_bribe if needed
+      gasUsed: firstRow.total_bribe, // Using total_bribe as placeholder, adjust as needed
+      transactions: bundles.map(b => b.txHash),
     };
 
     res.json(block);
@@ -2061,7 +2088,7 @@ app.get('/', (req: Request, res: Response<RootResponse>) => {
     endpoints: [
       'GET /api/latest-transactions',
       'GET /api/latest-blocks',
-      'GET /api/blocks/:blockId',
+      'GET /api/blocks/:blockNumber',
       'GET /api/transactions/:transactionId',
       'GET /api/addresses/:address',
       'GET /api/gross-mev?timeRange=15min',
