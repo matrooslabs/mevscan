@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createClient, ClickHouseClient } from '@clickhouse/client';
+import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
 import type {
   Transaction,
   Block,
@@ -146,6 +147,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   
   next();
 });
+
+// Caching middleware - cache responses for the current minute
+// Cache is automatically flushed when entering a new minute
+app.use(minuteCacheMiddleware);
+
+// Periodic cache cleanup (every 5 minutes)
+setInterval(() => {
+  cleanupExpiredCache();
+}, 5 * 60 * 1000);
 
 // Helper function to format relative time
 function formatRelativeTime(timestamp: number): string {
