@@ -23,7 +23,7 @@ import type {
   AtomicArbResponse,
   CexDexQuoteResponse,
   LiquidationResponse,
-} from '../../shared/types'
+} from '@mevscan/shared'
 
 // Initialize API client - you may want to configure this based on your environment
 const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001')

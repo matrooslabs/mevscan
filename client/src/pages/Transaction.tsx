@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useTransaction } from '../hooks/useApi'
-import type { Transaction } from '../../shared/types'
+import type { Transaction } from '@mevscan/shared'
 import AtomicMEVDetails from '../components/AtomicMEVDetails'
 import CexDexMEVDetails from '../components/CexDexMEVDetails'
 import LiquidationMEVDetails from '../components/LiquidationMEVDetails'

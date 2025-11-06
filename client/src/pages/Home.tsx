@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useLatestBlocks, useLatestTransactions, useTimeboostGrossRevenue } from "../hooks/useApi";
-import type { BlockListItem, Transaction } from "../../shared/types";
+import type { BlockListItem, Transaction } from "@mevscan/shared";
 import "./Home.css";
 
 interface TransactionHistoryData {

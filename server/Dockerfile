@@ -3,22 +3,22 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY server/package*.json ./
+# Copy root package files for workspace setup
+COPY package*.json ./
 
-# Install dependencies
+# Copy workspace package files
+COPY shared/package.json ./shared/
+COPY server/package.json ./server/
+
+# Install dependencies (this will install all workspaces)
 RUN npm ci
 
 # Copy source files
-COPY server/ ./
-
-# Copy shared types to parent directory to maintain ../shared/types import path
-WORKDIR /
-COPY shared/ /shared/
-
-WORKDIR /app
+COPY shared/ ./shared/
+COPY server/ ./server/
 
 # Build TypeScript
+WORKDIR /app/server
 RUN npm run build
 
 # Production stage
@@ -26,18 +26,22 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY server/package*.json ./
+# Copy root package files
+COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Copy workspace package files
+COPY shared/package.json ./shared/
+COPY server/package.json ./server/
+
+# Install production dependencies only (workspace-aware)
+RUN npm ci --only=production --workspace=server
 
 # Copy built files from builder
-COPY --from=builder /app/dist ./dist
-# Note: shared types are only needed at build time, but copy anyway for consistency
-COPY --from=builder /shared /shared
+COPY --from=builder /app/server/dist ./server/dist
+COPY --from=builder /app/shared ./shared
+
+WORKDIR /app/server
 
 EXPOSE 3001
 
 CMD ["npm", "start"]
-

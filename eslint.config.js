@@ -5,10 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'node_modules']),
   // Server configuration (Node.js environment)
   {
-    files: ['server/**/*.js'],
+    files: ['server/**/*.js', 'server/**/*.ts'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -26,8 +26,7 @@ export default defineConfig([
   },
   // Client configuration (Browser environment)
   {
-    files: ['**/*.{js,jsx}'],
-    ignores: ['server/**/*'],
+    files: ['client/**/*.{js,jsx,ts,tsx}'],
     extends: [
       js.configs.recommended,
       reactHooks.configs['recommended-latest'],

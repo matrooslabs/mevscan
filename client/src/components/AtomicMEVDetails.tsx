@@ -1,15 +1,15 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { useLiquidationDetails } from '../hooks/useApi'
-import type { LiquidationResponse } from '../../shared/types'
+import { useAtomicArb } from '../hooks/useApi'
+import type { AtomicArbResponse } from '@mevscan/shared'
 import './MEVDetails.css'
 
-interface LiquidationMEVDetailsProps {
+interface AtomicMEVDetailsProps {
   txHash: string
 }
 
-function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
+function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
   const navigate = useNavigate()
-  const { data, isLoading, error } = useLiquidationDetails(txHash)
+  const { data, isLoading, error } = useAtomicArb(txHash)
 
   const formatAddress = (address: string) => {
     if (!address || address.length < 10) return address
@@ -19,7 +19,7 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
   if (isLoading) {
     return (
       <div className="mev-details-container">
-        <div className="loading-state">Loading liquidation details...</div>
+        <div className="loading-state">Loading atomic arbitrage details...</div>
       </div>
     )
   }
@@ -28,7 +28,7 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
     return (
       <div className="mev-details-container">
         <div className="error-state">
-          Error loading liquidation: {error.message}
+          Error loading atomic arbitrage: {error.message}
         </div>
       </div>
     )
@@ -37,12 +37,12 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
   if (!data) {
     return (
       <div className="mev-details-container">
-        <div className="empty-state">No liquidation data found</div>
+        <div className="empty-state">No atomic arbitrage data found</div>
       </div>
     )
   }
 
-  const liquidation: LiquidationResponse = data
+  const arb: AtomicArbResponse = data
 
   return (
     <div className="mev-details-container">
@@ -54,32 +54,44 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
         <div className="section-content">
           <div className="details-grid">
             <div className="details-item">
-              <span className="details-label">Liquidation TX Hash:</span>
+              <span className="details-label">Transaction Hash:</span>
               <span className="details-value monospace">
-                <Link to={`/transaction/${liquidation.liquidation_tx_hash}`}>
-                  {liquidation.liquidation_tx_hash}
+                <Link to={`/transaction/${arb.tx_hash}`}>
+                  {arb.tx_hash}
                 </Link>
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Block Number:</span>
-              <span className="details-value">{liquidation.block_number.toLocaleString()}</span>
+              <span className="details-value">{arb.block_number.toLocaleString()}</span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">Trigger TX:</span>
+              <span className="details-value monospace">
+                <Link to={`/transaction/${arb.trigger_tx}`}>
+                  {formatAddress(arb.trigger_tx)}
+                </Link>
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">Arbitrage Type:</span>
+              <span className="details-value">{arb.arb_type}</span>
             </div>
             <div className="details-item">
               <span className="details-label">Profit (USD):</span>
               <span className="details-value">
-                ${liquidation.profit_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${arb.profit_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Protocols:</span>
               <span className="details-value">
-                {liquidation.protocols && liquidation.protocols.length > 0 ? liquidation.protocols.join(', ') : 'N/A'}
+                {arb.protocols && arb.protocols.length > 0 ? arb.protocols.join(', ') : 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Run ID:</span>
-              <span className="details-value">{liquidation.run_id}</span>
+              <span className="details-value">{arb.run_id}</span>
             </div>
           </div>
         </div>
@@ -95,111 +107,40 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
             <div className="details-item">
               <span className="details-label">Gas Used:</span>
               <span className="details-value">
-                {liquidation.gas_details.gas_used ? parseInt(liquidation.gas_details.gas_used).toLocaleString() : 'N/A'}
+                {arb.gas_details.gas_used ? parseInt(arb.gas_details.gas_used).toLocaleString() : 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Effective Gas Price:</span>
               <span className="details-value monospace">
-                {liquidation.gas_details.effective_gas_price || 'N/A'}
+                {arb.gas_details.effective_gas_price || 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Priority Fee:</span>
               <span className="details-value monospace">
-                {liquidation.gas_details.priority_fee || 'N/A'}
+                {arb.gas_details.priority_fee || 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Coinbase Transfer:</span>
               <span className="details-value monospace">
-                {liquidation.gas_details.coinbase_transfer || 'N/A'}
+                {arb.gas_details.coinbase_transfer || 'N/A'}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Liquidations */}
-      {liquidation.liquidations && liquidation.liquidations.length > 0 && (
+      {/* Swaps */}
+      {arb.swaps && arb.swaps.length > 0 && (
         <div className="mev-details-section">
           <div className="section-header">
-            <h3>Liquidations ({liquidation.liquidations.length})</h3>
-          </div>
-          <div className="section-content">
-            <div className="liquidations-list">
-              {liquidation.liquidations.map((liq, index) => (
-                <div key={index} className="liquidation-item">
-                  <div className="liquidation-header">
-                    <span className="liquidation-index">Liquidation #{index + 1}</span>
-                    <span className="liquidation-trace-idx">Trace Index: {liq.trace_idx}</span>
-                  </div>
-                  <div className="liquidation-details">
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Pool:</span>
-                      <span className="liquidation-value monospace">
-                        <Link to={`/address/${liq.pool}`}>
-                          {formatAddress(liq.pool)}
-                        </Link>
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Liquidator:</span>
-                      <span className="liquidation-value monospace">
-                        <Link to={`/address/${liq.liquidator}`}>
-                          {formatAddress(liq.liquidator)}
-                        </Link>
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Debtor:</span>
-                      <span className="liquidation-value monospace">
-                        <Link to={`/address/${liq.debtor}`}>
-                          {formatAddress(liq.debtor)}
-                        </Link>
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Collateral Asset:</span>
-                      <span className="liquidation-value monospace">
-                        {liq.collateral_asset[0]} ({liq.collateral_asset[1]})
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Debt Asset:</span>
-                      <span className="liquidation-value monospace">
-                        {liq.debt_asset[0]} ({liq.debt_asset[1]})
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Covered Debt:</span>
-                      <span className="liquidation-value monospace">
-                        {liq.covered_debt[0]} {liq.covered_debt[1]}
-                      </span>
-                    </div>
-                    <div className="liquidation-detail-row">
-                      <span className="liquidation-label">Liquidated Collateral:</span>
-                      <span className="liquidation-value monospace">
-                        {liq.liquidated_collateral[0]} {liq.liquidated_collateral[1]}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Liquidation Swaps */}
-      {liquidation.liquidation_swaps && liquidation.liquidation_swaps.length > 0 && (
-        <div className="mev-details-section">
-          <div className="section-header">
-            <h3>Liquidation Swaps ({liquidation.liquidation_swaps.length})</h3>
+            <h3>Swaps ({arb.swaps.length})</h3>
           </div>
           <div className="section-content">
             <div className="swaps-list">
-              {liquidation.liquidation_swaps.map((swap, index) => (
+              {arb.swaps.map((swap, index) => (
                 <div key={index} className="swap-item">
                   <div className="swap-header">
                     <span className="swap-index">Swap #{index + 1}</span>
@@ -265,5 +206,5 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
   )
 }
 
-export default LiquidationMEVDetails
+export default AtomicMEVDetails
 

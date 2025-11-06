@@ -13,7 +13,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mevscan/shared": ["../shared/types"]
+    }
   },
   "include": ["*.ts"],
   "exclude": ["node_modules", "dist"],
@@ -26,4 +30,3 @@
     }
   }
 }
-

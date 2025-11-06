@@ -22,8 +22,9 @@
     "checkJs": false,
     "baseUrl": ".",
     "paths": {
-      "@/shared/*": ["./shared/*"]
+      "@mevscan/shared": ["../shared/types"]
     }
   },
-  "include": ["src", "shared/types.ts", "src/vite-env.d.ts"]
+  "include": ["src", "../shared/types.ts", "src/vite-env.d.ts"]
 }
+

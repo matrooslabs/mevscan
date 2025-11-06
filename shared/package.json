@@ -1,0 +1,17 @@
+{
+  "name": "@mevscan/shared",
+  "version": "1.0.0",
+  "description": "Shared TypeScript type definitions for MEVScan",
+  "main": "types.ts",
+  "types": "types.ts",
+  "exports": {
+    ".": "./types.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
+

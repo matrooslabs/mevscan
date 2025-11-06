@@ -1,25 +1,29 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { useAtomicArb } from '../hooks/useApi'
-import type { AtomicArbResponse } from '../../shared/types'
+import { useCexDexQuote } from '../hooks/useApi'
+import type { CexDexQuoteResponse } from '@mevscan/shared'
 import './MEVDetails.css'
 
-interface AtomicMEVDetailsProps {
+interface CexDexMEVDetailsProps {
   txHash: string
 }
 
-function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
+function CexDexMEVDetails({ txHash }: CexDexMEVDetailsProps) {
   const navigate = useNavigate()
-  const { data, isLoading, error } = useAtomicArb(txHash)
+  const { data, isLoading, error } = useCexDexQuote(txHash)
 
   const formatAddress = (address: string) => {
     if (!address || address.length < 10) return address
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  const formatTimestamp = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleString()
+  }
+
   if (isLoading) {
     return (
       <div className="mev-details-container">
-        <div className="loading-state">Loading atomic arbitrage details...</div>
+        <div className="loading-state">Loading CexDex quote details...</div>
       </div>
     )
   }
@@ -28,7 +32,7 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
     return (
       <div className="mev-details-container">
         <div className="error-state">
-          Error loading atomic arbitrage: {error.message}
+          Error loading CexDex quote: {error.message}
         </div>
       </div>
     )
@@ -37,12 +41,12 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
   if (!data) {
     return (
       <div className="mev-details-container">
-        <div className="empty-state">No atomic arbitrage data found</div>
+        <div className="empty-state">No CexDex quote data found</div>
       </div>
     )
   }
 
-  const arb: AtomicArbResponse = data
+  const quote: CexDexQuoteResponse = data
 
   return (
     <div className="mev-details-container">
@@ -56,42 +60,105 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
             <div className="details-item">
               <span className="details-label">Transaction Hash:</span>
               <span className="details-value monospace">
-                <Link to={`/transaction/${arb.tx_hash}`}>
-                  {arb.tx_hash}
+                <Link to={`/transaction/${quote.tx_hash}`}>
+                  {quote.tx_hash}
                 </Link>
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Block Number:</span>
-              <span className="details-value">{arb.block_number.toLocaleString()}</span>
+              <span className="details-value">{quote.block_number.toLocaleString()}</span>
             </div>
             <div className="details-item">
-              <span className="details-label">Trigger TX:</span>
-              <span className="details-value monospace">
-                <Link to={`/transaction/${arb.trigger_tx}`}>
-                  {formatAddress(arb.trigger_tx)}
-                </Link>
+              <span className="details-label">Block Timestamp:</span>
+              <span className="details-value">
+                {formatTimestamp(quote.block_timestamp)}
               </span>
             </div>
             <div className="details-item">
-              <span className="details-label">Arbitrage Type:</span>
-              <span className="details-value">{arb.arb_type}</span>
+              <span className="details-label">Exchange:</span>
+              <span className="details-value">{quote.exchange}</span>
             </div>
             <div className="details-item">
               <span className="details-label">Profit (USD):</span>
               <span className="details-value">
-                ${arb.profit_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${quote.profit_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">PnL:</span>
+              <span className="details-value">
+                {quote.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Protocols:</span>
               <span className="details-value">
-                {arb.protocols && arb.protocols.length > 0 ? arb.protocols.join(', ') : 'N/A'}
+                {quote.protocols && quote.protocols.length > 0 ? quote.protocols.join(', ') : 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Run ID:</span>
-              <span className="details-value">{arb.run_id}</span>
+              <span className="details-value">{quote.run_id}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mid Price Information */}
+      <div className="mev-details-section">
+        <div className="section-header">
+          <h3>Mid Price Information</h3>
+        </div>
+        <div className="section-content">
+          <div className="details-grid">
+            <div className="details-item">
+              <span className="details-label">Instant Mid Price:</span>
+              <span className="details-value">
+                {quote.instant_mid_price && quote.instant_mid_price.length > 0
+                  ? quote.instant_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">T2 Mid Price:</span>
+              <span className="details-value">
+                {quote.t2_mid_price && quote.t2_mid_price.length > 0
+                  ? quote.t2_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">T12 Mid Price:</span>
+              <span className="details-value">
+                {quote.t12_mid_price && quote.t12_mid_price.length > 0
+                  ? quote.t12_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">T30 Mid Price:</span>
+              <span className="details-value">
+                {quote.t30_mid_price && quote.t30_mid_price.length > 0
+                  ? quote.t30_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">T60 Mid Price:</span>
+              <span className="details-value">
+                {quote.t60_mid_price && quote.t60_mid_price.length > 0
+                  ? quote.t60_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="details-item">
+              <span className="details-label">T300 Mid Price:</span>
+              <span className="details-value">
+                {quote.t300_mid_price && quote.t300_mid_price.length > 0
+                  ? quote.t300_mid_price.map(p => p.toFixed(6)).join(', ')
+                  : 'N/A'}
+              </span>
             </div>
           </div>
         </div>
@@ -107,25 +174,25 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
             <div className="details-item">
               <span className="details-label">Gas Used:</span>
               <span className="details-value">
-                {arb.gas_details.gas_used ? parseInt(arb.gas_details.gas_used).toLocaleString() : 'N/A'}
+                {quote.gas_details.gas_used ? parseInt(quote.gas_details.gas_used).toLocaleString() : 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Effective Gas Price:</span>
               <span className="details-value monospace">
-                {arb.gas_details.effective_gas_price || 'N/A'}
+                {quote.gas_details.effective_gas_price || 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Priority Fee:</span>
               <span className="details-value monospace">
-                {arb.gas_details.priority_fee || 'N/A'}
+                {quote.gas_details.priority_fee || 'N/A'}
               </span>
             </div>
             <div className="details-item">
               <span className="details-label">Coinbase Transfer:</span>
               <span className="details-value monospace">
-                {arb.gas_details.coinbase_transfer || 'N/A'}
+                {quote.gas_details.coinbase_transfer || 'N/A'}
               </span>
             </div>
           </div>
@@ -133,14 +200,14 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
       </div>
 
       {/* Swaps */}
-      {arb.swaps && arb.swaps.length > 0 && (
+      {quote.swaps && quote.swaps.length > 0 && (
         <div className="mev-details-section">
           <div className="section-header">
-            <h3>Swaps ({arb.swaps.length})</h3>
+            <h3>Swaps ({quote.swaps.length})</h3>
           </div>
           <div className="section-content">
             <div className="swaps-list">
-              {arb.swaps.map((swap, index) => (
+              {quote.swaps.map((swap, index) => (
                 <div key={index} className="swap-item">
                   <div className="swap-header">
                     <span className="swap-index">Swap #{index + 1}</span>
@@ -206,5 +273,5 @@ function AtomicMEVDetails({ txHash }: AtomicMEVDetailsProps) {
   )
 }
 
-export default AtomicMEVDetails
+export default CexDexMEVDetails
 

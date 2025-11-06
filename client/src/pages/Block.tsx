@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useBlock } from '../hooks/useApi'
-import type { Block } from '../../shared/types'
+import type { Block } from '@mevscan/shared'
 import './Block.css'
 
 interface BlockWithExtended extends Block {

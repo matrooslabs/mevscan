@@ -39,7 +39,7 @@ import type {
   AtomicArbResponse,
   CexDexQuoteResponse,
   LiquidationResponse,
-} from '../shared/types';
+} from '@mevscan/shared';
 
 dotenv.config();
 

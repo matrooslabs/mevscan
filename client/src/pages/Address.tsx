@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAddress } from '../hooks/useApi'
-import type { Address as AddressType } from '../../shared/types'
+import type { Address as AddressType } from '@mevscan/shared'
 import './Address.css'
 
 function Address() {
