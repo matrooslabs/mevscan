@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useTransaction } from '../hooks/useApi'
 import type { Transaction } from '../../shared/types'
@@ -116,17 +116,13 @@ function Transaction() {
             <div className="overview-item-full">
               <span className="overview-label">Transaction Hash:</span>
               <span className="overview-value monospace">
-                <a
-                  href={`/transaction/${transaction.hash}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    navigate(`/transaction/${transaction.hash}`)
-                  }}
+                <Link
+                  to={`/transaction/${transaction.hash}`}
                   className="hash-full"
                   style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
                 >
                   {transaction.hash}
-                </a>
+                </Link>
                 <button 
                   className={`copy-button ${copiedHash === 'txHash' ? 'copied' : ''}`}
                   title={copiedHash === 'txHash' ? 'Copied!' : 'Copy hash'}
@@ -163,12 +159,9 @@ function Transaction() {
                 <span className="overview-label">From:</span>
                 <span className="overview-value monospace">
                   {transaction.from ? (
-                    <a href={`/address/${transaction.from}`} onClick={(e) => {
-                      e.preventDefault()
-                      navigate(`/address/${transaction.from}`)
-                    }}>
+                    <Link to={`/address/${transaction.from}`}>
                       {formatAddress(transaction.from)}
-                    </a>
+                    </Link>
                   ) : (
                     'N/A'
                   )}
@@ -178,12 +171,9 @@ function Transaction() {
                 <span className="overview-label">To:</span>
                 <span className="overview-value monospace">
                   {transaction.to ? (
-                    <a href={`/address/${transaction.to}`} onClick={(e) => {
-                      e.preventDefault()
-                      navigate(`/address/${transaction.to}`)
-                    }}>
+                    <Link to={`/address/${transaction.to}`}>
                       {formatAddress(transaction.to)}
-                    </a>
+                    </Link>
                   ) : (
                     'Contract Creation'
                   )}
@@ -220,15 +210,24 @@ function Transaction() {
                 </span>
               </div>
               <div className="overview-item">
+                <span className="overview-label">MEV Contract:</span>
+                <span className="overview-value monospace">
+                  {transaction.mevContract ? (
+                    <Link to={`/address/${transaction.mevContract}`}>
+                      {formatAddress(transaction.mevContract)}
+                    </Link>
+                  ) : (
+                    'N/A'
+                  )}
+                </span>
+              </div>
+              <div className="overview-item">
                 <span className="overview-label">Express Lane Controller:</span>
                 <span className="overview-value monospace">
                   {transaction.expressLaneController ? (
-                    <a href={`/address/${transaction.expressLaneController}`} onClick={(e) => {
-                      e.preventDefault()
-                      navigate(`/address/${transaction.expressLaneController}`)
-                    }}>
+                    <Link to={`/address/${transaction.expressLaneController}`}>
                       {formatAddress(transaction.expressLaneController)}
-                    </a>
+                    </Link>
                   ) : (
                     'N/A'
                   )}

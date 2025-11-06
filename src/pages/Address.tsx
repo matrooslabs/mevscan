@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAddress } from '../hooks/useApi'
 import type { Address as AddressType } from '../../shared/types'
@@ -274,28 +274,20 @@ function Address() {
                     {addr.mevTransactions.transactions.map((tx, index) => (
                       <tr key={`${tx.txHash}-${index}`}>
                         <td className="monospace">
-                          <a
-                            href={`/transaction/${tx.txHash}`}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              navigate(`/transaction/${tx.txHash}`)
-                            }}
+                          <Link
+                            to={`/transaction/${tx.txHash}`}
                             className="hash-link"
                           >
                             {formatHash(tx.txHash)}
-                          </a>
+                          </Link>
                         </td>
                         <td>
-                          <a
-                            href={`/block/${tx.blockNumber}`}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              navigate(`/block/${tx.blockNumber}`)
-                            }}
+                          <Link
+                            to={`/block/${tx.blockNumber}`}
                             className="block-link"
                           >
                             {tx.blockNumber.toLocaleString()}
-                          </a>
+                          </Link>
                         </td>
                         <td>
                           <span className="mev-type-badge">{tx.mevType}</span>
@@ -315,16 +307,12 @@ function Address() {
                         {addr.isContract ? (
                           <td className="monospace">
                             {tx.eoa ? (
-                              <a
-                                href={`/address/${tx.eoa}`}
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  navigate(`/address/${tx.eoa}`)
-                                }}
+                              <Link
+                                to={`/address/${tx.eoa}`}
                                 className="address-link"
                               >
                                 {formatAddress(tx.eoa)}
-                              </a>
+                              </Link>
                             ) : (
                               <span className="text-muted">N/A</span>
                             )}
@@ -332,16 +320,12 @@ function Address() {
                         ) : (
                           <td className="monospace">
                             {tx.mevContract ? (
-                              <a
-                                href={`/address/${tx.mevContract}`}
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  navigate(`/address/${tx.mevContract}`)
-                                }}
+                              <Link
+                                to={`/address/${tx.mevContract}`}
                                 className="address-link"
                               >
                                 {formatAddress(tx.mevContract)}
-                              </a>
+                              </Link>
                             ) : (
                               <span className="text-muted">N/A</span>
                             )}

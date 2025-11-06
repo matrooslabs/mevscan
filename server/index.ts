@@ -526,6 +526,7 @@ app.get('/api/transactions/:transactionId', async (
         bh.profit_usd,
         bh.bribe_usd,
         bh.mev_type,
+        bh.mev_contract,
         bh.block_number,
         t.gas_details.priority_fee as priority_fee,
         t.gas_details.gas_used as gas_used,
@@ -556,6 +557,7 @@ app.get('/api/transactions/:transactionId', async (
       profit_usd: number;
       bribe_usd: number;
       mev_type: string;
+      mev_contract: string | null;
       block_number: number;
       priority_fee: string;
       gas_used: string;
@@ -643,6 +645,7 @@ app.get('/api/transactions/:transactionId', async (
       blockNumber: row.block_number,
       profit: row.profit_usd,
       mevType: row.mev_type,
+      mevContract: row.mev_contract,
       timeboosted: row.timeboosted,
       expressLaneController: row.express_lane_controller,
       expressLanePrice: row.express_lane_price,

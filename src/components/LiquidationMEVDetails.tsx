@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useLiquidationDetails } from '../hooks/useApi'
 import type { LiquidationResponse } from '../../shared/types'
 import './MEVDetails.css'
@@ -56,15 +56,9 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
             <div className="details-item">
               <span className="details-label">Liquidation TX Hash:</span>
               <span className="details-value monospace">
-                <a
-                  href={`/transaction/${liquidation.liquidation_tx_hash}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    navigate(`/transaction/${liquidation.liquidation_tx_hash}`)
-                  }}
-                >
+                <Link to={`/transaction/${liquidation.liquidation_tx_hash}`}>
                   {liquidation.liquidation_tx_hash}
-                </a>
+                </Link>
               </span>
             </div>
             <div className="details-item">
@@ -144,43 +138,25 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
                     <div className="liquidation-detail-row">
                       <span className="liquidation-label">Pool:</span>
                       <span className="liquidation-value monospace">
-                        <a
-                          href={`/address/${liq.pool}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${liq.pool}`)
-                          }}
-                        >
+                        <Link to={`/address/${liq.pool}`}>
                           {formatAddress(liq.pool)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="liquidation-detail-row">
                       <span className="liquidation-label">Liquidator:</span>
                       <span className="liquidation-value monospace">
-                        <a
-                          href={`/address/${liq.liquidator}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${liq.liquidator}`)
-                          }}
-                        >
+                        <Link to={`/address/${liq.liquidator}`}>
                           {formatAddress(liq.liquidator)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="liquidation-detail-row">
                       <span className="liquidation-label">Debtor:</span>
                       <span className="liquidation-value monospace">
-                        <a
-                          href={`/address/${liq.debtor}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${liq.debtor}`)
-                          }}
-                        >
+                        <Link to={`/address/${liq.debtor}`}>
                           {formatAddress(liq.debtor)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="liquidation-detail-row">
@@ -233,43 +209,25 @@ function LiquidationMEVDetails({ txHash }: LiquidationMEVDetailsProps) {
                     <div className="swap-detail-row">
                       <span className="swap-label">From:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.from}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.from}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.from}`}>
                           {formatAddress(swap.from)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">
                       <span className="swap-label">Recipient:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.recipient}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.recipient}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.recipient}`}>
                           {formatAddress(swap.recipient)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">
                       <span className="swap-label">Pool:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.pool}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.pool}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.pool}`}>
                           {formatAddress(swap.pool)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">

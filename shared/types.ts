@@ -32,6 +32,7 @@ export interface Transaction {
   blockNumber: number;
   profit: number;
   mevType: string;
+  mevContract?: string | null;
   timeboosted: boolean;
   expressLaneController: string | null;
   expressLanePrice: string | null;

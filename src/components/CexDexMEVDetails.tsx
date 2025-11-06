@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useCexDexQuote } from '../hooks/useApi'
 import type { CexDexQuoteResponse } from '../../shared/types'
 import './MEVDetails.css'
@@ -60,15 +60,9 @@ function CexDexMEVDetails({ txHash }: CexDexMEVDetailsProps) {
             <div className="details-item">
               <span className="details-label">Transaction Hash:</span>
               <span className="details-value monospace">
-                <a
-                  href={`/transaction/${quote.tx_hash}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    navigate(`/transaction/${quote.tx_hash}`)
-                  }}
-                >
+                <Link to={`/transaction/${quote.tx_hash}`}>
                   {quote.tx_hash}
-                </a>
+                </Link>
               </span>
             </div>
             <div className="details-item">
@@ -223,43 +217,25 @@ function CexDexMEVDetails({ txHash }: CexDexMEVDetailsProps) {
                     <div className="swap-detail-row">
                       <span className="swap-label">From:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.from}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.from}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.from}`}>
                           {formatAddress(swap.from)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">
                       <span className="swap-label">Recipient:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.recipient}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.recipient}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.recipient}`}>
                           {formatAddress(swap.recipient)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">
                       <span className="swap-label">Pool:</span>
                       <span className="swap-value monospace">
-                        <a
-                          href={`/address/${swap.pool}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(`/address/${swap.pool}`)
-                          }}
-                        >
+                        <Link to={`/address/${swap.pool}`}>
                           {formatAddress(swap.pool)}
-                        </a>
+                        </Link>
                       </span>
                     </div>
                     <div className="swap-detail-row">

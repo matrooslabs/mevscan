@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useBlock } from '../hooks/useApi'
 import type { Block } from '../../shared/types'
@@ -244,20 +244,14 @@ function Block() {
                   {block.bundles.map((bundle) => (
                     <div key={bundle.txHash} className="transaction-row">
                       <div className="transaction-hash monospace">
-                        <a href={`/transaction/${bundle.txHash}`} onClick={(e) => {
-                          e.preventDefault()
-                          navigate(`/transaction/${bundle.txHash}`)
-                        }}>
+                        <Link to={`/transaction/${bundle.txHash}`}>
                           {formatHash(bundle.txHash)}
-                        </a>
+                        </Link>
                       </div>
                       <div className="transaction-eoa monospace">
-                        <a href={`/address/${bundle.eoa}`} onClick={(e) => {
-                          e.preventDefault()
-                          navigate(`/address/${bundle.eoa}`)
-                        }}>
+                        <Link to={`/address/${bundle.eoa}`}>
                           {formatAddress(bundle.eoa)}
-                        </a>
+                        </Link>
                       </div>
                       <div className="transaction-mev-contract monospace">
                         {bundle.mevContract ? formatAddress(bundle.mevContract) : '—'}

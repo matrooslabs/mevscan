@@ -1,5 +1,5 @@
 import { useState, useMemo, FormEvent, ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -295,16 +295,12 @@ function Home() {
                           <span className="tx-icon">⇄</span>
                           <div className="tx-info">
                             <div className="tx-hash-time">
-                              <a
-                                href={`/transaction/${tx.hash}`}
+                              <Link
+                                to={`/transaction/${tx.hash}`}
                                 className="link-primary tx-hash"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  navigate(`/transaction/${tx.hash}`);
-                                }}
                               >
                                 {tx.hash.substring(0, 16)}...
-                              </a>
+                              </Link>
                               <span className="tx-time">Block {tx.blockNumber.toLocaleString()}</span>
                             </div>
                             <div className="tx-addresses">
@@ -329,16 +325,12 @@ function Home() {
                               {tx.expressLaneController && (
                                 <div className="tx-address-group">
                                   <span className="tx-label">Express Lane Controller</span>
-                                  <a
-                                    href={`/address/${tx.expressLaneController}`}
+                                  <Link
+                                    to={`/address/${tx.expressLaneController}`}
                                     className="link-secondary tx-address"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      navigate(`/address/${tx.expressLaneController}`);
-                                    }}
                                   >
                                     {tx.expressLaneController.substring(0, 10)}...{tx.expressLaneController.slice(-8)}
-                                  </a>
+                                  </Link>
                                 </div>
                               )}
                               {tx.expressLanePrice && (
