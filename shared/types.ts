@@ -57,6 +57,7 @@ export interface BlockListItem {
   totalProfit: number;
   timeboostedTxCount: number;
   timeboostedTxMevCount: number;
+  ethPrice?: number;
 }
 
 /**

@@ -57,7 +57,10 @@ function Home() {
   const latestBlocks: BlockListItem[] = latestBlocksData || [];
   const latestTransactions: Transaction[] = latestTransactionsData || [];
 
-  const etherPrice = 2450.75;
+  // Get ETH price from the latest block (first block in the list)
+  const etherPrice = latestBlocks.length > 0 && latestBlocks[0].ethPrice 
+    ? latestBlocks[0].ethPrice 
+    : null;
   const mevExtracted = 1234.56;
 
   // Generate transaction history data for last 14 days
@@ -103,7 +106,13 @@ function Home() {
       <div className="stats-bar">
         <div className="stat-item">
           <span className="stat-label">Ether Price</span>
-          <span className="stat-value">${etherPrice.toLocaleString()}</span>
+          <span className="stat-value">
+            {etherPrice !== null 
+              ? `$${etherPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : blocksLoading 
+                ? 'Loading...' 
+                : 'N/A'}
+          </span>
         </div>
         <div className="stat-item">
           <span className="stat-label">MEV Extracted</span>

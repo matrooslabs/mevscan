@@ -310,7 +310,8 @@ app.get('/api/latest-blocks', async (
         arraySum(mev_count.mev_count) as mev_count,
         total_mev_profit_usd as total_profit,
         timeboosted_tx_count,
-        timeboosted_tx_mev_count
+        timeboosted_tx_mev_count,
+        eth_price
       FROM mev.mev_blocks
       WHERE mev_count > 0 OR timeboosted_tx_count > 0 OR timeboosted_tx_mev_count > 0
       ORDER BY block_number DESC
@@ -329,6 +330,7 @@ app.get('/api/latest-blocks', async (
       total_profit: number;
       timeboosted_tx_count: number;
       timeboosted_tx_mev_count: number;
+      eth_price: number;
     }>>();
 
     // Map to BlockListItem type
@@ -339,6 +341,7 @@ app.get('/api/latest-blocks', async (
       totalProfit: row.total_profit,
       timeboostedTxCount: row.timeboosted_tx_count,
       timeboostedTxMevCount: row.timeboosted_tx_mev_count,
+      ethPrice: row.eth_price,
     }));
 
     res.json(blocks);
