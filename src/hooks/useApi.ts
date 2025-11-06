@@ -630,9 +630,10 @@ export function useApiRefreshByKeys(
     )
   }, [queryClient, queryKeys])
 
-  const isRefreshing = queryKeys.some(queryKey => 
-    queryClient.getQueryState(queryKey)?.isFetching ?? false
-  )
+  const isRefreshing = queryKeys.some(queryKey => {
+    const state = queryClient.getQueryState(queryKey)
+    return state?.fetchStatus === 'fetching'
+  })
 
   return { refresh, isRefreshing }
 }
@@ -672,7 +673,7 @@ export function usePeriodicApiRefresh(
   isPaused: boolean
 } {
   const [isPaused, setIsPaused] = useState(!enabled)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
     await Promise.all(queries.map(query => query.refetch()))
@@ -754,7 +755,7 @@ export function usePeriodicApiRefreshByKeys(
 } {
   const queryClient = useQueryClient()
   const [isPaused, setIsPaused] = useState(!enabled)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
     // Stagger refreshes to avoid overwhelming the server
@@ -797,9 +798,10 @@ export function usePeriodicApiRefreshByKeys(
     }
   }, [isPaused, intervalMs, refresh])
 
-  const isRefreshing = queryKeys.some(queryKey => 
-    queryClient.getQueryState(queryKey)?.isFetching ?? false
-  )
+  const isRefreshing = queryKeys.some(queryKey => {
+    const state = queryClient.getQueryState(queryKey)
+    return state?.fetchStatus === 'fetching'
+  })
 
   return { refresh, isRefreshing, pause, resume, isPaused }
 }

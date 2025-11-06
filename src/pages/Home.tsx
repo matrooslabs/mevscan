@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useLatestBlocks, useLatestTransactions } from "../hooks/useApi";
+import { useLatestBlocks, useLatestTransactions, useTimeboostGrossRevenue } from "../hooks/useApi";
 import type { BlockListItem, Transaction } from "../../shared/types";
 import "./Home.css";
 
@@ -33,6 +33,11 @@ function Home() {
     isLoading: transactionsLoading,
     error: transactionsError,
   } = useLatestTransactions(10);
+  const {
+    data: timeboostGrossRevenueData,
+    isLoading: timeboostGrossRevenueLoading,
+    error: timeboostGrossRevenueError,
+  } = useTimeboostGrossRevenue();
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,7 +66,8 @@ function Home() {
   const etherPrice = latestBlocks.length > 0 && latestBlocks[0].ethPrice 
     ? latestBlocks[0].ethPrice 
     : null;
-  const mevExtracted = 1234.56;
+  // Get Timeboost Auction Revenue (total_first_price) - gross revenue (all-time)
+  const timeboostAuctionRevenue = timeboostGrossRevenueData?.total_second_price ?? null;
 
   // Generate transaction history data for last 14 days
   const transactionHistory = useMemo<TransactionHistoryData[]>(() => {
@@ -115,9 +121,15 @@ function Home() {
           </span>
         </div>
         <div className="stat-item">
-          <span className="stat-label">MEV Extracted</span>
+          <span className="stat-label">Timeboost Auction Revenue</span>
           <span className="stat-value">
-            {mevExtracted.toLocaleString()} ETH
+            {timeboostAuctionRevenue !== null 
+              ? `${timeboostAuctionRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETH`
+              : timeboostGrossRevenueLoading 
+                ? 'Loading...' 
+                : timeboostGrossRevenueError
+                  ? 'Error'
+                  : 'N/A'}
           </span>
         </div>
         <div className="stat-item chart-item">
