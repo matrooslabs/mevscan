@@ -20,6 +20,9 @@ import type {
   TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
+  AtomicArbResponse,
+  CexDexQuoteResponse,
+  LiquidationResponse,
 } from '../../shared/types'
 
 // Initialize API client - you may want to configure this based on your environment
@@ -799,5 +802,53 @@ export function usePeriodicApiRefreshByKeys(
   )
 
   return { refresh, isRefreshing, pause, resume, isPaused }
+}
+
+/**
+ * Query hook for fetching atomic arbitrage data by transaction hash
+ * @param txHash - Transaction hash
+ * @returns Query result with atomic arbitrage data
+ */
+export function useAtomicArb(txHash: string): UseQueryResult<AtomicArbResponse, Error> {
+  return useQuery({
+    queryKey: ['atomic-arb', txHash],
+    queryFn: async () => {
+      const data = await apiClient.getAtomicArb(txHash)
+      return data
+    },
+    enabled: !!txHash, // Only run query if txHash is provided
+  })
+}
+
+/**
+ * Query hook for fetching CexDex quote data by transaction hash
+ * @param txHash - Transaction hash
+ * @returns Query result with CexDex quote data
+ */
+export function useCexDexQuote(txHash: string): UseQueryResult<CexDexQuoteResponse, Error> {
+  return useQuery({
+    queryKey: ['cexdex-quote', txHash],
+    queryFn: async () => {
+      const data = await apiClient.getCexDexQuote(txHash)
+      return data
+    },
+    enabled: !!txHash, // Only run query if txHash is provided
+  })
+}
+
+/**
+ * Query hook for fetching liquidation data by transaction hash
+ * @param txHash - Transaction hash
+ * @returns Query result with liquidation data
+ */
+export function useLiquidationDetails(txHash: string): UseQueryResult<LiquidationResponse, Error> {
+  return useQuery({
+    queryKey: ['liquidation-details', txHash],
+    queryFn: async () => {
+      const data = await apiClient.getLiquidationByTxHash(txHash)
+      return data
+    },
+    enabled: !!txHash, // Only run query if txHash is provided
+  })
 }
 

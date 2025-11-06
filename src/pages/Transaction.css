@@ -160,6 +160,12 @@
 
 .hash-full {
   font-family: var(--font-family-mono);
+  transition: color var(--transition-base);
+}
+
+.hash-full:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
 }
 
 .copy-button {

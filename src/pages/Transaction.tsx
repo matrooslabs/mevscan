@@ -2,6 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useTransaction } from '../hooks/useApi'
 import type { Transaction } from '../../shared/types'
+import AtomicMEVDetails from '../components/AtomicMEVDetails'
+import CexDexMEVDetails from '../components/CexDexMEVDetails'
+import LiquidationMEVDetails from '../components/LiquidationMEVDetails'
 import './Transaction.css'
 
 function Transaction() {
@@ -48,11 +51,6 @@ function Transaction() {
     gas: '0',
     gasPrice: '0',
     status: 'unknown',
-  }
-
-  const formatHash = (hash: string) => {
-    if (!hash || hash.length < 12) return hash
-    return `${hash.slice(0, 12)}...`
   }
 
   const formatAddress = (address: string) => {
@@ -118,7 +116,17 @@ function Transaction() {
             <div className="overview-item-full">
               <span className="overview-label">Transaction Hash:</span>
               <span className="overview-value monospace">
-                <span className="hash-full">{transaction.hash}</span>
+                <a
+                  href={`/transaction/${transaction.hash}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate(`/transaction/${transaction.hash}`)
+                  }}
+                  className="hash-full"
+                  style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+                >
+                  {transaction.hash}
+                </a>
                 <button 
                   className={`copy-button ${copiedHash === 'txHash' ? 'copied' : ''}`}
                   title={copiedHash === 'txHash' ? 'Copied!' : 'Copy hash'}
@@ -140,7 +148,7 @@ function Transaction() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="external-link-button"
-                  title="View on Etherscan"
+                  title="View on Arbiscan"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M10.5 3.5H11.5C12.0523 3.5 12.5 3.94772 12.5 4.5V11.5C12.5 12.0523 12.0523 12.5 11.5 12.5H2.5C1.94772 12.5 1.5 12.0523 1.5 11.5V2.5C1.5 1.94772 1.94772 1.5 2.5 1.5H7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -206,6 +214,12 @@ function Transaction() {
                 </span>
               </div>
               <div className="overview-item">
+                <span className="overview-label">MEV Type:</span>
+                <span className="overview-value">
+                  {transaction.mevType && transaction.mevType !== 'N/A' ? transaction.mevType : 'N/A'}
+                </span>
+              </div>
+              <div className="overview-item">
                 <span className="overview-label">Express Lane Controller:</span>
                 <span className="overview-value monospace">
                   {transaction.expressLaneController ? (
@@ -225,16 +239,33 @@ function Transaction() {
         </div>
 
         {/* MEV Overview Section */}
-        <div className="transaction-section">
-          <div className="section-header">
-            <h2>MEV Overview</h2>
-          </div>
-          <div className="section-content">
-            <div className="empty-state">
-              MEV Overview section coming soon
+        {transaction.mevType && transaction.mevType !== 'N/A' && transaction.hash && (
+          <div className="transaction-section">
+            <div className="section-header">
+              <h2>MEV Overview</h2>
+            </div>
+            <div className="section-content">
+              {(() => {
+                const mevType = transaction.mevType.toLowerCase()
+                // Normalize mevType to match our component selection
+                // Server returns: 'AtomicArb', 'CexDexQuotes', 'Liquidation'
+                if (mevType === 'atomic' || mevType === 'atomicarb' || mevType === 'atomic_arb') {
+                  return <AtomicMEVDetails txHash={transaction.hash} />
+                } else if (mevType === 'cexdex' || mevType === 'cexdexquotes' || mevType === 'cex_dex_quotes') {
+                  return <CexDexMEVDetails txHash={transaction.hash} />
+                } else if (mevType === 'liquidation' || mevType === 'liquidations') {
+                  return <LiquidationMEVDetails txHash={transaction.hash} />
+                } else {
+                  return (
+                    <div className="empty-state">
+                      MEV type "{transaction.mevType}" is not yet supported for detailed view
+                    </div>
+                  )
+                }
+              })()}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

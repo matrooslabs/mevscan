@@ -490,7 +490,7 @@ class ApiClient {
    * @param txHash - Transaction hash (64-character hex string, with or without 0x prefix)
    * @returns Promise resolving to liquidation data
    */
-  async getLiquidation(txHash: string): Promise<LiquidationResponse> {
+  async getLiquidationByTxHash(txHash: string): Promise<LiquidationResponse> {
     try {
       const response = await this.client.get<LiquidationResponse>('/api/mev/liquidations', {
         params: { tx_hash: txHash },
