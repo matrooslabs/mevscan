@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useBlock } from '../hooks/useApi'
 import type { Block } from '../../shared/types'
 import './Block.css'
@@ -13,6 +14,7 @@ interface BlockWithExtended extends Block {
 function Block() {
   const { block_number } = useParams<{ block_number: string }>()
   const navigate = useNavigate()
+  const [copiedHash, setCopiedHash] = useState<string | null>(null)
   const {
     data: blockData,
     isLoading,
@@ -60,6 +62,35 @@ function Block() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  const copyToClipboard = async (text: string, hashType: 'blockHash' | 'parentHash') => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedHash(hashType)
+      setTimeout(() => {
+        setCopiedHash(null)
+      }, 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        setCopiedHash(hashType)
+        setTimeout(() => {
+          setCopiedHash(null)
+        }, 2000)
+      } catch (err) {
+        console.error('Failed to copy:', err)
+      }
+      document.body.removeChild(textArea)
+    }
+  }
+
   return (
     <div className="block-page-container">
       {/* Header */}
@@ -73,7 +104,6 @@ function Block() {
           </button>
           <div className="block-title-section">
             <h1 className="block-title">Block #{block.number?.toLocaleString() || block_number}</h1>
-            <span className="block-status">Finalized</span>
           </div>
         </div>
       </div>
@@ -120,6 +150,14 @@ function Block() {
                 <span className="overview-label">Eth Value:</span>
                 <span className="overview-value">{block.ethValue || '0'} ETH</span>
               </div>
+              <div className="overview-item">
+                <span className="overview-label">Total MEV Profit:</span>
+                <span className="overview-value">
+                  {block.totalMevProfitUsd !== undefined 
+                    ? `$${block.totalMevProfitUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : 'N/A'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -139,11 +177,21 @@ function Block() {
                 <div className="details-label">Block Hash:</div>
                 <div className="details-value monospace">
                   <span className="hash-full">{block.hash}</span>
-                  <button className="copy-button" title="Copy hash">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M9.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5C1 10.3284 1.67157 11 2.5 11H4.5V12.5C4.5 13.3284 5.17157 14 6 14H11.5C12.3284 14 13 13.3284 13 12.5V5.5C13 4.67157 12.3284 4 11.5 4H9.5V1Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                      <path d="M9.5 1V4H13" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    </svg>
+                  <button 
+                    className={`copy-button ${copiedHash === 'blockHash' ? 'copied' : ''}`}
+                    title={copiedHash === 'blockHash' ? 'Copied!' : 'Copy hash'}
+                    onClick={() => copyToClipboard(block.hash, 'blockHash')}
+                  >
+                    {copiedHash === 'blockHash' ? (
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M11.6667 3.5L5.25 9.91667L2.33334 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M9.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5C1 10.3284 1.67157 11 2.5 11H4.5V12.5C4.5 13.3284 5.17157 14 6 14H11.5C12.3284 14 13 13.3284 13 12.5V5.5C13 4.67157 12.3284 4 11.5 4H9.5V1Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M9.5 1V4H13" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
@@ -152,45 +200,23 @@ function Block() {
                   <div className="details-label">Parent Hash:</div>
                   <div className="details-value monospace">
                     <span className="hash-full">{formatHash(block.parentHash)}</span>
-                    <button className="copy-button" title="Copy hash">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M9.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5C1 10.3284 1.67157 11 2.5 11H4.5V12.5C4.5 13.3284 5.17157 14 6 14H11.5C12.3284 14 13 13.3284 13 12.5V5.5C13 4.67157 12.3284 4 11.5 4H9.5V1Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                        <path d="M9.5 1V4H13" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                      </svg>
+                    <button 
+                      className={`copy-button ${copiedHash === 'parentHash' ? 'copied' : ''}`}
+                      title={copiedHash === 'parentHash' ? 'Copied!' : 'Copy hash'}
+                      onClick={() => copyToClipboard(block.parentHash || '', 'parentHash')}
+                    >
+                      {copiedHash === 'parentHash' ? (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M11.6667 3.5L5.25 9.91667L2.33334 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M9.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5C1 10.3284 1.67157 11 2.5 11H4.5V12.5C4.5 13.3284 5.17157 14 6 14H11.5C12.3284 14 13 13.3284 13 12.5V5.5C13 4.67157 12.3284 4 11.5 4H9.5V1Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                          <path d="M9.5 1V4H13" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        </svg>
+                      )}
                     </button>
                   </div>
-                </div>
-              )}
-              {block.number && block.number > 0 && (
-                <div className="details-row">
-                  <div className="details-label">Parent Block:</div>
-                  <div className="details-value">
-                    <a href={`/blocks/${block.number - 1}`} onClick={(e) => {
-                      e.preventDefault()
-                      navigate(`/blocks/${block.number - 1}`)
-                    }}>
-                      Block #{((block.number - 1) || 0).toLocaleString()}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {block.minerAddress && (
-                <div className="details-row">
-                  <div className="details-label">Miner:</div>
-                  <div className="details-value">
-                    {block.miner || 'Unknown'}
-                    {block.minerAddress !== '0x0000000000000000000000000000000000000000' && (
-                      <span className="monospace address-link" onClick={() => navigate(`/address/${block.minerAddress}`)}>
-                        {' '}{formatAddress(block.minerAddress)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-              {block.timeTaken && (
-                <div className="details-row">
-                  <div className="details-label">Time Taken:</div>
-                  <div className="details-value">{block.timeTaken}</div>
                 </div>
               )}
             </div>
@@ -208,8 +234,10 @@ function Block() {
               <div className="transactions-table">
                 <div className="transactions-table-header">
                   <div className="tx-col-hash">Hash</div>
+                  <div className="tx-col-eoa">EOA</div>
                   <div className="tx-col-mev-contract">MEV Contract</div>
                   <div className="tx-col-mev-type">MEV Type</div>
+                  <div className="tx-col-profit">Profit</div>
                   <div className="tx-col-timeboosted">Timeboosted</div>
                 </div>
                 <div className="transactions-list">
@@ -223,11 +251,22 @@ function Block() {
                           {formatHash(bundle.txHash)}
                         </a>
                       </div>
+                      <div className="transaction-eoa monospace">
+                        <a href={`/address/${bundle.eoa}`} onClick={(e) => {
+                          e.preventDefault()
+                          navigate(`/address/${bundle.eoa}`)
+                        }}>
+                          {formatAddress(bundle.eoa)}
+                        </a>
+                      </div>
                       <div className="transaction-mev-contract monospace">
                         {bundle.mevContract ? formatAddress(bundle.mevContract) : '—'}
                       </div>
                       <div className="transaction-mev-type">
                         {bundle.mevType || '—'}
+                      </div>
+                      <div className="transaction-profit">
+                        ${bundle.profitUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="transaction-timeboosted">
                         {bundle.timeboosted ? (

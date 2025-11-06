@@ -383,6 +383,7 @@ app.get('/api/blocks/:blockNumber', async (
         bh.bribe_usd as bundle_bribe_usd,
         bh.mev_type as mev_type,
         bh.mev_contract as mev_contract,
+        bh.eoa as eoa,
         bh.timeboosted as timeboosted,
         bh.express_lane_controller as express_lane_controller,
         bh.express_lane_price_usd as express_lane_price_usd,
@@ -415,6 +416,7 @@ app.get('/api/blocks/:blockNumber', async (
       bundle_bribe_usd: number;
       mev_type: string;
       mev_contract: string | null;
+      eoa: string;
       timeboosted: boolean;
       express_lane_controller: string | null;
       express_lane_price_usd: number | null;
@@ -440,6 +442,7 @@ app.get('/api/blocks/:blockNumber', async (
       bribeUsd: row.bundle_bribe_usd,
       mevType: row.mev_type,
       mevContract: row.mev_contract,
+      eoa: row.eoa,
       timeboosted: row.timeboosted,
       expressLaneController: row.express_lane_controller,
       expressLanePriceUsd: row.express_lane_price_usd,
@@ -478,6 +481,7 @@ app.get('/api/blocks/:blockNumber', async (
       timeTaken: '12 secs',
       ethValue: '0.00000', // Can be calculated from total_bribe if needed
       gasUsed: firstRow.total_bribe, // Using total_bribe as placeholder, adjust as needed
+      totalMevProfitUsd: firstRow.total_mev_profit_usd,
       transactions: bundles.map(b => b.txHash),
       bundles: bundles,
     };

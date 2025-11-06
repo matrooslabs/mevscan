@@ -1,4 +1,4 @@
-.block-page-container {
+.transaction-page-container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -8,13 +8,13 @@
 }
 
 /* Header */
-.block-header {
+.transaction-header {
   background-color: var(--color-bg-primary);
   border-bottom: 1px solid var(--color-border-primary);
   padding: var(--spacing-lg) var(--spacing-xl);
 }
 
-.block-header-content {
+.transaction-header-content {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -35,41 +35,28 @@
   color: var(--color-primary-hover);
 }
 
-.block-title-section {
+.transaction-title-section {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
 }
 
-.block-title {
+.transaction-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
 }
 
-.block-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  background-color: #10b981;
-  color: white;
-  border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 /* Main Content */
-.block-content {
+.transaction-content {
   padding: var(--spacing-xl);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 /* Section */
-.block-section {
+.transaction-section {
   background-color: var(--color-bg-primary);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-primary);
@@ -95,45 +82,8 @@
   letter-spacing: 0.05em;
 }
 
-.transaction-count {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
 .section-content {
   padding: var(--spacing-lg);
-}
-
-/* Overview Grid */
-.overview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.overview-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.overview-label {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.overview-value {
-  font-size: 1rem;
-  color: var(--color-text-primary);
-  font-weight: 500;
-}
-
-.express-lane-badge {
-  color: var(--color-primary);
-  font-size: 0.875rem;
-  margin-left: 0.5rem;
 }
 
 /* Details Table */
@@ -170,6 +120,44 @@
   gap: 0.5rem;
 }
 
+/* Overview Item Full Width */
+.overview-item-full {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* Overview Grid */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.overview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.overview-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.overview-value {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .hash-full {
   font-family: var(--font-family-mono);
 }
@@ -200,121 +188,17 @@
   color: #10b981;
 }
 
-.address-link {
-  color: var(--color-primary);
-  cursor: pointer;
-  margin-left: 0.5rem;
-}
-
-.address-link:hover {
-  text-decoration: underline;
-}
-
 .monospace {
   font-family: var(--font-family-mono);
 }
 
-/* Transactions Table */
-.transactions-table {
-  width: 100%;
-}
-
-.transactions-table-header {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr;
-  gap: var(--spacing-md);
-  padding: 0.875rem 0;
-  border-bottom: 2px solid var(--color-border-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.tx-col-hash,
-.tx-col-eoa,
-.tx-col-mev-contract,
-.tx-col-mev-type,
-.tx-col-profit,
-.tx-col-timeboosted {
-  padding: 0 var(--spacing-sm);
-}
-
-.transactions-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.transaction-row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr;
-  gap: var(--spacing-md);
-  align-items: center;
-  padding: 0.875rem 0;
-  border-bottom: 1px solid var(--color-border-primary);
-}
-
-.transaction-row:last-child {
-  border-bottom: none;
-}
-
-.transaction-row:hover {
-  background-color: var(--color-bg-quaternary);
-  margin: 0 calc(-1 * var(--spacing-lg));
-  padding-left: var(--spacing-lg);
-  padding-right: var(--spacing-lg);
-}
-
-.transaction-hash {
-  font-size: 0.875rem;
-  padding: 0 var(--spacing-sm);
-}
-
-.transaction-hash a {
+.monospace a {
   color: var(--color-primary);
   text-decoration: none;
 }
 
-.transaction-hash a:hover {
+.monospace a:hover {
   text-decoration: underline;
-}
-
-.transaction-mev-contract {
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  padding: 0 var(--spacing-sm);
-}
-
-.transaction-eoa {
-  font-size: 0.875rem;
-  padding: 0 var(--spacing-sm);
-}
-
-.transaction-eoa a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.transaction-eoa a:hover {
-  text-decoration: underline;
-}
-
-.transaction-mev-type {
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  padding: 0 var(--spacing-sm);
-}
-
-.transaction-profit {
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  font-weight: 500;
-  padding: 0 var(--spacing-sm);
-}
-
-.transaction-timeboosted {
-  padding: 0 var(--spacing-sm);
 }
 
 .timeboosted-badge {
@@ -328,6 +212,14 @@
 }
 
 .timeboosted-no {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Empty State */
+.empty-state {
+  padding: var(--spacing-xl);
+  text-align: center;
   color: var(--color-text-secondary);
   font-size: 0.875rem;
 }
@@ -359,15 +251,15 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .block-content {
+  .transaction-content {
     padding: var(--spacing-md);
   }
 
-  .block-header {
+  .transaction-header {
     padding: var(--spacing-md);
   }
 
-  .block-title {
+  .transaction-title {
     font-size: 1.25rem;
   }
 
@@ -383,35 +275,6 @@
 
   .details-label {
     padding-right: 0;
-  }
-
-  .transactions-table-header {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .transaction-row {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .tx-col-hash,
-  .tx-col-eoa,
-  .tx-col-mev-contract,
-  .tx-col-mev-type,
-  .tx-col-profit,
-  .tx-col-timeboosted {
-    padding: 0;
-    margin-bottom: 0.5rem;
-  }
-
-  .transaction-hash,
-  .transaction-eoa,
-  .transaction-mev-contract,
-  .transaction-mev-type,
-  .transaction-profit,
-  .transaction-timeboosted {
-    padding: 0;
   }
 }
 

@@ -47,6 +47,7 @@ export interface BlockBundle {
   bribeUsd: number;
   mevType: string;
   mevContract: string | null;
+  eoa: string;
   timeboosted: boolean;
   expressLaneController: string | null;
   expressLanePriceUsd: number | null;
@@ -67,6 +68,7 @@ export interface Block {
   timeTaken?: string;
   ethValue?: string;
   gasUsed?: number | string;
+  totalMevProfitUsd?: number;
   transactions?: string[];
   bundles?: BlockBundle[];
 }
