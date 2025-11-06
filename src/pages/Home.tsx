@@ -48,7 +48,7 @@ function Home() {
       }
       // Otherwise assume it's a transaction hash
       else {
-        navigate(`/tx/${searchTerm}`);
+        navigate(`/transaction/${searchTerm}`);
       }
     }
   };
@@ -275,11 +275,11 @@ function Home() {
                           <div className="tx-info">
                             <div className="tx-hash-time">
                               <a
-                                href={`/tx/${tx.hash}`}
+                                href={`/transaction/${tx.hash}`}
                                 className="link-primary tx-hash"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/tx/${tx.hash}`);
+                                  navigate(`/transaction/${tx.hash}`);
                                 }}
                               >
                                 {tx.hash.substring(0, 16)}...

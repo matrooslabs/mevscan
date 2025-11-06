@@ -15,7 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ask" element={<div>Ask Page - Coming Soon</div>} />
-        <Route path="/tx/:tx_hash" element={<Transaction />} />
+        <Route path="/transaction/:tx_hash" element={<Transaction />} />
         <Route path="/blocks/:block_number" element={<Block />} />
         <Route path="/address/:address" element={<Address />} />
       </Routes>
