@@ -230,7 +230,7 @@ function Address() {
                           <span className="breakdown-label">{mevType}:</span>
                           <span className="breakdown-value">
                             {count.toLocaleString()}
-                            {addr.statistics.totalTransactions > 0 && (
+                            {addr.statistics?.totalTransactions && addr.statistics.totalTransactions > 0 && (
                               <span className="percentage-badge">
                                 ({((count / addr.statistics.totalTransactions) * 100).toFixed(1)}%)
                               </span>
@@ -383,15 +383,15 @@ function Address() {
                       Page {page} of {addr.mevTransactions.pagination.totalPages}
                     </span>
                     <button
-                      onClick={() => setPage(p => Math.min(addr.mevTransactions.pagination!.totalPages, p + 1))}
-                      disabled={page >= addr.mevTransactions.pagination.totalPages}
+                      onClick={() => setPage(p => Math.min(addr.mevTransactions?.pagination?.totalPages ?? 1, p + 1))}
+                      disabled={page >= (addr.mevTransactions?.pagination?.totalPages ?? 1)}
                       className="pagination-button"
                     >
                       Next
                     </button>
                     <button
-                      onClick={() => setPage(addr.mevTransactions.pagination!.totalPages)}
-                      disabled={page >= addr.mevTransactions.pagination.totalPages}
+                      onClick={() => setPage(addr.mevTransactions?.pagination?.totalPages ?? 1)}
+                      disabled={page >= (addr.mevTransactions?.pagination?.totalPages ?? 1)}
                       className="pagination-button"
                     >
                       Last
