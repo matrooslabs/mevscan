@@ -10,7 +10,7 @@ COPY package*.json ./
 COPY shared/package.json ./shared/
 COPY server/package.json ./server/
 
-# Install dependencies (this will install all workspaces)
+# Install dependencies (this will install all workspaces and create symlinks)
 RUN npm ci
 
 # Copy source files
@@ -33,11 +33,13 @@ COPY package*.json ./
 COPY shared/package.json ./shared/
 COPY server/package.json ./server/
 
-# Install production dependencies only (workspace-aware)
-RUN npm ci --only=production --workspace=server
+# Install production dependencies for all workspaces to ensure proper linking
+# This creates the workspace symlink for @mevscan/shared
+RUN npm ci --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/server/dist ./server/dist
+# Copy shared source files (needed for runtime resolution)
 COPY --from=builder /app/shared ./shared
 
 WORKDIR /app/server

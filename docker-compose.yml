@@ -1,9 +1,15 @@
 version: '3.8'
 
+# Docker Compose configuration for MEVScan workspace
+# Both services use root context (.) to access all workspace directories:
+# - shared/ (@mevscan/shared)
+# - server/ (@mevscan/server) 
+# - client/ (@mevscan/client)
+
 services:
   api:
     build:
-      context: .
+      context: .  # Root context allows access to all workspaces
       dockerfile: server/Dockerfile
     container_name: mevscan-api
     environment:
@@ -24,8 +30,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: .  # Root context allows access to all workspaces
+      dockerfile: client/Dockerfile
     container_name: mevscan-web
     ports:
       - "8080:80" 

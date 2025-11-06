@@ -4,6 +4,11 @@ This guide explains how to use Docker Compose to run the MEVScan application in 
 
 ## Overview
 
+The MEVScan project uses npm workspaces with three packages:
+- **shared** (`@mevscan/shared`): Common TypeScript type definitions
+- **server** (`@mevscan/server`): Express.js backend server
+- **client** (`@mevscan/client`): React frontend application
+
 The Docker Compose setup includes two services:
 - **API**: Express.js backend server (port 3001)
 - **Web**: React frontend application served via nginx (port 8080)
@@ -85,6 +90,8 @@ docker-compose down -v
 - **Restart Policy**: `unless-stopped` (automatically restarts on failure)
 
 The API service:
+- Built from the `server/` workspace (`@mevscan/server`)
+- Uses shared types from `shared/` workspace (`@mevscan/shared`)
 - Connects to ClickHouse database using environment variables
 - Exposes a REST API for MEV data queries
 - Includes health check endpoint for monitoring
@@ -97,6 +104,8 @@ The API service:
 - **Restart Policy**: `unless-stopped`
 
 The web service:
+- Built from the `client/` workspace (`@mevscan/client`)
+- Uses shared types from `shared/` workspace (`@mevscan/shared`)
 - Serves the React application via nginx
 - Proxies `/api/*` requests to the API service
 - Proxies `/health` requests to the API service
@@ -119,6 +128,13 @@ If you've made changes to the code, rebuild the images:
 ```bash
 docker-compose up --build -d
 ```
+
+**Note:** The Docker build process:
+1. Copies root `package.json` and workspace package files
+2. Installs all workspace dependencies using `npm ci`
+3. Copies source files from `shared/`, `server/`, and `client/` directories
+4. Builds each workspace independently
+5. Creates production images with only necessary files
 
 ### Restart a Specific Service
 
@@ -166,6 +182,17 @@ docker-compose down --rmi all
 
 ## Architecture
 
+### Project Structure
+```
+mevscan/
+├── shared/          # @mevscan/shared - Common TypeScript types
+├── server/          # @mevscan/server - Express.js API
+├── client/          # @mevscan/client - React application
+├── package.json     # Root workspace configuration
+└── docker-compose.yml
+```
+
+### Service Architecture
 ```
 ┌─────────────────┐
 │   Browser       │
@@ -178,6 +205,8 @@ docker-compose down --rmi all
 │   Web Service   │
 │  (nginx)        │
 │  Port: 8080     │
+│  Built from:    │
+│  client/        │
 └────────┬───────┘
          │
          ├── Static Files (React App)
@@ -190,6 +219,10 @@ docker-compose down --rmi all
 │   API Service   │
 │  (Express)      │
 │  Port: 3001     │
+│  Built from:    │
+│  server/        │
+│  Uses:          │
+│  @mevscan/shared│
 └────────┬───────┘
          │
          │ SQL Queries
@@ -280,8 +313,23 @@ If you encounter build errors:
 
 For local development, it's recommended to run services directly (not via Docker):
 
-- **Frontend**: `npm run dev` (in project root)
-- **Backend**: `npm run dev` (in `server/` directory)
+**Prerequisites:**
+1. Install dependencies from the root directory:
+   ```bash
+   npm install
+   ```
+   This will install all workspace dependencies (shared, server, client).
+
+2. Run services:
+   - **Frontend**: `npm run dev` (from project root) - starts React dev server on localhost:5173
+   - **Backend**: `npm run dev:server` (from project root) or `npm run dev` (from `server/` directory)
+   - **Backend (watch mode)**: `npm run dev:watch` (from project root) or `npm run dev:watch` (from `server/` directory)
+
+**Workspace Structure:**
+- Root: Contains workspace configuration and shared scripts
+- `shared/`: Type definitions used by both server and client
+- `server/`: Express.js API server
+- `client/`: React application
 
 ### Production
 

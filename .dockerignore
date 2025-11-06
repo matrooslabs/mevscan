@@ -9,4 +9,8 @@ dist
 coverage
 .vscode
 .idea
+# Exclude workspace-level package-lock.json files (only root one is needed for workspaces)
+shared/package-lock.json
+server/package-lock.json
+client/package-lock.json
 
