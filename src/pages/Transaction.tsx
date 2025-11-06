@@ -135,6 +135,19 @@ function Transaction() {
                     </svg>
                   )}
                 </button>
+                <a
+                  href={`https://arbiscan.io/tx/${transaction.hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="external-link-button"
+                  title="View on Etherscan"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M10.5 3.5H11.5C12.0523 3.5 12.5 3.94772 12.5 4.5V11.5C12.5 12.0523 12.0523 12.5 11.5 12.5H2.5C1.94772 12.5 1.5 12.0523 1.5 11.5V2.5C1.5 1.94772 1.94772 1.5 2.5 1.5H7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <path d="M9.5 1.5H12.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <path d="M7.5 6.5L12.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  </svg>
+                </a>
               </span>
             </div>
             <div className="overview-grid">

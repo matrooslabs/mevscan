@@ -188,6 +188,25 @@
   color: #10b981;
 }
 
+.external-link-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base);
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.external-link-button:hover {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
 .monospace {
   font-family: var(--font-family-mono);
 }
