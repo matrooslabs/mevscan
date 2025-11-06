@@ -168,12 +168,12 @@ function TimeboostSection({
                     variant="h4" 
                     component="div"
                     sx={{ 
-                      fontSize: '2rem',
+                      fontSize: '3rem',
                       fontWeight: 600,
                       color: 'text.primary'
                     }}
                   >
-                    {timeboostGrossRevenue.data?.total_second_price?.toFixed(2) || '0.00'}
+                    {timeboostGrossRevenue.data?.total_second_price?.toFixed(2) || '0.00'} ETH
                   </Typography>
                 </Box>
               )}
