@@ -2986,7 +2986,7 @@ app.get('/health', (req: Request, res: Response<HealthResponse>) => {
 // Root endpoint
 app.get('/', (req: Request, res: Response<RootResponse>) => {
   res.json({ 
-    message: 'MEV GPT API Server',
+    message: 'MEVScan API Server',
     version: '1.0.0',
     endpoints: [
       'GET /api/latest-transactions',

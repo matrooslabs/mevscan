@@ -1,7 +1,7 @@
 {
-  "name": "mevgpt-server",
+  "name": "mevscan-server",
   "version": "1.0.0",
-  "description": "Express.js API server for MEV GPT",
+  "description": "Express.js API server for MEVScan",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

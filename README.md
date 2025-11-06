@@ -1,4 +1,4 @@
-# MEV GPT
+# MEVScan
 
 A React-based web application for viewing and analyzing blockchain data, specifically focused on MEV (Maximal Extractable Value) extraction data.
 
@@ -64,7 +64,7 @@ See [ENV_SETUP.md](./ENV_SETUP.md) for detailed instructions on configuring envi
 ## Project Structure
 
 ```
-mevgpt/
+mevscan/
 ├── server/          # Express.js API server (TypeScript)
 ├── src/             # React application
 │   ├── components/  # React components

@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript type definitions for MEV GPT API
+ * Shared TypeScript type definitions for MEVScan API
  * Used by both server and client
  */
 /**

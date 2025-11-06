@@ -1,6 +1,6 @@
-# MEV GPT API Server
+# MEVScan API Server
 
-Express.js server that provides dummy API responses for the MEV GPT application.
+Express.js server that provides dummy API responses for the MEVScan application.
 
 ## Installation
 
