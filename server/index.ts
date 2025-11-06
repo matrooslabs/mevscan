@@ -302,11 +302,12 @@ app.get('/api/latest-blocks', async (
       SELECT 
         block_hash,
         block_number,
-        mev_count.mev_count as mev_count,
+        arraySum(mev_count.mev_count) as mev_count,
         total_mev_profit_usd as total_profit,
         timeboosted_tx_count,
         timeboosted_tx_mev_count
       FROM mev.mev_blocks
+      WHERE mev_count > 0 OR timeboosted_tx_count > 0 OR timeboosted_tx_mev_count > 0
       ORDER BY block_number DESC
       LIMIT ${limit}
     `;
@@ -373,7 +374,7 @@ app.get('/api/blocks/:blockNumber', async (
         mb.block_hash as block_hash,
         mb.block_number as block_number,
         mb.eth_price as eth_price,
-        mb.mev_count.mev_count as mev_count,
+        arraySum(mb.mev_count.mev_count) as mev_count,
         mb.total_mev_profit_usd as total_mev_profit_usd,
         mb.timeboosted_tx_count as timeboosted_tx_count,
         mb.timeboosted_tx_mev_count as timeboosted_tx_mev_count,
