@@ -8,11 +8,13 @@ function Address() {
   const { address } = useParams<{ address: string }>()
   const navigate = useNavigate()
   const [copiedHash, setCopiedHash] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const {
     data: addressData,
     isLoading,
     error,
-  } = useAddress(address || '')
+  } = useAddress(address || '', page, pageSize)
 
   if (isLoading) {
     return (
@@ -50,7 +52,12 @@ function Address() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`
   }
 
-  const copyToClipboard = async (text: string, hashType: 'address') => {
+  const formatHash = (hash: string) => {
+    if (!hash || hash.length < 12) return hash
+    return `${hash.slice(0, 10)}...${hash.slice(-8)}`
+  }
+
+  const copyToClipboard = async (text: string, hashType: 'address' | 'txHash') => {
     try {
       await navigator.clipboard.writeText(text)
       setCopiedHash(hashType)
@@ -165,6 +172,266 @@ function Address() {
             </div>
           </div>
         </div>
+
+        {/* Statistics Section */}
+        {addr.statistics && (
+          <div className="address-section">
+            <div className="section-header">
+              <h2>{addr.isContract ? 'Contract' : 'EOA'} Statistics</h2>
+            </div>
+            <div className="section-content">
+              <div className="overview-grid">
+                <div className="overview-item">
+                  <span className="overview-label">Total Profit (USD):</span>
+                  <span className="overview-value">
+                    ${addr.statistics.totalProfitUsd.toLocaleString(undefined, { 
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2 
+                    })}
+                  </span>
+                </div>
+                <div className="overview-item">
+                  <span className="overview-label">Total Bribe (USD):</span>
+                  <span className="overview-value">
+                    ${addr.statistics.totalBribeUsd.toLocaleString(undefined, { 
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2 
+                    })}
+                  </span>
+                </div>
+                <div className="overview-item">
+                  <span className="overview-label">Total Transactions:</span>
+                  <span className="overview-value">
+                    {addr.statistics.totalTransactions.toLocaleString()}
+                  </span>
+                </div>
+                <div className="overview-item">
+                  <span className="overview-label">Timeboosted Transactions:</span>
+                  <span className="overview-value">
+                    {addr.statistics.timeboostedCount.toLocaleString()}
+                    {addr.statistics.totalTransactions > 0 && (
+                      <span className="percentage-badge">
+                        ({((addr.statistics.timeboostedCount / addr.statistics.totalTransactions) * 100).toFixed(1)}%)
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+              
+              {/* MEV Type Breakdown */}
+              {Object.keys(addr.statistics.mevTypeBreakdown).length > 0 && (
+                <div className="mev-type-breakdown">
+                  <h3 className="breakdown-title">MEV Type Breakdown</h3>
+                  <div className="breakdown-grid">
+                    {Object.entries(addr.statistics.mevTypeBreakdown)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([mevType, count]) => (
+                        <div key={mevType} className="breakdown-item">
+                          <span className="breakdown-label">{mevType}:</span>
+                          <span className="breakdown-value">
+                            {count.toLocaleString()}
+                            {addr.statistics.totalTransactions > 0 && (
+                              <span className="percentage-badge">
+                                ({((count / addr.statistics.totalTransactions) * 100).toFixed(1)}%)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MEV Transactions List Section */}
+        {addr.mevTransactions && addr.mevTransactions.transactions.length > 0 && (
+          <div className="address-section">
+            <div className="section-header">
+              <h2>MEV Transactions List</h2>
+              {addr.mevTransactions.pagination && (
+                <div className="pagination-info">
+                  Showing {((addr.mevTransactions.pagination.page - 1) * addr.mevTransactions.pagination.pageSize) + 1} - {Math.min(addr.mevTransactions.pagination.page * addr.mevTransactions.pagination.pageSize, addr.mevTransactions.pagination.total)} of {addr.mevTransactions.pagination.total.toLocaleString()}
+                </div>
+              )}
+            </div>
+            <div className="section-content">
+              <div className="transactions-table">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Transaction Hash</th>
+                      <th>Block</th>
+                      <th>MEV Type</th>
+                      <th>Profit (USD)</th>
+                      <th>Bribe (USD)</th>
+                      {addr.isContract ? <th>EOA</th> : <th>MEV Contract</th>}
+                      <th>Timeboosted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {addr.mevTransactions.transactions.map((tx, index) => (
+                      <tr key={`${tx.txHash}-${index}`}>
+                        <td className="monospace">
+                          <a
+                            href={`/transaction/${tx.txHash}`}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              navigate(`/transaction/${tx.txHash}`)
+                            }}
+                            className="hash-link"
+                          >
+                            {formatHash(tx.txHash)}
+                          </a>
+                        </td>
+                        <td>
+                          <a
+                            href={`/block/${tx.blockNumber}`}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              navigate(`/block/${tx.blockNumber}`)
+                            }}
+                            className="block-link"
+                          >
+                            {tx.blockNumber.toLocaleString()}
+                          </a>
+                        </td>
+                        <td>
+                          <span className="mev-type-badge">{tx.mevType}</span>
+                        </td>
+                        <td>
+                          ${tx.profitUsd.toLocaleString(undefined, { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </td>
+                        <td>
+                          ${tx.bribeUsd.toLocaleString(undefined, { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </td>
+                        {addr.isContract ? (
+                          <td className="monospace">
+                            {tx.eoa ? (
+                              <a
+                                href={`/address/${tx.eoa}`}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  navigate(`/address/${tx.eoa}`)
+                                }}
+                                className="address-link"
+                              >
+                                {formatAddress(tx.eoa)}
+                              </a>
+                            ) : (
+                              <span className="text-muted">N/A</span>
+                            )}
+                          </td>
+                        ) : (
+                          <td className="monospace">
+                            {tx.mevContract ? (
+                              <a
+                                href={`/address/${tx.mevContract}`}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  navigate(`/address/${tx.mevContract}`)
+                                }}
+                                className="address-link"
+                              >
+                                {formatAddress(tx.mevContract)}
+                              </a>
+                            ) : (
+                              <span className="text-muted">N/A</span>
+                            )}
+                          </td>
+                        )}
+                        <td>
+                          {tx.timeboosted ? (
+                            <span className="timeboosted-badge">Yes</span>
+                          ) : (
+                            <span className="timeboosted-no">No</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination Controls */}
+              {addr.mevTransactions.pagination && addr.mevTransactions.pagination.totalPages > 1 && (
+                <div className="pagination-controls">
+                  <div className="pagination-left">
+                    <label htmlFor="page-size-select">Items per page:</label>
+                    <select
+                      id="page-size-select"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value))
+                        setPage(1) // Reset to first page when changing page size
+                      }}
+                      className="page-size-select"
+                    >
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                  <div className="pagination-right">
+                    <button
+                      onClick={() => setPage(1)}
+                      disabled={page === 1}
+                      className="pagination-button"
+                    >
+                      First
+                    </button>
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="pagination-button"
+                    >
+                      Previous
+                    </button>
+                    <span className="pagination-page-info">
+                      Page {page} of {addr.mevTransactions.pagination.totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage(p => Math.min(addr.mevTransactions.pagination!.totalPages, p + 1))}
+                      disabled={page >= addr.mevTransactions.pagination.totalPages}
+                      className="pagination-button"
+                    >
+                      Next
+                    </button>
+                    <button
+                      onClick={() => setPage(addr.mevTransactions.pagination!.totalPages)}
+                      disabled={page >= addr.mevTransactions.pagination.totalPages}
+                      className="pagination-button"
+                    >
+                      Last
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {addr.statistics && addr.statistics.totalTransactions === 0 && (
+          <div className="address-section">
+            <div className="section-header">
+              <h2>MEV Transactions List</h2>
+            </div>
+            <div className="section-content">
+              <div className="empty-state">
+                No MEV transactions found for this address.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

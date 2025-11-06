@@ -97,6 +97,53 @@ export interface Block {
 }
 
 /**
+ * MEV Transaction (unified for both EOA and contracts)
+ */
+export interface MEVTransaction {
+  txHash: string;
+  blockNumber: number;
+  txIndex: number;
+  profitUsd: number;
+  bribeUsd: number;
+  mevType: string;
+  mevContract: string | null; // For EOA: the contract used, for contracts: null
+  eoa: string | null; // For contracts: the EOA, for EOA: null
+  timeboosted: boolean;
+  expressLaneController: string | null;
+  expressLanePriceUsd: number | null;
+  expressLaneRound: number | null;
+}
+
+/**
+ * Pagination metadata
+ */
+export interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+/**
+ * Paginated MEV transactions response
+ */
+export interface PaginatedMEVTransactions {
+  transactions: MEVTransaction[];
+  pagination: PaginationInfo;
+}
+
+/**
+ * Address statistics
+ */
+export interface AddressStatistics {
+  totalProfitUsd: number;
+  totalBribeUsd: number;
+  totalTransactions: number;
+  timeboostedCount: number;
+  mevTypeBreakdown: Record<string, number>;
+}
+
+/**
  * Address response type
  */
 export interface Address {
@@ -110,6 +157,9 @@ export interface Address {
   transactions?: string[];
   firstSeen?: string;
   lastSeen?: string;
+  // New fields for enhanced address page
+  statistics?: AddressStatistics;
+  mevTransactions?: PaginatedMEVTransactions; // Paginated MEV transactions list
 }
 
 /**

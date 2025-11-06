@@ -8,6 +8,10 @@ import type {
   Block,
   BlockListItem,
   Address,
+  MEVTransaction,
+  AddressStatistics,
+  PaginatedMEVTransactions,
+  PaginationInfo,
   ErrorResponse,
   HealthResponse,
   RootResponse,
@@ -673,22 +677,344 @@ app.get('/api/transactions/:transactionId', async (
 // Get a specific address by identifier
 app.get('/api/addresses/:address', async (
   req: Request<{ address: string }>, 
-  res: Response<Address>
+  res: Response<Address | ErrorResponse>
 ) => {
+  try {
   const { address } = req.params;
-  
-  // Create dummy address data
+    const normalizedAddress = address.toLowerCase();
+    
+    // Pagination parameters
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const pageSize = Math.min(100, Math.max(10, parseInt(req.query.pageSize as string) || 20));
+    const offset = (page - 1) * pageSize;
+    
+    // First, check if address is a contract by looking at mev_contract column
+    // Also check if it appears as an EOA
+    const contractCheckQuery = `
+      SELECT 
+        mev_contract,
+        eoa
+      FROM mev.bundle_header
+      WHERE (lower(mev_contract) = '${normalizedAddress}' OR lower(eoa) = '${normalizedAddress}')
+      LIMIT 1
+    `;
+    
+    const contractCheckResult = await req.clickhouse.query({
+      query: contractCheckQuery,
+      format: 'JSONEachRow',
+    });
+    
+    const contractCheckData = await contractCheckResult.json<Array<{
+      mev_contract: string | null;
+      eoa: string;
+    }>>();
+    
+    const isContract = contractCheckData.length > 0 && 
+                       contractCheckData[0].mev_contract !== null &&
+                       contractCheckData[0].mev_contract.toLowerCase() === normalizedAddress;
+    
+    // Get total count for statistics and pagination
+    const countQuery = isContract
+      ? `SELECT count() as total FROM mev.bundle_header WHERE lower(mev_contract) = '${normalizedAddress}'`
+      : `SELECT count() as total FROM mev.bundle_header WHERE lower(eoa) = '${normalizedAddress}'`;
+    
+    const countResult = await req.clickhouse.query({
+      query: countQuery,
+      format: 'JSONEachRow',
+    });
+    
+    const countData = await countResult.json<Array<{ total: number }>>();
+    const totalCount = countData.length > 0 ? countData[0].total : 0;
+    
+    // Get paginated transactions
+    let mevTransactions: MEVTransaction[] = [];
+    
+    if (isContract) {
+      // For contracts: Get paginated transactions where mev_contract = address
+      const contractQuery = `
+        SELECT 
+          tx_hash,
+          block_number,
+          tx_index,
+          profit_usd,
+          bribe_usd,
+          mev_type,
+          eoa,
+          mev_contract,
+          timeboosted,
+          express_lane_controller,
+          express_lane_price_usd,
+          express_lane_round
+        FROM mev.bundle_header
+        WHERE lower(mev_contract) = '${normalizedAddress}'
+        ORDER BY block_number DESC, tx_index DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+      
+      const contractResult = await req.clickhouse.query({
+        query: contractQuery,
+        format: 'JSONEachRow',
+      });
+      
+      const contractData = await contractResult.json<Array<{
+        tx_hash: string;
+        block_number: number;
+        tx_index: number;
+        profit_usd: number;
+        bribe_usd: number;
+        mev_type: string;
+        eoa: string;
+        mev_contract: string | null;
+        timeboosted: boolean;
+        express_lane_controller: string | null;
+        express_lane_price_usd: number | null;
+        express_lane_round: number | null;
+      }>>();
+      
+      mevTransactions = contractData.map(row => ({
+        txHash: row.tx_hash,
+        blockNumber: row.block_number,
+        txIndex: row.tx_index,
+        profitUsd: row.profit_usd,
+        bribeUsd: row.bribe_usd,
+        mevType: row.mev_type,
+        mevContract: null, // For contracts, mevContract is null
+        eoa: row.eoa,
+        timeboosted: row.timeboosted,
+        expressLaneController: row.express_lane_controller,
+        expressLanePriceUsd: row.express_lane_price_usd,
+        expressLaneRound: row.express_lane_round,
+      }));
+      
+    } else {
+      // For EOA: Get paginated bundle headers where eoa = address
+      const eoaQuery = `
+        SELECT 
+          tx_hash,
+          block_number,
+          tx_index,
+          profit_usd,
+          bribe_usd,
+          mev_type,
+          mev_contract,
+          eoa,
+          timeboosted,
+          express_lane_controller,
+          express_lane_price_usd,
+          express_lane_round
+        FROM mev.bundle_header
+        WHERE lower(eoa) = '${normalizedAddress}'
+        ORDER BY block_number DESC, tx_index DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+      
+      const eoaResult = await req.clickhouse.query({
+        query: eoaQuery,
+        format: 'JSONEachRow',
+      });
+      
+      const eoaData = await eoaResult.json<Array<{
+        tx_hash: string;
+        block_number: number;
+        tx_index: number;
+        profit_usd: number;
+        bribe_usd: number;
+        mev_type: string;
+        mev_contract: string | null;
+        eoa: string;
+        timeboosted: boolean;
+        express_lane_controller: string | null;
+        express_lane_price_usd: number | null;
+        express_lane_round: number | null;
+      }>>();
+      
+      mevTransactions = eoaData.map(row => ({
+        txHash: row.tx_hash,
+        blockNumber: row.block_number,
+        txIndex: row.tx_index,
+        profitUsd: row.profit_usd,
+        bribeUsd: row.bribe_usd,
+        mevType: row.mev_type,
+        mevContract: row.mev_contract,
+        eoa: null, // For EOA, eoa is null
+        timeboosted: row.timeboosted,
+        expressLaneController: row.express_lane_controller,
+        expressLanePriceUsd: row.express_lane_price_usd,
+        expressLaneRound: row.express_lane_round,
+      }));
+    }
+    
+    // Get statistics from all transactions (not just current page)
+    // First get overall stats
+    const overallStatsQuery = isContract
+      ? `
+        SELECT 
+          sum(profit_usd) as total_profit,
+          sum(bribe_usd) as total_bribe,
+          countIf(timeboosted = true) as timeboosted_count
+        FROM mev.bundle_header
+        WHERE lower(mev_contract) = '${normalizedAddress}'
+      `
+      : `
+        SELECT 
+          sum(profit_usd) as total_profit,
+          sum(bribe_usd) as total_bribe,
+          countIf(timeboosted = true) as timeboosted_count
+        FROM mev.bundle_header
+        WHERE lower(eoa) = '${normalizedAddress}'
+      `;
+    
+    const overallStatsResult = await req.clickhouse.query({
+      query: overallStatsQuery,
+      format: 'JSONEachRow',
+    });
+    
+    const overallStatsData = await overallStatsResult.json<Array<{
+      total_profit: number;
+      total_bribe: number;
+      timeboosted_count: number;
+    }>>();
+    
+    // Get MEV type breakdown
+    const mevTypeQuery = isContract
+      ? `
+        SELECT 
+          mev_type,
+          count() as mev_type_count
+        FROM mev.bundle_header
+        WHERE lower(mev_contract) = '${normalizedAddress}'
+        GROUP BY mev_type
+      `
+      : `
+        SELECT 
+          mev_type,
+          count() as mev_type_count
+        FROM mev.bundle_header
+        WHERE lower(eoa) = '${normalizedAddress}'
+        GROUP BY mev_type
+      `;
+    
+    const mevTypeResult = await req.clickhouse.query({
+      query: mevTypeQuery,
+      format: 'JSONEachRow',
+    });
+    
+    const mevTypeData = await mevTypeResult.json<Array<{
+      mev_type: string;
+      mev_type_count: number;
+    }>>();
+    
+    const statistics: AddressStatistics = {
+      totalProfitUsd: overallStatsData.length > 0 ? (overallStatsData[0].total_profit || 0) : 0,
+      totalBribeUsd: overallStatsData.length > 0 ? (overallStatsData[0].total_bribe || 0) : 0,
+      totalTransactions: totalCount,
+      timeboostedCount: overallStatsData.length > 0 ? (overallStatsData[0].timeboosted_count || 0) : 0,
+      mevTypeBreakdown: mevTypeData.reduce((acc, row) => {
+        acc[row.mev_type] = row.mev_type_count;
+        return acc;
+      }, {} as Record<string, number>),
+    };
+    
+    // Get first and last seen timestamps (from all transactions, not just current page)
+    let firstSeen: string | undefined;
+    let lastSeen: string | undefined;
+    
+    if (totalCount > 0) {
+      const timestampQuery = isContract
+        ? `
+          SELECT 
+            min(block_number) as min_block,
+            max(block_number) as max_block
+          FROM mev.bundle_header
+          WHERE lower(mev_contract) = '${normalizedAddress}'
+        `
+        : `
+          SELECT 
+            min(block_number) as min_block,
+            max(block_number) as max_block
+          FROM mev.bundle_header
+          WHERE lower(eoa) = '${normalizedAddress}'
+        `;
+      
+      try {
+        const blockRangeResult = await req.clickhouse.query({
+          query: timestampQuery,
+          format: 'JSONEachRow',
+        });
+        const blockRangeData = await blockRangeResult.json<Array<{
+          min_block: number;
+          max_block: number;
+        }>>();
+        
+        if (blockRangeData.length > 0 && blockRangeData[0].min_block && blockRangeData[0].max_block) {
+          const minBlock = blockRangeData[0].min_block;
+          const maxBlock = blockRangeData[0].max_block;
+          
+          const timestampQuery2 = `
+            SELECT 
+              min(block_timestamp) as first_seen,
+              max(block_timestamp) as last_seen
+            FROM ethereum.blocks
+            WHERE block_number >= ${minBlock} AND block_number <= ${maxBlock} AND valid = 1
+          `;
+          const timestampResult = await req.clickhouse.query({
+            query: timestampQuery2,
+            format: 'JSONEachRow',
+          });
+          const timestampData = await timestampResult.json<Array<{
+            first_seen: number | null;
+            last_seen: number | null;
+          }>>();
+          
+          if (timestampData.length > 0 && timestampData[0].first_seen) {
+            firstSeen = formatRelativeTime(timestampData[0].first_seen);
+          }
+          if (timestampData.length > 0 && timestampData[0].last_seen) {
+            lastSeen = formatRelativeTime(timestampData[0].last_seen);
+          }
+        }
+      } catch (error) {
+        console.warn('Could not fetch timestamps:', error);
+      }
+    }
+    
+    // Build pagination info
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const pagination: PaginationInfo = {
+      page,
+      pageSize,
+      total: totalCount,
+      totalPages,
+    };
+    
+    const paginatedTransactions: PaginatedMEVTransactions = {
+      transactions: mevTransactions,
+      pagination,
+    };
+    
   const addressData: Address = {
     address: address,
-    balance: '1.234567',
-    balanceInEth: '1.234567',
-    transactionCount: 42,
+      balance: '0',
+      balanceInEth: '0',
+      ethBalance: '0',
+      transactionCount: statistics.totalTransactions,
     code: null,
-    isContract: false,
-    transactions: [],
+      isContract: isContract,
+      transactions: mevTransactions.map(tx => tx.txHash),
+      firstSeen: firstSeen,
+      lastSeen: lastSeen,
+      statistics: statistics,
+      mevTransactions: paginatedTransactions,
   };
   
   res.json(addressData);
+  } catch (error) {
+    console.error('Error fetching address:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch address',
+    });
+  }
 });
 
 // Dashboard visualization endpoints

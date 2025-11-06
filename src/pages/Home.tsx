@@ -111,7 +111,7 @@ function Home() {
 
       <div className="stats-bar">
         <div className="stat-item">
-          <span className="stat-label">Ether Price</span>
+          <span className="stat-label">ETH Price</span>
           <span className="stat-value">
             {etherPrice !== null 
               ? `$${etherPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

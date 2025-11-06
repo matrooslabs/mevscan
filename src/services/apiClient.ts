@@ -96,11 +96,15 @@ class ApiClient {
   /**
    * Get a specific address by identifier
    * @param address - Address hash
+   * @param page - Page number (default: 1)
+   * @param pageSize - Number of items per page (default: 20)
    * @returns Promise resolving to address data
    */
-  async getAddress(address: string): Promise<Address> {
+  async getAddress(address: string, page: number = 1, pageSize: number = 20): Promise<Address> {
     try {
-      const response = await this.client.get<Address>(`/api/addresses/${address}`);
+      const response = await this.client.get<Address>(`/api/addresses/${address}`, {
+        params: { page, pageSize },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);

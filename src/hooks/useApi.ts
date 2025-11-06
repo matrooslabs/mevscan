@@ -164,11 +164,11 @@ export function useTransaction(transactionId: string): UseQueryResult<Transactio
  * @param address - Address hash
  * @returns Query result with address data
  */
-export function useAddress(address: string): UseQueryResult<Address, Error> {
+export function useAddress(address: string, page: number = 1, pageSize: number = 20): UseQueryResult<Address, Error> {
   return useQuery({
-    queryKey: ['addresses', address],
+    queryKey: ['addresses', address, page, pageSize],
     queryFn: async () => {
-      const data = await apiClient.getAddress(address)
+      const data = await apiClient.getAddress(address, page, pageSize)
       return data
     },
     enabled: !!address, // Only run query if address is provided
