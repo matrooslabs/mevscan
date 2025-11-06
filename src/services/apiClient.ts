@@ -17,6 +17,9 @@ import type {
   TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
+  AtomicArbResponse,
+  CexDexQuoteResponse,
+  LiquidationResponse,
 } from '../../shared/types';
 
 class ApiClient {
@@ -443,6 +446,54 @@ class ApiClient {
     try {
       const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price', {
         params: { timeRange },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get atomic arbitrage data by transaction hash
+   * @param txHash - Transaction hash (64-character hex string, with or without 0x prefix)
+   * @returns Promise resolving to atomic arbitrage data
+   */
+  async getAtomicArb(txHash: string): Promise<AtomicArbResponse> {
+    try {
+      const response = await this.client.get<AtomicArbResponse>('/api/mev/atomic', {
+        params: { tx_hash: txHash },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get CexDex quote data by transaction hash
+   * @param txHash - Transaction hash (64-character hex string, with or without 0x prefix)
+   * @returns Promise resolving to CexDex quote data
+   */
+  async getCexDexQuote(txHash: string): Promise<CexDexQuoteResponse> {
+    try {
+      const response = await this.client.get<CexDexQuoteResponse>('/api/mev/cexdex', {
+        params: { tx_hash: txHash },
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get liquidation data by transaction hash
+   * @param txHash - Transaction hash (64-character hex string, with or without 0x prefix)
+   * @returns Promise resolving to liquidation data
+   */
+  async getLiquidation(txHash: string): Promise<LiquidationResponse> {
+    try {
+      const response = await this.client.get<LiquidationResponse>('/api/mev/liquidations', {
+        params: { tx_hash: txHash },
       });
       return response.data;
     } catch (error) {

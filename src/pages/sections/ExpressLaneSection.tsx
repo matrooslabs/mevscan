@@ -14,7 +14,7 @@ interface ExpressLaneSectionProps {
 }
 
 function ExpressLaneSection({
-  timeRange,
+  timeRange: _timeRange,
   expressLaneMEVPercentage,
   expressLaneMEVPercentagePerMinute,
   expressLaneNetProfit,
@@ -85,7 +85,7 @@ function ExpressLaneSection({
         name: item.controller || 'Unknown',
         value: item.net_profit_total || 0,
       }))
-      .sort((a, b) => b.value - a.value)
+      .sort((a: { name: string; value: number }, b: { name: string; value: number }) => b.value - a.value)
   }, [expressLaneProfitByController.data])
 
   return (

@@ -20,7 +20,7 @@ interface TimeboostSectionProps {
 }
 
 function TimeboostSection({
-  timeRange,
+  timeRange: _timeRange,
   timeboostGrossRevenue,
   timeboostRevenue,
   bidsPerAddress,

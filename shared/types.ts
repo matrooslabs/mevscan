@@ -4,6 +4,27 @@
  */
 
 /**
+ * Token delta information
+ */
+export interface TokenDelta {
+  tokenAddress: string;
+  decimals: number;
+  symbol: string;
+  delta: number;
+  deltaUsd: number;
+}
+
+/**
+ * Balance delta for a specific transaction/address
+ */
+export interface BalanceDelta {
+  txHash: string;
+  address: string;
+  name: string | null;
+  tokenDeltas: TokenDelta[];
+}
+
+/**
  * Transaction response type
  */
 export interface Transaction {
@@ -23,6 +44,7 @@ export interface Transaction {
   gas?: string;
   gasPrice?: string;
   status?: string;
+  balanceDeltas?: BalanceDelta[];
 }
 
 /**
@@ -311,4 +333,107 @@ export interface ExpressLanePriceDataPoint {
  * Express lane price response type
  */
 export type ExpressLanePriceResponse = ExpressLanePriceDataPoint[];
+
+/**
+ * Swap information for atomic arbitrage
+ */
+export interface SwapInfo {
+  trace_idx: number;
+  from: string;
+  recipient: string;
+  pool: string;
+  token_in: [string, string];
+  token_out: [string, string];
+  amount_in: [string, string];
+  amount_out: [string, string];
+}
+
+/**
+ * Gas details information
+ */
+export interface GasDetails {
+  coinbase_transfer: string | null;
+  priority_fee: string;
+  gas_used: string;
+  effective_gas_price: string;
+}
+
+/**
+ * Atomic arbitrage response
+ */
+export interface AtomicArbResponse {
+  tx_hash: string;
+  block_number: number;
+  trigger_tx: string;
+  swaps: SwapInfo[];
+  gas_details: GasDetails;
+  arb_type: string;
+  run_id: number;
+  profit_usd: number;
+  protocols: string[];
+}
+
+/**
+ * CexDex quote response
+ */
+export interface CexDexQuoteResponse {
+  tx_hash: string;
+  block_timestamp: number;
+  block_number: number;
+  swaps: SwapInfo[];
+  instant_mid_price: number[];
+  t2_mid_price: number[];
+  t12_mid_price: number[];
+  t30_mid_price: number[];
+  t60_mid_price: number[];
+  t300_mid_price: number[];
+  exchange: string;
+  pnl: number;
+  gas_details: GasDetails;
+  run_id: number;
+  profit_usd: number;
+  protocols: string[];
+}
+
+/**
+ * Liquidation swap information
+ */
+export interface LiquidationSwapInfo {
+  trace_idx: number;
+  from: string;
+  recipient: string;
+  pool: string;
+  token_in: [string, string];
+  token_out: [string, string];
+  amount_in: [string, string];
+  amount_out: [string, string];
+}
+
+/**
+ * Liquidation information
+ */
+export interface LiquidationInfo {
+  trace_idx: number;
+  pool: string;
+  liquidator: string;
+  debtor: string;
+  collateral_asset: [string, string];
+  debt_asset: [string, string];
+  covered_debt: [string, string];
+  liquidated_collateral: [string, string];
+}
+
+/**
+ * Liquidation response
+ */
+export interface LiquidationResponse {
+  liquidation_tx_hash: string;
+  block_number: number;
+  liquidation_swaps: LiquidationSwapInfo[];
+  liquidations: LiquidationInfo[];
+  gas_details: GasDetails;
+  run_id: number;
+  profit_usd: number;
+  protocols: string[];
+}
 
