@@ -59,8 +59,9 @@ function Home() {
   };
 
   // Use data from TanStack Query or fallback to empty array
-  const latestBlocks: BlockListItem[] = latestBlocksData || [];
-  const latestTransactions: Transaction[] = latestTransactionsData || [];
+  // Ensure we always have an array, even if the API returns something unexpected
+  const latestBlocks: BlockListItem[] = Array.isArray(latestBlocksData) ? latestBlocksData : [];
+  const latestTransactions: Transaction[] = Array.isArray(latestTransactionsData) ? latestTransactionsData : [];
 
   // Get ETH price from the latest block (first block in the list)
   const etherPrice = latestBlocks.length > 0 && latestBlocks[0].ethPrice 

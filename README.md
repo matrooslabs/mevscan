@@ -92,7 +92,6 @@ See [ENV_SETUP.md](./ENV_SETUP.md) for detailed instructions on configuring envi
 - **Axios** - HTTP client
 - **Material UI** - Component library
 - **Recharts** - Charting library
-- **Viem** - Ethereum utilities
 
 ### Backend (Server)
 - **Express.js** - Web framework
@@ -112,7 +111,7 @@ mevscan/
 │   ├── src/
 │   │   ├── components/  # React components (charts, details, navbar)
 │   │   ├── pages/       # Page components (Dashboard, Home, Address, Block, Transaction)
-│   │   ├── hooks/       # React hooks (useApi, useWallet)
+│   │   ├── hooks/       # React hooks (useApi)
 │   │   ├── services/    # API client service
 │   │   └── styles/      # Global styles
 │   ├── public/          # Static assets

@@ -19,7 +19,6 @@
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
     "recharts": "^3.3.0",
-    "viem": "^2.38.6",
     "@mevscan/shared": "*"
   },
   "devDependencies": {
