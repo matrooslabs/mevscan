@@ -154,6 +154,7 @@ function Dashboard() {
             <MenuItem value="15min">15 minutes</MenuItem>
             <MenuItem value="30min">30 minutes</MenuItem>
             <MenuItem value="1hour">1 hour</MenuItem>
+            <MenuItem value="12hours">12 hours</MenuItem>
           </Select>
         </FormControl>
       </div>

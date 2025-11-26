@@ -113,7 +113,7 @@ class ApiClient {
 
   /**
    * Get Gross MEV time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
   async getGrossMEV(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
@@ -129,7 +129,7 @@ class ApiClient {
 
   /**
    * Get Gross Atomic Arb time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
   async getGrossAtomicArb(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
@@ -145,7 +145,7 @@ class ApiClient {
 
   /**
    * Get Gross CexDexQuotes time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
   async getGrossCexDexQuotes(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
@@ -161,7 +161,7 @@ class ApiClient {
 
   /**
    * Get Gross Liquidation time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
   async getGrossLiquidation(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
@@ -177,7 +177,7 @@ class ApiClient {
 
   /**
    * Get Atomic MEV Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getAtomicMEVTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -193,7 +193,7 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to pie chart data
    */
   async getExpressLaneMEVPercentage(timeRange: string = '15min'): Promise<PieChartResponse> {
@@ -209,7 +209,7 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage per minute time series
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series percentage data
    */
   async getExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): Promise<TimeSeriesPercentageResponse> {
@@ -225,7 +225,7 @@ class ApiClient {
 
   /**
    * Get Atomic Arb MEV time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getAtomicMEV(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -241,7 +241,7 @@ class ApiClient {
 
   /**
    * Get CexDex Arb time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getCexDex(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -257,7 +257,7 @@ class ApiClient {
 
   /**
    * Get CexDex MEV Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getCexDexTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -273,7 +273,7 @@ class ApiClient {
 
   /**
    * Get Liquidation time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getLiquidation(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -289,7 +289,7 @@ class ApiClient {
 
   /**
    * Get Liquidation Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
   async getLiquidationTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
@@ -305,7 +305,7 @@ class ApiClient {
 
   /**
    * Get Express Lane Net Profit data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Net Profit data
    */
   async getExpressLaneNetProfit(timeRange: string = '15min'): Promise<ExpressLaneNetProfitResponse> {
@@ -321,7 +321,7 @@ class ApiClient {
 
   /**
    * Get Express Lane Profit by Controller data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Profit by Controller data
    */
   async getExpressLaneProfitByController(timeRange: string = '15min'): Promise<ExpressLaneProfitByControllerResponse> {
@@ -350,7 +350,7 @@ class ApiClient {
 
   /**
    * Get Timeboost Revenue (time-ranged)
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Timeboost Revenue data
    */
   async getTimeboostRevenue(timeRange: string = '15min'): Promise<TimeboostRevenueResponse> {
@@ -366,7 +366,7 @@ class ApiClient {
 
   /**
    * Get Bids per Address
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Bids per Address data
    */
   async getBidsPerAddress(timeRange: string = '15min'): Promise<BidsPerAddressResponse> {
@@ -382,7 +382,7 @@ class ApiClient {
 
   /**
    * Get Auction Win Count
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Auction Win Count data
    */
   async getAuctionWinCount(timeRange: string = '15min'): Promise<AuctionWinCountResponse> {
@@ -398,7 +398,7 @@ class ApiClient {
 
   /**
    * Get Timeboosted Tx per Second
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Timeboosted Tx per Second data
    */
   async getTimeboostedTxPerSecond(timeRange: string = '15min'): Promise<TimeboostedTxPerSecondResponse> {
@@ -414,7 +414,7 @@ class ApiClient {
 
   /**
    * Get Timeboosted Tx per Block
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Timeboosted Tx per Block data
    */
   async getTimeboostedTxPerBlock(timeRange: string = '15min'): Promise<TimeboostedTxPerBlockResponse> {
@@ -443,7 +443,7 @@ class ApiClient {
 
   /**
    * Get Express Lane Price
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Price data
    */
   async getExpressLanePrice(timeRange: string = '15min'): Promise<ExpressLanePriceResponse> {

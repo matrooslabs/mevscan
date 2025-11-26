@@ -187,7 +187,7 @@ function formatEthValue(wei: string | number): string {
 
 // Helper function to convert timeRange string to ClickHouse interval
 function getTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour'];
+  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
   
   if (!validRanges.includes(range)) {
@@ -203,6 +203,8 @@ function getTimeRangeFilter(timeRange: string): string {
       return `e.block_timestamp >= now() - INTERVAL 30 MINUTE`;
     case '1hour':
       return `e.block_timestamp >= now() - INTERVAL 1 HOUR`;
+    case '12hours':
+      return `e.block_timestamp >= now() - INTERVAL 12 HOUR`;
     default:
       return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
   }
@@ -210,7 +212,7 @@ function getTimeRangeFilter(timeRange: string): string {
 
 // Helper function to convert timeRange string to ClickHouse interval for timestamp column
 function getTimestampTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour'];
+  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
   
   if (!validRanges.includes(range)) {
@@ -226,6 +228,8 @@ function getTimestampTimeRangeFilter(timeRange: string): string {
       return `timestamp >= now() - INTERVAL 30 MINUTE`;
     case '1hour':
       return `timestamp >= now() - INTERVAL 1 HOUR`;
+    case '12hours':
+      return `timestamp >= now() - INTERVAL 12 HOUR`;
     default:
       return `timestamp >= now() - INTERVAL 15 MINUTE`;
   }

@@ -178,7 +178,7 @@ export function useAddress(address: string, page: number = 1, pageSize: number =
 /**
  * Query hook for fetching Gross MEV time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data
  */
 export function useGrossMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
@@ -196,7 +196,7 @@ export function useGrossMEV(timeRange: string = '15min'): UseQueryResult<TimeSer
 /**
  * Query hook for fetching Gross Atomic Arb time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data
  */
 export function useGrossAtomicArb(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
@@ -214,7 +214,7 @@ export function useGrossAtomicArb(timeRange: string = '15min'): UseQueryResult<T
 /**
  * Query hook for fetching Gross CexDexQuotes time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data
  */
 export function useGrossCexDexQuotes(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
@@ -232,7 +232,7 @@ export function useGrossCexDexQuotes(timeRange: string = '15min'): UseQueryResul
 /**
  * Query hook for fetching Gross Liquidation time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data
  */
 export function useGrossLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesResponse, Error> {
@@ -250,7 +250,7 @@ export function useGrossLiquidation(timeRange: string = '15min'): UseQueryResult
 /**
  * Query hook for fetching Atomic MEV Timeboosted time series
  * Priority: HIGH - Loads after 100ms (important protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useAtomicMEVTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -268,7 +268,7 @@ export function useAtomicMEVTimeboosted(timeRange: string = '15min'): UseQueryRe
 /**
  * Query hook for fetching Express Lane MEV Percentage
  * Priority: HIGH - Loads after 100ms (important summary metric)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with pie chart data
  */
 export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQueryResult<PieChartResponse, Error> {
@@ -286,7 +286,7 @@ export function useExpressLaneMEVPercentage(timeRange: string = '15min'): UseQue
 /**
  * Query hook for fetching Express Lane MEV Percentage per minute time series
  * Priority: MEDIUM - Loads after 300ms (detailed time series)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series percentage data
  */
 export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): UseQueryResult<TimeSeriesPercentageResponse, Error> {
@@ -304,7 +304,7 @@ export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'
 /**
  * Query hook for fetching Atomic Arb MEV time series by protocol
  * Priority: HIGH - Loads after 100ms (important protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useAtomicMEV(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -322,7 +322,7 @@ export function useAtomicMEV(timeRange: string = '15min'): UseQueryResult<TimeSe
 /**
  * Query hook for fetching CexDex Arb time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useCexDex(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -340,7 +340,7 @@ export function useCexDex(timeRange: string = '15min'): UseQueryResult<TimeSerie
 /**
  * Query hook for fetching CexDex MEV Timeboosted time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useCexDexTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -358,7 +358,7 @@ export function useCexDexTimeboosted(timeRange: string = '15min'): UseQueryResul
 /**
  * Query hook for fetching Liquidation time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useLiquidation(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -376,7 +376,7 @@ export function useLiquidation(timeRange: string = '15min'): UseQueryResult<Time
 /**
  * Query hook for fetching Liquidation Timeboosted time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with time series data by protocol
  */
 export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
@@ -394,7 +394,7 @@ export function useLiquidationTimeboosted(timeRange: string = '15min'): UseQuery
 /**
  * Query hook for fetching Express Lane Net Profit
  * Priority: LOW - Loads after 600ms (detailed breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Express Lane Net Profit data
  */
 export function useExpressLaneNetProfit(timeRange: string = '15min'): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
@@ -412,7 +412,7 @@ export function useExpressLaneNetProfit(timeRange: string = '15min'): UseQueryRe
 /**
  * Query hook for fetching Express Lane Profit by Controller
  * Priority: LOW - Loads after 600ms (detailed breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Express Lane Profit by Controller data
  */
 export function useExpressLaneProfitByController(timeRange: string = '15min'): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
@@ -447,7 +447,7 @@ export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueRespo
 /**
  * Query hook for fetching Timeboost Revenue (time-ranged)
  * Priority: LOW - Loads after 600ms (detailed breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Timeboost Revenue data
  */
 export function useTimeboostRevenue(timeRange: string = '15min'): UseQueryResult<TimeboostRevenueResponse, Error> {
@@ -465,7 +465,7 @@ export function useTimeboostRevenue(timeRange: string = '15min'): UseQueryResult
 /**
  * Query hook for fetching Bids per Address
  * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Bids per Address data
  */
 export function useBidsPerAddress(timeRange: string = '15min'): UseQueryResult<BidsPerAddressResponse, Error> {
@@ -483,7 +483,7 @@ export function useBidsPerAddress(timeRange: string = '15min'): UseQueryResult<B
 /**
  * Query hook for fetching Auction Win Count
  * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Auction Win Count data
  */
 export function useAuctionWinCount(timeRange: string = '15min'): UseQueryResult<AuctionWinCountResponse, Error> {
@@ -501,7 +501,7 @@ export function useAuctionWinCount(timeRange: string = '15min'): UseQueryResult<
 /**
  * Query hook for fetching Timeboosted Tx per Second
  * Priority: MEDIUM - Loads after 300ms (time series data)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Timeboosted Tx per Second data
  */
 export function useTimeboostedTxPerSecond(timeRange: string = '15min'): UseQueryResult<TimeboostedTxPerSecondResponse, Error> {
@@ -519,7 +519,7 @@ export function useTimeboostedTxPerSecond(timeRange: string = '15min'): UseQuery
 /**
  * Query hook for fetching Timeboosted Tx per Block
  * Priority: MEDIUM - Loads after 300ms (time series data)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Timeboosted Tx per Block data
  */
 export function useTimeboostedTxPerBlock(timeRange: string = '15min'): UseQueryResult<TimeboostedTxPerBlockResponse, Error> {
@@ -554,7 +554,7 @@ export function useBidsPerRound(): UseQueryResult<BidsPerRoundResponse, Error> {
 /**
  * Query hook for fetching Express Lane Price
  * Priority: MEDIUM - Loads after 300ms (time series data)
- * @param timeRange - Time range string (5min, 15min, 30min, 1hour)
+ * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
  * @returns Query result with Express Lane Price data
  */
 export function useExpressLanePrice(timeRange: string = '15min'): UseQueryResult<ExpressLanePriceResponse, Error> {
