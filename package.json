@@ -6,7 +6,8 @@
   "workspaces": [
     "shared",
     "server",
-    "client"
+    "client",
+    "websocket"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=client",
