@@ -3,6 +3,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createClient, ClickHouseClient } from '@clickhouse/client';
 import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
+import { getGrossMEV } from './services/grossMEVService';
+import { initClickHouseClient, type ClickHouseConfig } from '@mevscan/shared/clickhouse';
 import type {
   Transaction,
   Block,
@@ -52,41 +54,15 @@ app.set('trust proxy', true);
 // Initialize ClickHouse client once
 let clickhouseClient: ClickHouseClient | null = null;
 
-function initClickHouseClient(): ClickHouseClient {
-  const url = process.env.CLICKHOUSE_URL;
-  const username = process.env.CLICKHOUSE_USERNAME;
-  const password = process.env.CLICKHOUSE_PASSWORD;
-  const database = process.env.CLICKHOUSE_DATABASE;
-
-  // Validate all required environment variables are present
-  if (!url) {
-    console.error('ERROR: CLICKHOUSE_URL environment variable is required');
-    process.exit(1);
-  }
-  if (!username) {
-    console.error('ERROR: CLICKHOUSE_USERNAME environment variable is required');
-    process.exit(1);
-  }
-  if (password === undefined) {
-    console.error('ERROR: CLICKHOUSE_PASSWORD environment variable is required');
-    process.exit(1);
-  }
-  if (!database) {
-    console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
-    process.exit(1);
-  }
-
-  return createClient({
-    host: url,
-    username,
-    password,
-    database,
-  });
-}
-
 // Initialize ClickHouse client at startup - exit if configuration is invalid
 try {
-  clickhouseClient = initClickHouseClient();
+  const clickHouseConfig: ClickHouseConfig = {
+    url: process.env.CLICKHOUSE_URL || '',
+    username: process.env.CLICKHOUSE_USERNAME || '',
+    password: process.env.CLICKHOUSE_PASSWORD || '',
+    database: process.env.CLICKHOUSE_DATABASE || '',
+  };
+  clickhouseClient = initClickHouseClient(clickHouseConfig);
   console.log('✓ ClickHouse client initialized successfully');
 } catch (error) {
   console.error('ERROR: Failed to initialize ClickHouse client:', error);
@@ -116,45 +92,45 @@ app.use(express.json());
 app.use((req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
-  
+
   // Log request
   const clientIP = req.ip || req.socket.remoteAddress || 'unknown';
-  
+
   // Build parameter string
   const params: string[] = [];
-  
+
   // Query parameters
   const queryParams = Object.keys(req.query);
   if (queryParams.length > 0) {
     params.push(`query: ${JSON.stringify(req.query)}`);
   }
-  
+
   // URL parameters (available after routing, but logged here for consistency)
   const urlParams = Object.keys(req.params);
   if (urlParams.length > 0) {
     params.push(`params: ${JSON.stringify(req.params)}`);
   }
-  
+
   // Request body (for POST/PUT/PATCH)
   if (req.body && Object.keys(req.body).length > 0 && ['POST', 'PUT', 'PATCH'].includes(req.method)) {
     params.push(`body: ${JSON.stringify(req.body)}`);
   }
-  
+
   const paramString = params.length > 0 ? ` | ${params.join(' | ')}` : '';
-  
+
   console.log(`[${timestamp}] ${req.method} ${req.path}${paramString} - IP: ${clientIP}`);
-  
+
   // Log response when finished
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const statusColor = res.statusCode >= 400 ? '\x1b[31m' : res.statusCode >= 300 ? '\x1b[33m' : '\x1b[32m';
     const resetColor = '\x1b[0m';
-    
+
     console.log(
       `[${timestamp}] ${req.method} ${req.path}${paramString} - ${statusColor}${res.statusCode}${resetColor} - ${duration}ms - ${clientIP}`
     );
   });
-  
+
   next();
 });
 
@@ -171,7 +147,7 @@ setInterval(() => {
 function formatRelativeTime(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = now - timestamp;
-  
+
   if (diff < 60) return `${diff} secs ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
@@ -189,11 +165,11 @@ function formatEthValue(wei: string | number): string {
 function getTimeRangeFilter(timeRange: string): string {
   const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
-  
+
   if (!validRanges.includes(range)) {
     throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
   }
-  
+
   switch (range) {
     case '5min':
       return `e.block_timestamp >= now() - INTERVAL 5 MINUTE`;
@@ -214,11 +190,11 @@ function getTimeRangeFilter(timeRange: string): string {
 function getTimestampTimeRangeFilter(timeRange: string): string {
   const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
-  
+
   if (!validRanges.includes(range)) {
     throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
   }
-  
+
   switch (range) {
     case '5min':
       return `timestamp >= now() - INTERVAL 5 MINUTE`;
@@ -244,7 +220,7 @@ app.get('/api/latest-transactions', async (
 ) => {
   try {
     const limit = parseInt(req.query.limit as string) || 20;
-    
+
     // Query bundle_header table only
     // Using PRIMARY KEY (block_number, tx_hash) for efficient querying
     const query = `
@@ -308,7 +284,7 @@ app.get('/api/latest-blocks', async (
 ) => {
   try {
     const limit = parseInt(req.query.limit as string) || 20;
-    
+
     // Query mev_blocks table
     // Using PRIMARY KEY (block_number, block_hash) for efficient querying
     const query = `
@@ -369,7 +345,7 @@ app.get('/api/blocks/:blockNumber', async (
 ) => {
   try {
     const { blockNumber } = req.params;
-    
+
     // Validate block number is numeric
     if (!/^\d+$/.test(blockNumber)) {
       res.status(400).json({
@@ -380,7 +356,7 @@ app.get('/api/blocks/:blockNumber', async (
     }
 
     const blockNum = parseInt(blockNumber, 10);
-    
+
     // Query joining mev.mev_blocks and mev.bundle_header
     // Focus on PnL and MEV types for each bundle
     const query = `
@@ -450,7 +426,7 @@ app.get('/api/blocks/:blockNumber', async (
 
     // Get block-level info from first row (all rows have same block info)
     const firstRow = data[0];
-    
+
     // Extract bundles with PnL and MEV types
     const bundles = data.map(row => ({
       txHash: row.tx_hash,
@@ -515,12 +491,12 @@ app.get('/api/blocks/:blockNumber', async (
 
 // Get a specific transaction by identifier
 app.get('/api/transactions/:transactionId', async (
-  req: Request<{ transactionId: string }>, 
+  req: Request<{ transactionId: string }>,
   res: Response<Transaction | ErrorResponse>
 ) => {
   try {
     const { transactionId } = req.params;
-    
+
     // Query joins bundle_header and tree tables using PRIMARY KEY (block_number, tx_hash)
     const query = `
       SELECT 
@@ -585,7 +561,7 @@ app.get('/api/transactions/:transactionId', async (
     }
 
     const row = data[0];
-    const value = row.priority_fee 
+    const value = row.priority_fee
       ? formatEthValue(row.priority_fee)
       : (row.profit_usd / 1e6).toFixed(5);
 
@@ -594,7 +570,7 @@ app.get('/api/transactions/:transactionId', async (
     if (row.balance_deltas_tx_hash && row.balance_deltas_tx_hash.length > 0) {
       for (let i = 0; i < row.balance_deltas_tx_hash.length; i++) {
         const tokenDeltas: TokenDelta[] = [];
-        
+
         // Parse token_deltas array for this balance_delta entry
         // token_deltas is Array(Tuple(Tuple(String, UInt8, String), Float64, Float64))
         // In JSON: [[[address, decimals, symbol], delta, delta_usd], ...]
@@ -608,7 +584,7 @@ app.get('/api/transactions/:transactionId', async (
                 let tokenAddress = '';
                 let decimals = 0;
                 let symbol = '';
-                
+
                 if (Array.isArray(tokenInfo) && tokenInfo.length >= 2) {
                   tokenAddress = String(tokenInfo[0] || '');
                   decimals = Number(tokenInfo[1] || 0);
@@ -619,10 +595,10 @@ app.get('/api/transactions/:transactionId', async (
                   decimals = Number(tokenDelta[1] || 0);
                   symbol = String(tokenDelta[2] || '');
                 }
-                
+
                 const delta = Array.isArray(tokenInfo) ? Number(tokenDelta[1] || 0) : Number(tokenDelta[3] || 0);
                 const deltaUsd = Array.isArray(tokenInfo) ? Number(tokenDelta[2] || 0) : Number(tokenDelta[4] || 0);
-                
+
                 tokenDeltas.push({
                   tokenAddress,
                   decimals,
@@ -634,7 +610,7 @@ app.get('/api/transactions/:transactionId', async (
             }
           }
         }
-        
+
         balanceDeltas.push({
           txHash: row.balance_deltas_tx_hash[i] || '',
           address: row.balance_deltas_address[i] || '',
@@ -654,13 +630,13 @@ app.get('/api/transactions/:transactionId', async (
       expressLaneController: row.express_lane_controller,
       expressLanePrice: row.express_lane_price,
       expressLaneRound: row.express_lane_round,
-      from: row.from.length > 14 
+      from: row.from.length > 14
         ? `${row.from.slice(0, 10)}...${row.from.slice(-6)}`
         : row.from,
-      to: row.to 
-        ? (row.to.length > 14 
-            ? `${row.to.slice(0, 10)}...${row.to.slice(-6)}`
-            : row.to)
+      to: row.to
+        ? (row.to.length > 14
+          ? `${row.to.slice(0, 10)}...${row.to.slice(-6)}`
+          : row.to)
         : 'Contract Creation',
       toLabel: row.mev_type || null,
       value,
@@ -683,18 +659,18 @@ app.get('/api/transactions/:transactionId', async (
 
 // Get a specific address by identifier
 app.get('/api/addresses/:address', async (
-  req: Request<{ address: string }>, 
+  req: Request<{ address: string }>,
   res: Response<Address | ErrorResponse>
 ) => {
   try {
-  const { address } = req.params;
+    const { address } = req.params;
     const normalizedAddress = address.toLowerCase();
-    
+
     // Pagination parameters
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const pageSize = Math.min(100, Math.max(10, parseInt(req.query.pageSize as string) || 20));
     const offset = (page - 1) * pageSize;
-    
+
     // First, check if address is a contract by looking at mev_contract column
     // Also check if it appears as an EOA
     const contractCheckQuery = `
@@ -705,37 +681,37 @@ app.get('/api/addresses/:address', async (
       WHERE (lower(mev_contract) = '${normalizedAddress}' OR lower(eoa) = '${normalizedAddress}')
       LIMIT 1
     `;
-    
+
     const contractCheckResult = await req.clickhouse.query({
       query: contractCheckQuery,
       format: 'JSONEachRow',
     });
-    
+
     const contractCheckData = await contractCheckResult.json<Array<{
       mev_contract: string | null;
       eoa: string;
     }>>();
-    
-    const isContract = contractCheckData.length > 0 && 
-                       contractCheckData[0].mev_contract !== null &&
-                       contractCheckData[0].mev_contract.toLowerCase() === normalizedAddress;
-    
+
+    const isContract = contractCheckData.length > 0 &&
+      contractCheckData[0].mev_contract !== null &&
+      contractCheckData[0].mev_contract.toLowerCase() === normalizedAddress;
+
     // Get total count for statistics and pagination
     const countQuery = isContract
       ? `SELECT count() as total FROM mev.bundle_header WHERE lower(mev_contract) = '${normalizedAddress}'`
       : `SELECT count() as total FROM mev.bundle_header WHERE lower(eoa) = '${normalizedAddress}'`;
-    
+
     const countResult = await req.clickhouse.query({
       query: countQuery,
       format: 'JSONEachRow',
     });
-    
+
     const countData = await countResult.json<Array<{ total: number }>>();
     const totalCount = countData.length > 0 ? countData[0].total : 0;
-    
+
     // Get paginated transactions
     let mevTransactions: MEVTransaction[] = [];
-    
+
     if (isContract) {
       // For contracts: Get paginated transactions where mev_contract = address
       const contractQuery = `
@@ -757,12 +733,12 @@ app.get('/api/addresses/:address', async (
         ORDER BY block_number DESC, tx_index DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-      
+
       const contractResult = await req.clickhouse.query({
         query: contractQuery,
         format: 'JSONEachRow',
       });
-      
+
       const contractData = await contractResult.json<Array<{
         tx_hash: string;
         block_number: number;
@@ -777,7 +753,7 @@ app.get('/api/addresses/:address', async (
         express_lane_price_usd: number | null;
         express_lane_round: number | null;
       }>>();
-      
+
       mevTransactions = contractData.map(row => ({
         txHash: row.tx_hash,
         blockNumber: row.block_number,
@@ -792,7 +768,7 @@ app.get('/api/addresses/:address', async (
         expressLanePriceUsd: row.express_lane_price_usd,
         expressLaneRound: row.express_lane_round,
       }));
-      
+
     } else {
       // For EOA: Get paginated bundle headers where eoa = address
       const eoaQuery = `
@@ -814,12 +790,12 @@ app.get('/api/addresses/:address', async (
         ORDER BY block_number DESC, tx_index DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-      
+
       const eoaResult = await req.clickhouse.query({
         query: eoaQuery,
         format: 'JSONEachRow',
       });
-      
+
       const eoaData = await eoaResult.json<Array<{
         tx_hash: string;
         block_number: number;
@@ -834,7 +810,7 @@ app.get('/api/addresses/:address', async (
         express_lane_price_usd: number | null;
         express_lane_round: number | null;
       }>>();
-      
+
       mevTransactions = eoaData.map(row => ({
         txHash: row.tx_hash,
         blockNumber: row.block_number,
@@ -850,7 +826,7 @@ app.get('/api/addresses/:address', async (
         expressLaneRound: row.express_lane_round,
       }));
     }
-    
+
     // Get statistics from all transactions (not just current page)
     // First get overall stats
     const overallStatsQuery = isContract
@@ -870,18 +846,18 @@ app.get('/api/addresses/:address', async (
         FROM mev.bundle_header
         WHERE lower(eoa) = '${normalizedAddress}'
       `;
-    
+
     const overallStatsResult = await req.clickhouse.query({
       query: overallStatsQuery,
       format: 'JSONEachRow',
     });
-    
+
     const overallStatsData = await overallStatsResult.json<Array<{
       total_profit: number;
       total_bribe: number;
       timeboosted_count: number;
     }>>();
-    
+
     // Get MEV type breakdown
     const mevTypeQuery = isContract
       ? `
@@ -900,17 +876,17 @@ app.get('/api/addresses/:address', async (
         WHERE lower(eoa) = '${normalizedAddress}'
         GROUP BY mev_type
       `;
-    
+
     const mevTypeResult = await req.clickhouse.query({
       query: mevTypeQuery,
       format: 'JSONEachRow',
     });
-    
+
     const mevTypeData = await mevTypeResult.json<Array<{
       mev_type: string;
       mev_type_count: number;
     }>>();
-    
+
     const statistics: AddressStatistics = {
       totalProfitUsd: overallStatsData.length > 0 ? (overallStatsData[0].total_profit || 0) : 0,
       totalBribeUsd: overallStatsData.length > 0 ? (overallStatsData[0].total_bribe || 0) : 0,
@@ -921,11 +897,11 @@ app.get('/api/addresses/:address', async (
         return acc;
       }, {} as Record<string, number>),
     };
-    
+
     // Get first and last seen timestamps (from all transactions, not just current page)
     let firstSeen: string | undefined;
     let lastSeen: string | undefined;
-    
+
     if (totalCount > 0) {
       const timestampQuery = isContract
         ? `
@@ -942,7 +918,7 @@ app.get('/api/addresses/:address', async (
           FROM mev.bundle_header
           WHERE lower(eoa) = '${normalizedAddress}'
         `;
-      
+
       try {
         const blockRangeResult = await req.clickhouse.query({
           query: timestampQuery,
@@ -952,11 +928,11 @@ app.get('/api/addresses/:address', async (
           min_block: number;
           max_block: number;
         }>>();
-        
+
         if (blockRangeData.length > 0 && blockRangeData[0].min_block && blockRangeData[0].max_block) {
           const minBlock = blockRangeData[0].min_block;
           const maxBlock = blockRangeData[0].max_block;
-          
+
           const timestampQuery2 = `
             SELECT 
               min(block_timestamp) as first_seen,
@@ -972,7 +948,7 @@ app.get('/api/addresses/:address', async (
             first_seen: number | null;
             last_seen: number | null;
           }>>();
-          
+
           if (timestampData.length > 0 && timestampData[0].first_seen) {
             firstSeen = formatRelativeTime(timestampData[0].first_seen);
           }
@@ -984,7 +960,7 @@ app.get('/api/addresses/:address', async (
         console.warn('Could not fetch timestamps:', error);
       }
     }
-    
+
     // Build pagination info
     const totalPages = Math.ceil(totalCount / pageSize);
     const pagination: PaginationInfo = {
@@ -993,28 +969,28 @@ app.get('/api/addresses/:address', async (
       total: totalCount,
       totalPages,
     };
-    
+
     const paginatedTransactions: PaginatedMEVTransactions = {
       transactions: mevTransactions,
       pagination,
     };
-    
-  const addressData: Address = {
-    address: address,
+
+    const addressData: Address = {
+      address: address,
       balance: '0',
       balanceInEth: '0',
       ethBalance: '0',
       transactionCount: statistics.totalTransactions,
-    code: null,
+      code: null,
       isContract: isContract,
       transactions: mevTransactions.map(tx => tx.txHash),
       firstSeen: firstSeen,
       lastSeen: lastSeen,
       statistics: statistics,
       mevTransactions: paginatedTransactions,
-  };
-  
-  res.json(addressData);
+    };
+
+    res.json(addressData);
   } catch (error) {
     console.error('Error fetching address:', error);
     res.status(500).json({
@@ -1033,61 +1009,7 @@ app.get('/api/gross-mev', async (
 ) => {
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
-    const timeFilter = getTimeRangeFilter(timeRange);
-    
-    const query = `
-      SELECT
-        toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) as time,
-        sum(m.profit_usd) as total,
-        sumIf(m.profit_usd, m.timeboosted = false) as normal,
-        sumIf(m.profit_usd, m.timeboosted = true) as timeboost
-      FROM
-        mev.bundle_header AS m
-      LEFT JOIN ethereum.blocks AS e
-        ON m.block_number = e.block_number
-      LEFT JOIN mev.atomic_arbs AS a
-        ON a.tx_hash = m.tx_hash
-      WHERE
-        (m.mev_type = 'CexDexQuotes' OR m.mev_type = 'AtomicArb' OR m.mev_type = 'Liquidation')
-        AND (replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
-          or a.arb_type = '')
-        AND ${timeFilter}
-      GROUP BY
-        time
-      ORDER BY
-        time ASC
-    `;
-
-    const result = await req.clickhouse.query({
-      query,
-      format: 'JSONEachRow',
-    });
-
-    const data = await result.json<Array<{
-      time: number;
-      total: number;
-      normal: number;
-      timeboost: number;
-    }>>();
-
-    const response: TimeSeriesResponse = data
-      .filter((row) => row.time != null && !isNaN(row.time))
-      .map((row) => {
-        const date = new Date(row.time * 1000);
-        if (isNaN(date.getTime())) {
-          return null;
-        }
-        const hours = date.getHours().toString().padStart(2, '0');
-        const mins = date.getMinutes().toString().padStart(2, '0');
-        return {
-          time: `${hours}:${mins}`,
-          total: row.total || 0,
-          normal: row.normal || 0,
-          timeboost: row.timeboost || 0,
-        };
-      })
-      .filter((item): item is TimeSeriesDataPoint => item !== null);
-
+    const response = await getGrossMEV(req.clickhouse, timeRange);
     res.json(response);
   } catch (error) {
     console.error('Error fetching Gross MEV:', error);
@@ -1106,7 +1028,7 @@ app.get('/api/gross-atomic-arb', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) as time,
@@ -1179,7 +1101,7 @@ app.get('/api/gross-cex-dex-quotes', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
@@ -1251,7 +1173,7 @@ app.get('/api/gross-liquidation', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
@@ -1326,7 +1248,7 @@ app.get('/api/protocols/atomic-mev/timeboosted', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 SELECT
   toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
@@ -1391,7 +1313,7 @@ app.get('/api/protocols/atomic-mev', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 WITH
     proto_list AS (
@@ -1477,7 +1399,7 @@ app.get('/api/protocols/cexdex', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 WITH
     proto_list AS (
@@ -1562,7 +1484,7 @@ app.get('/api/protocols/cexdex/timeboosted', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 WITH
     proto_list AS (
@@ -1648,7 +1570,7 @@ app.get('/api/protocols/liquidation', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 WITH
     proto_list AS (
@@ -1733,7 +1655,7 @@ app.get('/api/protocols/liquidation/timeboosted', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
 WITH
     proto_list AS (
@@ -1819,7 +1741,7 @@ app.get('/api/express-lane/mev-percentage', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         sum(m.profit_usd) AS total,
@@ -1883,7 +1805,7 @@ app.get('/api/express-lane/mev-percentage-per-minute', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
@@ -1953,7 +1875,7 @@ app.get('/api/express-lane/net-profit', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         bh.express_lane_round AS round,
@@ -2018,7 +1940,7 @@ app.get('/api/express-lane/profit-by-controller', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT 
         controller,
@@ -2142,7 +2064,7 @@ app.get('/api/timeboost/revenue', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimestampTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         sum(first_price) AS total_first_price,
@@ -2203,7 +2125,7 @@ app.get('/api/timeboost/bids-per-address', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimestampTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT 
         bidder, 
@@ -2247,7 +2169,7 @@ app.get('/api/timeboost/auction-win-count', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimestampTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         winner AS address,
@@ -2298,7 +2220,7 @@ app.get('/api/timeboost/tx-per-second', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         toDateTime(e.block_timestamp) AS time,
@@ -2356,7 +2278,7 @@ app.get('/api/timeboost/tx-per-block', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         e.block_number AS block_number,
@@ -2442,7 +2364,7 @@ app.get('/api/timeboost/express-lane-price', async (
   try {
     const timeRange = (req.query.timeRange as string) || '15min';
     const timeFilter = getTimestampTimeRangeFilter(timeRange);
-    
+
     const query = `
       SELECT
         round,
@@ -2501,7 +2423,7 @@ app.get('/api/mev/atomic', async (
 ) => {
   try {
     const txHash = req.query.tx_hash as string;
-    
+
     if (!txHash) {
       res.status(400).json({
         error: 'Bad Request',
@@ -2582,7 +2504,7 @@ app.get('/api/mev/atomic', async (
     }
 
     const row = data[0];
-    
+
     // Transform nested swaps array
     const swaps: Array<{
       trace_idx: number;
@@ -2594,7 +2516,7 @@ app.get('/api/mev/atomic', async (
       amount_in: [string, string];
       amount_out: [string, string];
     }> = [];
-    
+
     if (row['swaps.trace_idx'] && row['swaps.trace_idx'].length > 0) {
       for (let i = 0; i < row['swaps.trace_idx'].length; i++) {
         swaps.push({
@@ -2644,7 +2566,7 @@ app.get('/api/mev/cexdex', async (
 ) => {
   try {
     const txHash = req.query.tx_hash as string;
-    
+
     if (!txHash) {
       res.status(400).json({
         error: 'Bad Request',
@@ -2739,7 +2661,7 @@ app.get('/api/mev/cexdex', async (
     }
 
     const row = data[0];
-    
+
     // Transform nested swaps array
     const swaps: Array<{
       trace_idx: number;
@@ -2751,7 +2673,7 @@ app.get('/api/mev/cexdex', async (
       amount_in: [string, string];
       amount_out: [string, string];
     }> = [];
-    
+
     if (row['swaps.trace_idx'] && row['swaps.trace_idx'].length > 0) {
       for (let i = 0; i < row['swaps.trace_idx'].length; i++) {
         swaps.push({
@@ -2808,7 +2730,7 @@ app.get('/api/mev/liquidations', async (
 ) => {
   try {
     const txHash = req.query.tx_hash as string;
-    
+
     if (!txHash) {
       res.status(400).json({
         error: 'Bad Request',
@@ -2901,7 +2823,7 @@ app.get('/api/mev/liquidations', async (
     }
 
     const row = data[0];
-    
+
     // Transform nested liquidation_swaps array
     const liquidationSwaps: Array<{
       trace_idx: number;
@@ -2913,7 +2835,7 @@ app.get('/api/mev/liquidations', async (
       amount_in: [string, string];
       amount_out: [string, string];
     }> = [];
-    
+
     if (row['liquidation_swaps.trace_idx'] && row['liquidation_swaps.trace_idx'].length > 0) {
       for (let i = 0; i < row['liquidation_swaps.trace_idx'].length; i++) {
         liquidationSwaps.push({
@@ -2940,7 +2862,7 @@ app.get('/api/mev/liquidations', async (
       covered_debt: [string, string];
       liquidated_collateral: [string, string];
     }> = [];
-    
+
     if (row.liquidations_trace_idx && row.liquidations_trace_idx.length > 0) {
       for (let i = 0; i < row.liquidations_trace_idx.length; i++) {
         liquidations.push({
@@ -2989,7 +2911,7 @@ app.get('/health', (req: Request, res: Response<HealthResponse>) => {
 
 // Root endpoint
 app.get('/', (req: Request, res: Response<RootResponse>) => {
-  res.json({ 
+  res.json({
     message: 'MEVScan API Server',
     version: '1.0.0',
     endpoints: [
@@ -3031,15 +2953,15 @@ app.use((
   _next: NextFunction
 ) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
-    message: err.message 
+    message: err.message
   });
 });
 
 // 404 handler
 app.use((req: Request, res: Response<ErrorResponse>) => {
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'Not Found',
     message: `Cannot ${req.method} ${req.path}`
   });
