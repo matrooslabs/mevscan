@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
 import PubNub from 'pubnub';
-import { PUBNUB_CHANNELS } from '@mevscan/shared/constants';
+import { PUBNUB_CHANNELS, TIME_RANGES } from '@mevscan/shared/constants';
 import { initClickHouseClient, type ClickHouseConfig } from '@mevscan/shared/clickhouse';
 import { ClickHouseClient } from '@clickhouse/client';
+import { generateGrossMevData } from './service';
 
 dotenv.config();
 
@@ -33,6 +34,48 @@ try {
 }
 
 
+const refreshInterval = 20000; // 20 seconds
+
+// Function to refresh and publish Gross MEV data
+async function refreshAndPublish() {
+    if (!clickhouseClient) {
+        console.error('ClickHouse client not initialized');
+        return;
+    }
+
+    try {
+        const grossMevData = await generateGrossMevData(clickhouseClient);
+
+        for (const timeRange of TIME_RANGES) {
+            const msg = grossMevData[timeRange];
+            if (!msg) {
+                continue;
+            }
+
+            pubnub.publish({
+                channel: `${PUBNUB_CHANNELS.GROSS_MEV}_${timeRange}`,
+                message: JSON.parse(JSON.stringify(msg)) // todo: find a way to improve this
+            },
+                (status, response) => {
+                    if (status.error) {
+                        console.error(`Error publishing ${timeRange} to PubNub:`, status.error);
+                    } else {
+                        console.log(`✓ Published Gross MEV data for ${timeRange} to PubNub`);
+                    }
+                });
+        }
+    } catch (error) {
+        console.error('Error refreshing Gross MEV data:', error);
+    }
+}
+
+// Initial refresh on startup
+refreshAndPublish();
+
+// Set up periodic refresh
+setInterval(() => {
+    refreshAndPublish();
+}, refreshInterval);
 
 
 // pubnub.publish({
