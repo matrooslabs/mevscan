@@ -1,15 +1,15 @@
 import { ClickHouseClient } from '@clickhouse/client';
 import type { TimeSeriesResponse, TimeSeriesDataPoint } from '@mevscan/shared';
+import { TIME_RANGES } from '@mevscan/shared/constants';
 
 /**
  * Helper function to generate time range filter for block_timestamp
  */
 function getTimeRangeFilter(timeRange: string): string {
-    const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
     const range = timeRange || '15min';
 
-    if (!validRanges.includes(range)) {
-        throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
+    if (!TIME_RANGES.includes(range)) {
+        throw new Error(`Invalid timeRange. Must be one of: ${TIME_RANGES.join(', ')}`);
     }
 
     switch (range) {

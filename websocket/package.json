@@ -21,7 +21,8 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "pubnub": "^10.2.3",
-    "@mevscan/shared": "*"
+    "@mevscan/shared": "*",
+    "@clickhouse/client": "^0.2.7"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

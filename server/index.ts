@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { createClient, ClickHouseClient } from '@clickhouse/client';
+import { ClickHouseClient } from '@clickhouse/client';
 import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
 import { getGrossMEV } from './services/grossMEVService';
 import { initClickHouseClient, type ClickHouseConfig } from '@mevscan/shared/clickhouse';
+import { TIME_RANGES } from '@mevscan/shared/constants';
 import type {
   Transaction,
   Block,
@@ -41,7 +42,7 @@ import type {
   AtomicArbResponse,
   CexDexQuoteResponse,
   LiquidationResponse,
-} from '@mevscan/shared';
+}  from '@mevscan/shared';
 
 dotenv.config();
 
@@ -163,11 +164,10 @@ function formatEthValue(wei: string | number): string {
 
 // Helper function to convert timeRange string to ClickHouse interval
 function getTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
 
-  if (!validRanges.includes(range)) {
-    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
+  if (!TIME_RANGES.includes(range)) {
+    throw new Error(`Invalid timeRange. Must be one of: ${TIME_RANGES.join(', ')}`);
   }
 
   switch (range) {
@@ -188,11 +188,10 @@ function getTimeRangeFilter(timeRange: string): string {
 
 // Helper function to convert timeRange string to ClickHouse interval for timestamp column
 function getTimestampTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
   const range = timeRange || '15min';
 
-  if (!validRanges.includes(range)) {
-    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
+  if (!TIME_RANGES.includes(range)) {
+    throw new Error(`Invalid timeRange. Must be one of: ${TIME_RANGES.join(', ')}`);
   }
 
   switch (range) {
