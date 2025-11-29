@@ -33,6 +33,8 @@ try {
 }
 
 
+
+
 // pubnub.publish({
 //     channel: "test",
 //     message: { "test": "hello1234" }

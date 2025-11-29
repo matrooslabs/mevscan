@@ -21,6 +21,7 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "pubnub": "^10.2.3",
+    "@mevscan/server": "*",
     "@mevscan/shared": "*",
     "@clickhouse/client": "^0.2.7"
   },
