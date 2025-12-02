@@ -6,12 +6,6 @@ import {
   ErrorResponse,
   Transaction,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
 
 /**
  * Register latest/recent data routes

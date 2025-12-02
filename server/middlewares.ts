@@ -6,6 +6,8 @@ import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
 import type { ErrorResponse } from '@mevscan/shared';
 
 // Middleware to inject ClickHouse client into request context
+// TypeScript declaration merging requires namespace syntax
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -13,6 +15,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 /**
  * Creates middleware to inject ClickHouse client into request context
