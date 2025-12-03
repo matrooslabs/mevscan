@@ -3,7 +3,7 @@ import PubNub from 'pubnub';
 import { PUBNUB_CHANNELS, TIME_RANGES } from '@mevscan/shared/constants';
 import { initClickHouseClient, type ClickHouseConfig } from '@mevscan/shared/clickhouse';
 import { ClickHouseClient } from '@clickhouse/client';
-import { generateGrossMevData } from './service';
+import { getGrossMevFromBlocktime, GrossMevDataResponse } from './services/grossMevService';
 
 dotenv.config();
 
@@ -15,74 +15,69 @@ const pubnub = new PubNub({
 });
 
 
-// Initialize ClickHouse client once
 let clickhouseClient: ClickHouseClient | null = null;
+let channelLastStoredTime: Record<string, number> = {};
+let refreshInterval = 20 * 1000; // 20 seconds
 
-// Initialize ClickHouse client at startup - exit if configuration is invalid
-try {
-    const clickHouseConfig: ClickHouseConfig = {
-        url: process.env.CLICKHOUSE_URL || '',
-        username: process.env.CLICKHOUSE_USERNAME || '',
-        password: process.env.CLICKHOUSE_PASSWORD || '',
-        database: process.env.CLICKHOUSE_DATABASE || '',
-    };
-    clickhouseClient = initClickHouseClient(clickHouseConfig);
-    console.log('✓ ClickHouse client initialized successfully');
-} catch (error) {
-    console.error('ERROR: Failed to initialize ClickHouse client:', error);
-    process.exit(1);
-}
+async function refreshAndPublish(clickhouseClient: ClickHouseClient, pubnub: PubNub) {
+    let lastStoredTime = channelLastStoredTime[PUBNUB_CHANNELS.GROSS_MEV];
+    if (!lastStoredTime) {
+        // Fetch from pubnub message to get last stored time
+        const message = await pubnub.fetchMessages({
+            channels: [PUBNUB_CHANNELS.GROSS_MEV],
+            count: 1,
+        });
 
+        const fetchedMessage = message.channels[PUBNUB_CHANNELS.GROSS_MEV];
+        if (!fetchedMessage || fetchedMessage.length === 0) {
+            lastStoredTime = Math.floor((Date.now() - 60 * 60 * 1000) / 1000);
+        } else {
+            const grossData = fetchedMessage[0]!.message as unknown as GrossMevDataResponse[];
+            lastStoredTime = grossData[grossData.length - 1]!.time + 1;
+        }
+    }
 
-const refreshInterval = 20000; // 20 seconds
-
-// Function to refresh and publish Gross MEV data
-async function refreshAndPublish() {
-    if (!clickhouseClient) {
-        console.error('ClickHouse client not initialized');
+    const grossMevData = await getGrossMevFromBlocktime(clickhouseClient, lastStoredTime);
+    if (!grossMevData || grossMevData.length === 0) {
         return;
     }
+    console.log(grossMevData);
 
-    try {
-        const grossMevData = await generateGrossMevData(clickhouseClient);
-
-        for (const timeRange of TIME_RANGES) {
-            const msg = grossMevData[timeRange];
-            if (!msg) {
-                continue;
-            }
-
-            pubnub.publish({
-                channel: `${PUBNUB_CHANNELS.GROSS_MEV}_${timeRange}`,
-                message: JSON.parse(JSON.stringify(msg)) // todo: find a way to improve this
-            },
-                (status, response) => {
-                    if (status.error) {
-                        console.error(`Error publishing ${timeRange} to PubNub:`, status.error);
-                    } else {
-                        console.log(`✓ Published Gross MEV data for ${timeRange} to PubNub`);
-                    }
-                });
+    pubnub.publish({
+        channel: PUBNUB_CHANNELS.GROSS_MEV,
+        message: grossMevData as any
+    }, (status, response) => {
+        if (status.error) {
+            console.error('Error publishing Gross MEV data:', status.error);
         }
-    } catch (error) {
-        console.error('Error refreshing Gross MEV data:', error);
-    }
+    });
+
+    channelLastStoredTime[PUBNUB_CHANNELS.GROSS_MEV] = grossMevData[grossMevData.length - 1]!.time;
 }
 
-// Initial refresh on startup
-refreshAndPublish();
 
-// Set up periodic refresh
-setInterval(() => {
-    refreshAndPublish();
-}, refreshInterval);
+(async () => {
+    try {
+        const clickHouseConfig: ClickHouseConfig = {
+            url: process.env.CLICKHOUSE_URL || '',
+            username: process.env.CLICKHOUSE_USERNAME || '',
+            password: process.env.CLICKHOUSE_PASSWORD || '',
+            database: process.env.CLICKHOUSE_DATABASE || '',
+        };
+        clickhouseClient = initClickHouseClient(clickHouseConfig);
+        const pingResult = await clickhouseClient.ping();
+        if (!pingResult.success) {
+            console.error('ERROR: Failed to ping ClickHouse client');
+            process.exit(1);
+        }
+        console.log('✓ ClickHouse client initialized successfully');
+    } catch (error) {
+        console.error('ERROR: Failed to initialize ClickHouse client:', error);
+        process.exit(1);
+    }
 
-
-// pubnub.publish({
-//     channel: "test",
-//     message: { "test": "hello1234" }
-// },
-//     (status, response) => {
-//         console.log(status);
-//         console.log(response);
-//     })
+    while (true) {
+        await refreshAndPublish(clickhouseClient!, pubnub);
+        await new Promise(resolve => setTimeout(resolve, refreshInterval));
+    }
+})();

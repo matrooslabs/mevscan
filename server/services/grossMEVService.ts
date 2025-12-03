@@ -96,6 +96,3 @@ export async function getGrossMEV(
 
     return response;
 }
-
-
-
