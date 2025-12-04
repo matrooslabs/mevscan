@@ -91,22 +91,34 @@ function Chart() {
     };
   }, []);
 
-  // Example line chart data
-  const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+  // Sample data for chart
+  const sampleData: GrossMevDataResponse[] = [
+    { time: Math.floor(Date.now() / 1000) - 3600, total: 12000, normal: 8000, timeboost: 4000 },
+    { time: Math.floor(Date.now() / 1000) - 3300, total: 15000, normal: 10000, timeboost: 5000 },
+    { time: Math.floor(Date.now() / 1000) - 3000, total: 18000, normal: 12000, timeboost: 6000 },
+    { time: Math.floor(Date.now() / 1000) - 2700, total: 14000, normal: 9000, timeboost: 5000 },
+    { time: Math.floor(Date.now() / 1000) - 2400, total: 16000, normal: 11000, timeboost: 5000 },
+    { time: Math.floor(Date.now() / 1000) - 2100, total: 19000, normal: 13000, timeboost: 6000 },
+    { time: Math.floor(Date.now() / 1000) - 1800, total: 17000, normal: 11500, timeboost: 5500 },
+    { time: Math.floor(Date.now() / 1000) - 1500, total: 20000, normal: 14000, timeboost: 6000 },
+    { time: Math.floor(Date.now() / 1000) - 1200, total: 22000, normal: 15000, timeboost: 7000 },
+    { time: Math.floor(Date.now() / 1000) - 900, total: 18000, normal: 12000, timeboost: 6000 },
+    { time: Math.floor(Date.now() / 1000) - 600, total: 21000, normal: 14500, timeboost: 6500 },
+    { time: Math.floor(Date.now() / 1000) - 300, total: 23000, normal: 16000, timeboost: 7000 },
+  ];
+
+  // Transform sample data into chart format
+  const chartData = {
+    labels: sampleData.map(item => {
+      const date = new Date(item.time * 1000);
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }),
     datasets: [
       {
-        label: 'MEV Profit (USD)',
-        data: [12000, 19000, 3000, 5000, 2000, 3000, 8000],
+        label: 'Total MEV Profit (USD)',
+        data: sampleData.map(item => item.total),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.1,
-      },
-      {
-        label: 'Timeboost Profit (USD)',
-        data: [2000, 3000, 20000, 5000, 1000, 4000, 6000],
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
         tension: 0.1,
       },
     ],
@@ -122,6 +134,39 @@ function Chart() {
       title: {
         display: true,
         text: 'MEV Profit Over Time',
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index' as const,
+        intersect: false,
+        callbacks: {
+          title: (context: any) => {
+            const index = context[0]?.dataIndex;
+            if (index === undefined) return '';
+            const item = sampleData[index];
+            if (!item) return '';
+            const date = new Date(item.time * 1000);
+            return `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+          },
+          label: (context: any) => {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            return `${label}: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          },
+          afterBody: (context: any) => {
+            const index = context[0]?.dataIndex;
+            if (index === undefined) return '';
+            const item = sampleData[index];
+            if (!item) return '';
+            return [
+              '',
+              'All Values:',
+              `Total: $${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              `Normal: $${item.normal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              `Timeboost: $${item.timeboost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            ];
+          },
+        },
       },
     },
     scales: {
@@ -140,7 +185,7 @@ function Chart() {
         <Card>
           <CardContent>
             <Box sx={{ height: 400 }}>
-              <Line data={data} options={options} />
+              <Line data={chartData} options={options} />
             </Box>
           </CardContent>
         </Card>
