@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import PubNub from 'pubnub';
-import { PUBNUB_CHANNELS, TIME_RANGES } from '@mevscan/shared/constants';
+import { PUBNUB_CHANNELS } from '@mevscan/shared/constants';
 import { initClickHouseClient, type ClickHouseConfig } from '@mevscan/shared/clickhouse';
 import { ClickHouseClient } from '@clickhouse/client';
-import { getGrossMevFromBlocktime, GrossMevDataResponse } from './services/grossMevService';
+import { getGrossMevFromBlocktime } from './services/grossMevService';
+import { GrossMevDataResponse } from '@mevscan/shared';
 
 dotenv.config();
 

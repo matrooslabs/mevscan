@@ -1,11 +1,5 @@
 import { ClickHouseClient } from "@clickhouse/client";
-
-export interface GrossMevDataResponse {
-    time: number;
-    total: number;
-    normal: number;
-    timeboost: number;
-}
+import { GrossMevDataResponse } from "@mevscan/shared";
 
 export async function getGrossMevFromBlocktime(clickhouse: ClickHouseClient, fromTimestamp: number): Promise<GrossMevDataResponse[]> {
     const query = `

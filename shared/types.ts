@@ -488,4 +488,9 @@ export interface LiquidationResponse {
   profit_usd: number;
   protocols: string[];
 }
-
+export interface GrossMevDataResponse {
+  time: number;
+  total: number;
+  normal: number;
+  timeboost: number;
+}
