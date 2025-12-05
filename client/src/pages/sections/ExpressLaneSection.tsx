@@ -19,22 +19,18 @@ import type {
   ExpressLaneProfitByControllerEntry,
 } from '../../types/api'
 
-interface ExpressLaneSectionProps {
-  timeRange?: string
-}
-
-function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
-  const expressLaneMEVPercentage = useExpressLaneMEVPercentage(timeRange)
-  const expressLaneMEVPercentagePerMinute = useExpressLaneMEVPercentagePerMinute(timeRange)
-  const expressLaneNetProfit = useExpressLaneNetProfit(timeRange)
-  const expressLaneProfitByController = useExpressLaneProfitByController(timeRange)
+function ExpressLaneSection() {
+  const expressLaneMEVPercentage = useExpressLaneMEVPercentage()
+  const expressLaneMEVPercentagePerMinute = useExpressLaneMEVPercentagePerMinute()
+  const expressLaneNetProfit = useExpressLaneNetProfit()
+  const expressLaneProfitByController = useExpressLaneProfitByController()
 
   usePeriodicApiRefreshByKeys(
     [
-      ['express-lane-mev-percentage', timeRange],
-      ['express-lane-mev-percentage-per-minute', timeRange],
-      ['express-lane-net-profit', timeRange],
-      ['express-lane-profit-by-controller', timeRange],
+      ['express-lane-mev-percentage'],
+      ['express-lane-mev-percentage-per-minute'],
+      ['express-lane-net-profit'],
+      ['express-lane-profit-by-controller'],
     ],
     60000,
     true,

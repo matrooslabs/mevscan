@@ -19,10 +19,6 @@ import {
 } from '../../hooks/useApi'
 import './MEVSection.css'
 
-interface MEVSectionProps {
-  timeRange?: string
-}
-
 const transformTimeSeriesData = (data?: TimeSeriesPoint[]): TimeSeriesData => {
   if (!data) return []
   return data.map((item) => ({
@@ -77,30 +73,30 @@ const transformProtocolData = (
   }
 }
 
-function MEVSection({ timeRange = '1hour' }: MEVSectionProps) {
-  const grossMEV = useGrossMEV(timeRange)
-  const grossAtomicArb = useGrossAtomicArb(timeRange)
-  const grossCexDexQuotes = useGrossCexDexQuotes(timeRange)
-  const grossLiquidation = useGrossLiquidation(timeRange)
-  const atomicMEVTimeboosted = useAtomicMEVTimeboosted(timeRange)
-  const atomicMEV = useAtomicMEV(timeRange)
-  const cexDex = useCexDex(timeRange)
-  const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
-  const liquidation = useLiquidation(timeRange)
-  const liquidationTimeboosted = useLiquidationTimeboosted(timeRange)
+function MEVSection() {
+  const grossMEV = useGrossMEV()
+  const grossAtomicArb = useGrossAtomicArb()
+  const grossCexDexQuotes = useGrossCexDexQuotes()
+  const grossLiquidation = useGrossLiquidation()
+  const atomicMEVTimeboosted = useAtomicMEVTimeboosted()
+  const atomicMEV = useAtomicMEV()
+  const cexDex = useCexDex()
+  const cexDexTimeboosted = useCexDexTimeboosted()
+  const liquidation = useLiquidation()
+  const liquidationTimeboosted = useLiquidationTimeboosted()
 
   usePeriodicApiRefreshByKeys(
     [
-      ['gross-mev', timeRange],
-      ['gross-atomic-arb', timeRange],
-      ['gross-cex-dex-quotes', timeRange],
-      ['gross-liquidation', timeRange],
-      ['atomic-mev-timeboosted', timeRange],
-      ['atomic-mev', timeRange],
-      ['cexdex', timeRange],
-      ['cexdex-timeboosted', timeRange],
-      ['liquidation', timeRange],
-      ['liquidation-timeboosted', timeRange],
+      ['gross-mev'],
+      ['gross-atomic-arb'],
+      ['gross-cex-dex-quotes'],
+      ['gross-liquidation'],
+      ['atomic-mev-timeboosted'],
+      ['atomic-mev'],
+      ['cexdex'],
+      ['cexdex-timeboosted'],
+      ['liquidation'],
+      ['liquidation-timeboosted'],
     ],
     60000,
     true,

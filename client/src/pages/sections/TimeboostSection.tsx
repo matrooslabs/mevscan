@@ -27,30 +27,26 @@ import type {
   TimeboostedTxPerSecondEntry,
 } from '../../types/api'
 
-interface TimeboostSectionProps {
-  timeRange?: string
-}
-
-function TimeboostSection({ timeRange = '1hour' }: TimeboostSectionProps) {
+function TimeboostSection() {
   const timeboostGrossRevenue = useTimeboostGrossRevenue()
-  const timeboostRevenue = useTimeboostRevenue(timeRange)
-  const bidsPerAddress = useBidsPerAddress(timeRange)
-  const auctionWinCount = useAuctionWinCount(timeRange)
-  const timeboostedTxPerSecond = useTimeboostedTxPerSecond(timeRange)
-  const timeboostedTxPerBlock = useTimeboostedTxPerBlock(timeRange)
+  const timeboostRevenue = useTimeboostRevenue()
+  const bidsPerAddress = useBidsPerAddress()
+  const auctionWinCount = useAuctionWinCount()
+  const timeboostedTxPerSecond = useTimeboostedTxPerSecond()
+  const timeboostedTxPerBlock = useTimeboostedTxPerBlock()
   const bidsPerRound = useBidsPerRound()
-  const expressLanePrice = useExpressLanePrice(timeRange)
+  const expressLanePrice = useExpressLanePrice()
 
   usePeriodicApiRefreshByKeys(
     [
       ['timeboost-gross-revenue'],
-      ['timeboost-revenue', timeRange],
-      ['bids-per-address', timeRange],
-      ['auction-win-count', timeRange],
-      ['timeboosted-tx-per-second', timeRange],
-      ['timeboosted-tx-per-block', timeRange],
+      ['timeboost-revenue'],
+      ['bids-per-address'],
+      ['auction-win-count'],
+      ['timeboosted-tx-per-second'],
+      ['timeboosted-tx-per-block'],
       ['bids-per-round'],
-      ['express-lane-price', timeRange],
+      ['express-lane-price'],
     ],
     60000,
     true,
