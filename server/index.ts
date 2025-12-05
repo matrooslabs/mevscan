@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import { createClient, ClickHouseClient } from '@clickhouse/client';
 import {
@@ -12,11 +11,10 @@ import {
   notFoundMiddleware,
 } from './middlewares';
 import { registerRoutes } from './routes';
-
-dotenv.config();
+import { config } from './config';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = config.server.port;
 
 // Trust proxy for accurate client IP (useful when behind nginx, load balancer, etc.)
 app.set('trust proxy', true);
@@ -25,34 +23,11 @@ app.set('trust proxy', true);
 let clickhouseClient: ClickHouseClient | null = null;
 
 function initClickHouseClient(): ClickHouseClient {
-  const url = process.env.CLICKHOUSE_URL;
-  const username = process.env.CLICKHOUSE_USERNAME;
-  const password = process.env.CLICKHOUSE_PASSWORD;
-  const database = process.env.CLICKHOUSE_DATABASE;
-
-  // Validate all required environment variables are present
-  if (!url) {
-    console.error('ERROR: CLICKHOUSE_URL environment variable is required');
-    process.exit(1);
-  }
-  if (!username) {
-    console.error('ERROR: CLICKHOUSE_USERNAME environment variable is required');
-    process.exit(1);
-  }
-  if (password === undefined) {
-    console.error('ERROR: CLICKHOUSE_PASSWORD environment variable is required');
-    process.exit(1);
-  }
-  if (!database) {
-    console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
-    process.exit(1);
-  }
-
   return createClient({
-    host: url,
-    username,
-    password,
-    database,
+    host: config.clickhouse.url,
+    username: config.clickhouse.username,
+    password: config.clickhouse.password,
+    database: config.clickhouse.database,
   });
 }
 
