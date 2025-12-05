@@ -1,0 +1,384 @@
+import type { Express } from 'express';
+import {
+  Request,
+  Response,
+  Address,
+  AuctionWinCountResponse,
+  BidsPerAddressResponse,
+  BidsPerRoundResponse,
+  Block,
+  ErrorResponse,
+  TimeboostRevenueResponse,
+  TimeboostedTxPerBlockResponse,
+  TimeboostedTxPerSecondResponse,
+} from './types';
+import {
+  formatRelativeTime,
+  formatEthValue,
+  getTimeRangeFilter,
+  getTimestampTimeRangeFilter,
+} from './types';
+
+/**
+ * Register timeboost routes
+ */
+export function registerTimeboostRoutes(app: Express) {
+  app.get('/api/timeboost/gross-revenue', async (
+    req: Request,
+    res: Response<TimeboostRevenueResponse | ErrorResponse>
+  ) => {
+    try {
+      const query = `
+        SELECT
+          sum(first_price) AS total_first_price,
+          sum(second_price) AS total_second_price
+        FROM (
+          SELECT
+            round,
+            maxIf(price, rank = 1) AS first_price,
+            anyIf(bidder, rank = 1) AS winner,
+            maxIf(price, rank = 2) AS second_price,
+            anyIf(bidder, rank = 2) AS second_place
+          FROM (
+            SELECT
+              round,
+              toFloat64(amount) / 1e18 AS price,
+              bidder,
+              row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+            FROM timeboost.bids
+          )
+          GROUP BY round
+        )
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        total_first_price: number;
+        total_second_price: number;
+      }>>();
+
+      const response: TimeboostRevenueResponse = data.length > 0 ? {
+        total_first_price: data[0].total_first_price || 0,
+        total_second_price: data[0].total_second_price || 0,
+      } : {
+        total_first_price: 0,
+        total_second_price: 0,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Timeboost Gross Revenue:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Gross Revenue',
+      });
+    }
+  });
+
+  // Get Timeboost Revenue (time-ranged)
+  app.get('/api/timeboost/revenue', async (
+    req: Request,
+    res: Response<TimeboostRevenueResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          sum(first_price) AS total_first_price,
+          sum(second_price) AS total_second_price
+        FROM (
+          SELECT
+            round,
+            maxIf(price, rank = 1) AS first_price,
+            anyIf(bidder, rank = 1) AS winner,
+            maxIf(price, rank = 2) AS second_price,
+            anyIf(bidder, rank = 2) AS second_place
+          FROM (
+            SELECT
+              round,
+              toFloat64(amount) / 1e18 AS price,
+              bidder,
+              row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+            FROM timeboost.bids
+            WHERE ${timeFilter}
+          )
+          GROUP BY round
+        )
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        total_first_price: number;
+        total_second_price: number;
+      }>>();
+
+      const response: TimeboostRevenueResponse = data.length > 0 ? {
+        total_first_price: data[0].total_first_price || 0,
+        total_second_price: data[0].total_second_price || 0,
+      } : {
+        total_first_price: 0,
+        total_second_price: 0,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Timeboost Revenue:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Revenue',
+      });
+    }
+  });
+
+  // Get Bids per Address
+  app.get('/api/timeboost/bids-per-address', async (
+    req: Request,
+    res: Response<BidsPerAddressResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT 
+          bidder, 
+          count(*) as bid_count 
+        FROM timeboost.bids 
+        WHERE ${timeFilter} 
+        GROUP BY bidder
+        ORDER BY bid_count DESC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        bidder: string;
+        bid_count: number;
+      }>>();
+
+      const response: BidsPerAddressResponse = data.map((row) => ({
+        bidder: row.bidder || '',
+        bid_count: row.bid_count || 0,
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Bids per Address:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Bids per Address',
+      });
+    }
+  });
+
+  // Get Auction Win Count
+  app.get('/api/timeboost/auction-win-count', async (
+    req: Request,
+    res: Response<AuctionWinCountResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          winner AS address,
+          COUNT(*) AS wins
+        FROM (
+          SELECT
+            round,
+            argMax(bidder, toUInt256(amount)) AS winner
+          FROM timeboost.bids
+          WHERE ${timeFilter}
+          GROUP BY round
+        )
+        GROUP BY address
+        ORDER BY wins DESC
+        LIMIT 15
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        address: string;
+        wins: number;
+      }>>();
+
+      const response: AuctionWinCountResponse = data.map((row) => ({
+        address: row.address || '',
+        wins: row.wins || 0,
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Auction Win Count:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Auction Win Count',
+      });
+    }
+  });
+
+  // Get Timeboosted Tx per Second
+  app.get('/api/timeboost/tx-per-second', async (
+    req: Request,
+    res: Response<TimeboostedTxPerSecondResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          toDateTime(e.block_timestamp) AS time,
+          sum(m.timeboosted_tx_count) AS tx_count
+        FROM mev.mev_blocks AS m
+        INNER JOIN ethereum.blocks AS e
+          ON m.block_number = e.block_number
+        WHERE ${timeFilter}
+        GROUP BY e.block_timestamp
+        ORDER BY e.block_timestamp ASC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        time: string;
+        tx_count: number;
+      }>>();
+
+      const response: TimeboostedTxPerSecondResponse = data
+        .filter((row) => row.time != null)
+        .map((row) => {
+          const date = new Date(row.time);
+          if (isNaN(date.getTime())) {
+            return null;
+          }
+          const hours = date.getHours().toString().padStart(2, '0');
+          const mins = date.getMinutes().toString().padStart(2, '0');
+          const secs = date.getSeconds().toString().padStart(2, '0');
+          return {
+            time: `${hours}:${mins}:${secs}`,
+            tx_count: row.tx_count || 0,
+          };
+        })
+        .filter((item): item is { time: string; tx_count: number } => item !== null);
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Timeboosted Tx per Second:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Second',
+      });
+    }
+  });
+
+  // Get Timeboosted Tx per Block
+  app.get('/api/timeboost/tx-per-block', async (
+    req: Request,
+    res: Response<TimeboostedTxPerBlockResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          e.block_number AS block_number,
+          m.timeboosted_tx_count AS tx_count
+        FROM mev.mev_blocks AS m
+        INNER JOIN ethereum.blocks AS e
+          ON m.block_number = e.block_number
+        WHERE ${timeFilter}
+        ORDER BY e.block_number ASC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        block_number: number;
+        tx_count: number;
+      }>>();
+
+      const response: TimeboostedTxPerBlockResponse = data.map((row) => ({
+        block_number: row.block_number || 0,
+        tx_count: row.tx_count || 0,
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Timeboosted Tx per Block:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Block',
+      });
+    }
+  });
+
+  // Get Bids per Round
+  app.get('/api/timeboost/bids-per-round', async (
+    req: Request,
+    res: Response<BidsPerRoundResponse | ErrorResponse>
+  ) => {
+    try {
+      const query = `
+        SELECT 
+          round, 
+          count(*) AS bid_count 
+        FROM timeboost.bids 
+        WHERE round > (SELECT max(round) FROM timeboost.bids) - 15 
+        GROUP BY round 
+        ORDER BY round ASC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        round: number;
+        bid_count: number;
+      }>>();
+
+      const response: BidsPerRoundResponse = data.map((row) => ({
+        round: row.round || 0,
+        bid_count: row.bid_count || 0,
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Bids per Round:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Bids per Round',
+      });
+    }
+  });
+
+  // Get Express Lane Price
+
+}
