@@ -8,7 +8,6 @@ import BarChart from '../../components/BarChart'
 import RadialBarChart from '../../components/RadialBarChart'
 
 interface TimeboostSectionProps {
-  timeRange: string
   timeboostGrossRevenue: UseQueryResult<any>
   timeboostRevenue: UseQueryResult<any>
   bidsPerAddress: UseQueryResult<any>
@@ -20,7 +19,6 @@ interface TimeboostSectionProps {
 }
 
 function TimeboostSection({
-  timeRange: _timeRange,
   timeboostGrossRevenue,
   timeboostRevenue,
   bidsPerAddress,

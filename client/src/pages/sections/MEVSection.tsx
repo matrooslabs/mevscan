@@ -5,7 +5,6 @@ import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 
 interface MEVSectionProps {
-  timeRange: string
   grossMEV: UseQueryResult<any>
   grossAtomicArb: UseQueryResult<any>
   grossCexDexQuotes: UseQueryResult<any>
@@ -69,7 +68,6 @@ const transformProtocolData = (data: any) => {
 }
 
 function MEVSection({
-  timeRange,
   grossMEV,
   grossAtomicArb,
   grossCexDexQuotes,

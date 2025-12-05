@@ -6,7 +6,6 @@ import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
 
 interface ExpressLaneSectionProps {
-  timeRange: string
   expressLaneMEVPercentage: UseQueryResult<any>
   expressLaneMEVPercentagePerMinute: UseQueryResult<any>
   expressLaneNetProfit: UseQueryResult<any>
@@ -14,7 +13,6 @@ interface ExpressLaneSectionProps {
 }
 
 function ExpressLaneSection({
-  timeRange: _timeRange,
   expressLaneMEVPercentage,
   expressLaneMEVPercentagePerMinute,
   expressLaneNetProfit,

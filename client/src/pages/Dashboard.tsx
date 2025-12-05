@@ -1,6 +1,5 @@
 import './Dashboard.css'
-import { useState } from 'react'
-import { Select, MenuItem, FormControl, InputLabel, Alert, Box } from '@mui/material'
+import { Alert, Box } from '@mui/material'
 import {
   useGrossMEV,
   useGrossAtomicArb,
@@ -31,7 +30,7 @@ import ExpressLaneSection from './sections/ExpressLaneSection'
 import TimeboostSection from './sections/TimeboostSection'
 
 function Dashboard() {
-  const [timeRange, setTimeRange] = useState<string>('15min')
+  const timeRange = '1hour'
 
   // Fetch all data
   const grossMEV = useGrossMEV(timeRange)
@@ -142,23 +141,6 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div style={{ marginBottom: 'var(--spacing-lg)', display: 'flex', justifyContent: 'flex-end', padding: '0 var(--spacing-lg)' }}>
-        <FormControl size="small" style={{ minWidth: 150 }}>
-          <InputLabel>Time Range</InputLabel>
-          <Select
-            value={timeRange}
-            label="Time Range"
-            onChange={(e) => setTimeRange(e.target.value)}
-          >
-            <MenuItem value="5min">5 minutes</MenuItem>
-            <MenuItem value="15min">15 minutes</MenuItem>
-            <MenuItem value="30min">30 minutes</MenuItem>
-            <MenuItem value="1hour">1 hour</MenuItem>
-            <MenuItem value="12hours">12 hours</MenuItem>
-          </Select>
-        </FormControl>
-      </div>
-
       {hasError && (
         <Box style={{ padding: '0 var(--spacing-lg)' }}>
           <Alert severity="error" style={{ marginBottom: 'var(--spacing-md)' }}>
@@ -168,7 +150,6 @@ function Dashboard() {
       )}
 
       <MEVSection
-        timeRange={timeRange}
         grossMEV={grossMEV}
         grossAtomicArb={grossAtomicArb}
         grossCexDexQuotes={grossCexDexQuotes}
@@ -182,7 +163,6 @@ function Dashboard() {
       />
 
       <ExpressLaneSection
-        timeRange={timeRange}
         expressLaneMEVPercentage={expressLaneMEVPercentage}
         expressLaneMEVPercentagePerMinute={expressLaneMEVPercentagePerMinute}
         expressLaneNetProfit={expressLaneNetProfit}
@@ -190,7 +170,6 @@ function Dashboard() {
       />
 
       <TimeboostSection
-        timeRange={timeRange}
         timeboostGrossRevenue={timeboostGrossRevenue}
         timeboostRevenue={timeboostRevenue}
         bidsPerAddress={bidsPerAddress}
