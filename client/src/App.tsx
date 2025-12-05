@@ -1,6 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Transaction from './pages/Transaction'
 import Block from './pages/Block'
@@ -10,9 +8,8 @@ import './App.css'
 function App() {
   return (
     <>
-      <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ask" element={<div>Ask Page - Coming Soon</div>} />
         <Route path="/transaction/:tx_hash" element={<Transaction />} />
