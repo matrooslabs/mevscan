@@ -3,6 +3,7 @@ import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mu
 import type { UseQueryResult } from '@tanstack/react-query'
 import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData, type LineConfig } from '../../components/TimeSeriesChart'
+import './MEVSection.css'
 
 interface MEVSectionProps {
   grossMEV: UseQueryResult<any>
@@ -133,49 +134,23 @@ function MEVSection({
   return (
     <>
       {/* Gross MEV Statistics Section */}
-      <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+      <Box className="dashboard-section-group">
         <Typography 
           variant="h4" 
           component="h2" 
-          sx={{ 
-            marginBottom: 'var(--spacing-2xl)',
-            padding: 'var(--spacing-lg)',
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            fontSize: '2rem',
-            letterSpacing: '-0.5px',
-            position: 'relative',
-            display: 'inline-block',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: '8px',
-              left: 'var(--spacing-lg)',
-              width: '80px',
-              height: '4px',
-              background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
-              borderRadius: '2px',
-            }
-          }}
+          className="mev-section-title"
         >
           MEV
         </Typography>
         <Box className="dashboard-section">
           {/* Gross MEV */}
           <Card className="dashboard-box dashboard-box-full">
-            <CardContent 
-              className="chart-card-content"
-              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-            >
+            <CardContent className="chart-card-content">
               <Typography variant="h5" component="h2" className="chard-card-title">
                 Gross MEV
               </Typography>
               {grossMEV.isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <Box className="loading-container">
                   <CircularProgress />
                 </Box>
               ) : grossMEV.isError ? (
@@ -199,15 +174,12 @@ function MEVSection({
 
           {/* Gross Atomic Arb */}
           <Card className="dashboard-box dashboard-box-full">
-            <CardContent 
-              className="chart-card-content"
-              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-            >
+            <CardContent className="chart-card-content">
               <Typography variant="h5" component="h2" className="chard-card-title">
                 Gross Atomic Arb
               </Typography>
               {grossAtomicArb.isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <Box className="loading-container">
                   <CircularProgress />
                 </Box>
               ) : grossAtomicArb.isError ? (
@@ -231,15 +203,12 @@ function MEVSection({
 
           {/* Gross CexDex */}
           <Card className="dashboard-box dashboard-box-full">
-            <CardContent 
-              className="chart-card-content"
-              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-            >
+            <CardContent className="chart-card-content">
               <Typography variant="h5" component="h2" className="chard-card-title">
                 Gross CexDex
               </Typography>
               {grossCexDexQuotes.isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <Box className="loading-container">
                   <CircularProgress />
                 </Box>
               ) : grossCexDexQuotes.isError ? (
@@ -263,15 +232,12 @@ function MEVSection({
 
           {/* Gross Liquidation */}
           <Card className="dashboard-box dashboard-box-full">
-            <CardContent 
-              className="chart-card-content"
-              style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-            >
+            <CardContent className="chart-card-content">
               <Typography variant="h5" component="h2" className="chard-card-title">
                 Gross Liquidation
               </Typography>
               {grossLiquidation.isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <Box className="loading-container">
                   <CircularProgress />
                 </Box>
               ) : grossLiquidation.isError ? (
@@ -298,15 +264,12 @@ function MEVSection({
       <Box className="dashboard-section">
         {/* Atomic Arb MEV */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               Atomic Arb MEV
             </Typography>
             {atomicMEV.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : atomicMEV.isError ? (
@@ -326,15 +289,12 @@ function MEVSection({
 
         {/* Atomic MEV Timeboosted */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               Atomic MEV Timeboosted
             </Typography>
             {atomicMEVTimeboosted.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : atomicMEVTimeboosted.isError ? (
@@ -354,15 +314,12 @@ function MEVSection({
 
         {/* CexDex Arb */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               CexDex Arb
             </Typography>
             {cexDex.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : cexDex.isError ? (
@@ -382,15 +339,12 @@ function MEVSection({
 
         {/* CexDex MEV Timeboosted */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               CexDex MEV Timeboosted
             </Typography>
             {cexDexTimeboosted.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : cexDexTimeboosted.isError ? (
@@ -410,15 +364,12 @@ function MEVSection({
 
         {/* Liquidation */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               Liquidation
             </Typography>
             {liquidation.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : liquidation.isError ? (
@@ -438,15 +389,12 @@ function MEVSection({
 
         {/* Liquidation Timeboosted */}
         <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
+          <CardContent className="chart-card-content">
             <Typography variant="h5" component="h2" className="chard-card-title">
               Liquidation Timeboosted
             </Typography>
             {liquidationTimeboosted.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <Box className="loading-container">
                 <CircularProgress />
               </Box>
             ) : liquidationTimeboosted.isError ? (
