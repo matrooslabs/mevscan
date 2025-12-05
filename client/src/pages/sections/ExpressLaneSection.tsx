@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material'
+import { Typography, Box } from '@mui/material'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
@@ -10,6 +10,14 @@ import {
   useExpressLaneProfitByController,
   usePeriodicApiRefreshByKeys,
 } from '../../hooks/useApi'
+import ChartCard from '../../components/ChartCard'
+import './ExpressLaneSection.css'
+import type {
+  ExpressLaneMEVPercentage,
+  ExpressLaneMEVPercentagePerMinute,
+  ExpressLaneNetProfitEntry,
+  ExpressLaneProfitByControllerEntry,
+} from '../../types/api'
 
 interface ExpressLaneSectionProps {
   timeRange?: string
@@ -34,9 +42,10 @@ function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
   )
   // Transform pie chart data
   const transformPieChartData = useMemo((): PieChartData[] => {
-    if (!expressLaneMEVPercentage.data) return []
+    const mevData = expressLaneMEVPercentage.data as ExpressLaneMEVPercentage | undefined
+    if (!mevData) return []
     
-    const { total, timeboost } = expressLaneMEVPercentage.data
+    const { total, timeboost } = mevData
     const normal = Math.max(0, total - timeboost)
     const timeboostValue = Math.max(0, timeboost || 0)
     
@@ -59,9 +68,12 @@ function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
   }, [expressLaneMEVPercentage.data])
 
   // Transform Express Lane MEV Percentage per minute data
-  const transformPercentageTimeSeriesData = useMemo((): TimeSeriesData => {
-    if (!expressLaneMEVPercentagePerMinute.data) return []
-    return expressLaneMEVPercentagePerMinute.data.map((item: any) => ({
+  const transformPercentageTimeSeriesData = useMemo<TimeSeriesData>(() => {
+    const percentageData = expressLaneMEVPercentagePerMinute.data as
+      | ExpressLaneMEVPercentagePerMinute[]
+      | undefined
+    if (!percentageData) return []
+    return percentageData.map((item) => ({
       time: item.time,
       total: item.percentage,
       normal: 0,
@@ -71,11 +83,12 @@ function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
 
   // Transform Express Lane Net Profit data
   const transformExpressLaneNetProfitData = useMemo(() => {
-    if (!expressLaneNetProfit.data || expressLaneNetProfit.data.length === 0) {
+    const netProfitData = expressLaneNetProfit.data as ExpressLaneNetProfitEntry[] | undefined
+    if (!netProfitData || netProfitData.length === 0) {
       return []
     }
     const roundMap = new Map<number, number>()
-    expressLaneNetProfit.data.forEach((item: any) => {
+    netProfitData.forEach((item) => {
       const current = roundMap.get(item.round) || 0
       roundMap.set(item.round, current + item.net_profit)
     })
@@ -89,11 +102,14 @@ function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
 
   // Transform Express Lane Profit by Controller data
   const transformExpressLaneProfitByControllerData = useMemo(() => {
-    if (!expressLaneProfitByController.data || expressLaneProfitByController.data.length === 0) {
+    const profitByControllerData = expressLaneProfitByController.data as
+      | ExpressLaneProfitByControllerEntry[]
+      | undefined
+    if (!profitByControllerData || profitByControllerData.length === 0) {
       return []
     }
-    return expressLaneProfitByController.data
-      .map((item: any) => ({
+    return profitByControllerData
+      .map((item) => ({
         name: item.controller || 'Unknown',
         value: item.net_profit_total || 0,
       }))
@@ -101,166 +117,102 @@ function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
   }, [expressLaneProfitByController.data])
 
   return (
-    <Box className="dashboard-section-group" sx={{ marginBottom: 'var(--spacing-xl)' }}>
+    <Box className="dashboard-section-group express-section-spacing">
       <Typography 
         variant="h4" 
         component="h2" 
-        sx={{ 
-          marginBottom: 'var(--spacing-2xl)',
-          padding: 'var(--spacing-lg)',
-          fontWeight: 700,
-          background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-          fontSize: '2rem',
-          letterSpacing: '-0.5px',
-          position: 'relative',
-          display: 'inline-block',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: '8px',
-            left: 'var(--spacing-lg)',
-            width: '80px',
-            height: '4px',
-            background: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
-            borderRadius: '2px',
-          }
-        }}
+        className="express-section-title"
       >
         Express Lane
       </Typography>
       <Box className="dashboard-section">
         {/* Express Lane MEV Percentage */}
-        <Card className="dashboard-box dashboard-box-half">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              className="chard-card-title"
-              style={{ marginBottom: 'var(--spacing-lg)' }}
-            >
-              Express Lane MEV Percentage
-            </Typography>
-            {expressLaneMEVPercentage.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : expressLaneMEVPercentage.isError ? (
-              <Alert severity="error">{expressLaneMEVPercentage.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-md)', height: '100%', flex: 1 }}>
-                <Box style={{ width: '100%', height: '250px', flex: 1 }}>
-                  <PieChart 
-                    data={transformPieChartData}
-                    innerRadius={40}
-                    outerRadius={80}
-                    showLegend={true}
-                  />
-                </Box>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Express Lane MEV Percentage"
+          isLoading={expressLaneMEVPercentage.isLoading}
+          isError={expressLaneMEVPercentage.isError}
+          errorMessage={expressLaneMEVPercentage.error?.message}
+          className="chart-card-half"
+          contentClassName="express-chart-card-flex"
+        >
+          <Box className="express-chart-card-inner">
+            <Box className="express-chart-card-pie">
+              <PieChart 
+                data={transformPieChartData}
+                innerRadius={40}
+                outerRadius={80}
+                showLegend={true}
+              />
+            </Box>
+          </Box>
+        </ChartCard>
 
         {/* Express Lane MEV Percentage Time Series */}
-        <Card className="dashboard-box dashboard-box-half">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography variant="h5" component="h2" className="chard-card-title">
-              Express Lane MEV Percentage
-            </Typography>
-            {expressLaneMEVPercentagePerMinute.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : expressLaneMEVPercentagePerMinute.isError ? (
-              <Alert severity="error">{expressLaneMEVPercentagePerMinute.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformPercentageTimeSeriesData}
-                xAxisKey="time"
-                yAxisLabel="Percentage (%)"
-                showArea={true}
-                hideZeroValues={true}
-                lines={[
-                  { dataKey: 'total', name: 'Percentage', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Express Lane MEV Percentage"
+          isLoading={expressLaneMEVPercentagePerMinute.isLoading}
+          isError={expressLaneMEVPercentagePerMinute.isError}
+          errorMessage={expressLaneMEVPercentagePerMinute.error?.message}
+          className="chart-card-half"
+          contentClassName="express-chart-card-flex"
+        >
+          <TimeSeriesChart 
+            data={transformPercentageTimeSeriesData}
+            xAxisKey="time"
+            yAxisLabel="Percentage (%)"
+            showArea={true}
+            hideZeroValues={true}
+            lines={[
+              { dataKey: 'total', name: 'Percentage', strokeColor: '#82ca9d' },
+            ]}
+          />
+        </ChartCard>
 
         {/* Express Lane Net Profit */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography variant="h5" component="h2" className="chard-card-title">
-              Express Lane Net Profit
-            </Typography>
-            {expressLaneNetProfit.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : expressLaneNetProfit.isError ? (
-              <Alert severity="error">{expressLaneNetProfit.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <TimeSeriesChart 
-                data={transformExpressLaneNetProfitData.map(item => ({
-                  time: item.round,
-                  total: item.net_profit,
-                  normal: 0,
-                  timeboost: item.net_profit,
-                }))}
-                xAxisKey="time"
-                yAxisLabel="Net Profit (USD)"
-                showArea={true}
-                hideZeroValues={true}
-                lines={[
-                  { dataKey: 'total', name: 'Net Profit', strokeColor: '#82ca9d' },
-                ]}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Express Lane Net Profit"
+          isLoading={expressLaneNetProfit.isLoading}
+          isError={expressLaneNetProfit.isError}
+          errorMessage={expressLaneNetProfit.error?.message}
+          className="chart-card-full"
+          contentClassName="express-chart-card-flex"
+        >
+          <TimeSeriesChart 
+            data={transformExpressLaneNetProfitData.map(item => ({
+              time: item.round,
+              total: item.net_profit,
+              normal: 0,
+              timeboost: item.net_profit,
+            }))}
+            xAxisKey="time"
+            yAxisLabel="Net Profit (USD)"
+            showArea={true}
+            hideZeroValues={true}
+            lines={[
+              { dataKey: 'total', name: 'Net Profit', strokeColor: '#82ca9d' },
+            ]}
+          />
+        </ChartCard>
 
         {/* Express Lane Profit by Controller */}
-        <Card className="dashboard-box dashboard-box-full">
-          <CardContent 
-            className="chart-card-content"
-            style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--spacing-lg)', gap: 'var(--spacing-md)' }}
-          >
-            <Typography variant="h5" component="h2" className="chard-card-title">
-              Express Lane Profit by Controller
-            </Typography>
-            {expressLaneProfitByController.isLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-                <CircularProgress />
-              </Box>
-            ) : expressLaneProfitByController.isError ? (
-              <Alert severity="error">{expressLaneProfitByController.error?.message || 'Failed to load data'}</Alert>
-            ) : (
-              <BarChart 
-                data={transformExpressLaneProfitByControllerData}
-                xAxisKey="name"
-                yAxisLabel="Net Profit (USD)"
-                showGrid={true}
-                showLegend={false}
-                showTooltip={true}
-                barColor="#82ca9d"
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Express Lane Profit by Controller"
+          isLoading={expressLaneProfitByController.isLoading}
+          isError={expressLaneProfitByController.isError}
+          errorMessage={expressLaneProfitByController.error?.message}
+          className="chart-card-full"
+          contentClassName="express-chart-card-flex"
+        >
+          <BarChart 
+            data={transformExpressLaneProfitByControllerData}
+            xAxisKey="name"
+            yAxisLabel="Net Profit (USD)"
+            showGrid={true}
+            showLegend={false}
+            showTooltip={true}
+            barColor="#82ca9d"
+          />
+        </ChartCard>
       </Box>
     </Box>
   )

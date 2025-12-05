@@ -1,0 +1,68 @@
+.timeboost-section-spacing {
+  margin-bottom: var(--spacing-xl);
+}
+
+.timeboost-section-title {
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-lg);
+  font-weight: 700;
+  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 2rem;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.timeboost-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: var(--spacing-lg);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
+  border-radius: 2px;
+}
+
+.timeboost-chart-card-flex {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.timeboost-chart-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  height: 100%;
+  flex: 1;
+}
+
+.timeboost-chart-card-pie {
+  width: 100%;
+  height: 250px;
+  flex: 1;
+}
+
+.timeboost-chart-card-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex: 1;
+}
+
+.timeboost-metric-large-value {
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--text-primary, inherit);
+}
+
