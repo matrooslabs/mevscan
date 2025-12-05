@@ -1,21 +1,24 @@
 import { useMemo } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material'
-import type { UseQueryResult } from '@tanstack/react-query'
 import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData, type LineConfig } from '../../components/TimeSeriesChart'
+import {
+  useAtomicMEV,
+  useAtomicMEVTimeboosted,
+  useCexDex,
+  useCexDexTimeboosted,
+  useGrossAtomicArb,
+  useGrossCexDexQuotes,
+  useGrossLiquidation,
+  useGrossMEV,
+  useLiquidation,
+  useLiquidationTimeboosted,
+  usePeriodicApiRefreshByKeys,
+} from '../../hooks/useApi'
 import './MEVSection.css'
 
 interface MEVSectionProps {
-  grossMEV: UseQueryResult<any>
-  grossAtomicArb: UseQueryResult<any>
-  grossCexDexQuotes: UseQueryResult<any>
-  grossLiquidation: UseQueryResult<any>
-  atomicMEV: UseQueryResult<any>
-  atomicMEVTimeboosted: UseQueryResult<any>
-  cexDex: UseQueryResult<any>
-  cexDexTimeboosted: UseQueryResult<any>
-  liquidation: UseQueryResult<any>
-  liquidationTimeboosted: UseQueryResult<any>
+  timeRange?: string
 }
 
 const transformTimeSeriesData = (data: any): TimeSeriesData => {
@@ -70,18 +73,35 @@ const transformProtocolData = (data: any): { transformedData: Record<string, str
   }
 }
 
-function MEVSection({
-  grossMEV,
-  grossAtomicArb,
-  grossCexDexQuotes,
-  grossLiquidation,
-  atomicMEV,
-  atomicMEVTimeboosted,
-  cexDex,
-  cexDexTimeboosted,
-  liquidation,
-  liquidationTimeboosted,
-}: MEVSectionProps) {
+function MEVSection({ timeRange = '1hour' }: MEVSectionProps) {
+  const grossMEV = useGrossMEV(timeRange)
+  const grossAtomicArb = useGrossAtomicArb(timeRange)
+  const grossCexDexQuotes = useGrossCexDexQuotes(timeRange)
+  const grossLiquidation = useGrossLiquidation(timeRange)
+  const atomicMEVTimeboosted = useAtomicMEVTimeboosted(timeRange)
+  const atomicMEV = useAtomicMEV(timeRange)
+  const cexDex = useCexDex(timeRange)
+  const cexDexTimeboosted = useCexDexTimeboosted(timeRange)
+  const liquidation = useLiquidation(timeRange)
+  const liquidationTimeboosted = useLiquidationTimeboosted(timeRange)
+
+  usePeriodicApiRefreshByKeys(
+    [
+      ['gross-mev', timeRange],
+      ['gross-atomic-arb', timeRange],
+      ['gross-cex-dex-quotes', timeRange],
+      ['gross-liquidation', timeRange],
+      ['atomic-mev-timeboosted', timeRange],
+      ['atomic-mev', timeRange],
+      ['cexdex', timeRange],
+      ['cexdex-timeboosted', timeRange],
+      ['liquidation', timeRange],
+      ['liquidation-timeboosted', timeRange],
+    ],
+    60000,
+    true,
+    200
+  )
   // Transform Atomic MEV Timeboosted data
   const { transformedAtomicMEVData, atomicMEVLineConfigs } = useMemo(() => {
     if (!atomicMEVTimeboosted.data || atomicMEVTimeboosted.data.length === 0) {

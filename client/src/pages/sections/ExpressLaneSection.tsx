@@ -1,23 +1,37 @@
 import { useMemo } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material'
-import type { UseQueryResult } from '@tanstack/react-query'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
+import {
+  useExpressLaneMEVPercentage,
+  useExpressLaneMEVPercentagePerMinute,
+  useExpressLaneNetProfit,
+  useExpressLaneProfitByController,
+  usePeriodicApiRefreshByKeys,
+} from '../../hooks/useApi'
 
 interface ExpressLaneSectionProps {
-  expressLaneMEVPercentage: UseQueryResult<any>
-  expressLaneMEVPercentagePerMinute: UseQueryResult<any>
-  expressLaneNetProfit: UseQueryResult<any>
-  expressLaneProfitByController: UseQueryResult<any>
+  timeRange?: string
 }
 
-function ExpressLaneSection({
-  expressLaneMEVPercentage,
-  expressLaneMEVPercentagePerMinute,
-  expressLaneNetProfit,
-  expressLaneProfitByController,
-}: ExpressLaneSectionProps) {
+function ExpressLaneSection({ timeRange = '1hour' }: ExpressLaneSectionProps) {
+  const expressLaneMEVPercentage = useExpressLaneMEVPercentage(timeRange)
+  const expressLaneMEVPercentagePerMinute = useExpressLaneMEVPercentagePerMinute(timeRange)
+  const expressLaneNetProfit = useExpressLaneNetProfit(timeRange)
+  const expressLaneProfitByController = useExpressLaneProfitByController(timeRange)
+
+  usePeriodicApiRefreshByKeys(
+    [
+      ['express-lane-mev-percentage', timeRange],
+      ['express-lane-mev-percentage-per-minute', timeRange],
+      ['express-lane-net-profit', timeRange],
+      ['express-lane-profit-by-controller', timeRange],
+    ],
+    60000,
+    true,
+    200
+  )
   // Transform pie chart data
   const transformPieChartData = useMemo((): PieChartData[] => {
     if (!expressLaneMEVPercentage.data) return []

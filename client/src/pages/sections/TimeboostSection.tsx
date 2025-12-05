@@ -1,33 +1,51 @@
 import { useMemo } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material'
-import type { UseQueryResult } from '@tanstack/react-query'
 import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
 import RadialBarChart from '../../components/RadialBarChart'
+import {
+  useAuctionWinCount,
+  useBidsPerAddress,
+  useBidsPerRound,
+  useExpressLanePrice,
+  usePeriodicApiRefreshByKeys,
+  useTimeboostGrossRevenue,
+  useTimeboostRevenue,
+  useTimeboostedTxPerBlock,
+  useTimeboostedTxPerSecond,
+} from '../../hooks/useApi'
 
 interface TimeboostSectionProps {
-  timeboostGrossRevenue: UseQueryResult<any>
-  timeboostRevenue: UseQueryResult<any>
-  bidsPerAddress: UseQueryResult<any>
-  auctionWinCount: UseQueryResult<any>
-  timeboostedTxPerSecond: UseQueryResult<any>
-  timeboostedTxPerBlock: UseQueryResult<any>
-  bidsPerRound: UseQueryResult<any>
-  expressLanePrice: UseQueryResult<any>
+  timeRange?: string
 }
 
-function TimeboostSection({
-  timeboostGrossRevenue,
-  timeboostRevenue,
-  bidsPerAddress,
-  auctionWinCount,
-  timeboostedTxPerSecond,
-  timeboostedTxPerBlock,
-  bidsPerRound,
-  expressLanePrice,
-}: TimeboostSectionProps) {
+function TimeboostSection({ timeRange = '1hour' }: TimeboostSectionProps) {
+  const timeboostGrossRevenue = useTimeboostGrossRevenue()
+  const timeboostRevenue = useTimeboostRevenue(timeRange)
+  const bidsPerAddress = useBidsPerAddress(timeRange)
+  const auctionWinCount = useAuctionWinCount(timeRange)
+  const timeboostedTxPerSecond = useTimeboostedTxPerSecond(timeRange)
+  const timeboostedTxPerBlock = useTimeboostedTxPerBlock(timeRange)
+  const bidsPerRound = useBidsPerRound()
+  const expressLanePrice = useExpressLanePrice(timeRange)
+
+  usePeriodicApiRefreshByKeys(
+    [
+      ['timeboost-gross-revenue'],
+      ['timeboost-revenue', timeRange],
+      ['bids-per-address', timeRange],
+      ['auction-win-count', timeRange],
+      ['timeboosted-tx-per-second', timeRange],
+      ['timeboosted-tx-per-block', timeRange],
+      ['bids-per-round'],
+      ['express-lane-price', timeRange],
+    ],
+    60000,
+    true,
+    200
+  )
   // Transform Bids per Address data
   const transformBidsPerAddressData = useMemo((): PieChartData[] => {
     if (!bidsPerAddress.data || bidsPerAddress.data.length === 0) {
