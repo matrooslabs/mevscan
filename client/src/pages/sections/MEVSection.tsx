@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { chartColorPalette } from '../../theme'
-import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
+import TimeSeriesChart, { type TimeSeriesData, type LineConfig } from '../../components/TimeSeriesChart'
 
 interface MEVSectionProps {
   grossMEV: UseQueryResult<any>
@@ -27,20 +27,22 @@ const transformTimeSeriesData = (data: any): TimeSeriesData => {
   }))
 }
 
-const transformProtocolData = (data: any) => {
+const transformProtocolData = (data: any): { transformedData: Record<string, string | number>[], lineConfigs: LineConfig[] } => {
   if (!data || data.length === 0) {
     return { transformedData: [], lineConfigs: [] }
   }
   
-  const protocols = Array.from(new Set(data.map((item: any) => item.proto))).sort()
-  const times = Array.from(new Set(data.map((item: any) => item.time))).sort()
+  const protocols = Array.from(new Set(data.map((item: any) => String(item.proto)))).sort() as string[]
+  const times = Array.from(new Set(data.map((item: any) => String(item.time)))).sort() as string[]
   
   const dataMap = new Map<string, Map<string, number>>()
   data.forEach((item: any) => {
-    if (!dataMap.has(item.time)) {
-      dataMap.set(item.time, new Map())
+    const time = String(item.time)
+    const proto = String(item.proto)
+    if (!dataMap.has(time)) {
+      dataMap.set(time, new Map())
     }
-    dataMap.get(item.time)!.set(item.proto, item.profit_usd)
+    dataMap.get(time)!.set(proto, Number(item.profit_usd) || 0)
   })
   
   const transformedData = times.map(time => {
@@ -55,7 +57,7 @@ const transformProtocolData = (data: any) => {
     return dataPoint
   })
   
-  const lineConfigs = protocols.map((proto, index) => ({
+  const lineConfigs: LineConfig[] = protocols.map((proto, index) => ({
     dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
     name: proto,
     strokeColor: chartColorPalette[index % chartColorPalette.length],
@@ -82,18 +84,20 @@ function MEVSection({
   // Transform Atomic MEV Timeboosted data
   const { transformedAtomicMEVData, atomicMEVLineConfigs } = useMemo(() => {
     if (!atomicMEVTimeboosted.data || atomicMEVTimeboosted.data.length === 0) {
-      return { transformedAtomicMEVData: [], atomicMEVLineConfigs: [] }
+      return { transformedAtomicMEVData: [], atomicMEVLineConfigs: [] as LineConfig[] }
     }
     
-    const protocols = Array.from(new Set(atomicMEVTimeboosted.data.map((item: any) => item.proto))).sort()
-    const times = Array.from(new Set(atomicMEVTimeboosted.data.map((item: any) => item.time))).sort()
+    const protocols = Array.from(new Set(atomicMEVTimeboosted.data.map((item: any) => String(item.proto)))).sort() as string[]
+    const times = Array.from(new Set(atomicMEVTimeboosted.data.map((item: any) => String(item.time)))).sort() as string[]
     
     const dataMap = new Map<string, Map<string, number>>()
     atomicMEVTimeboosted.data.forEach((item: any) => {
-      if (!dataMap.has(item.time)) {
-        dataMap.set(item.time, new Map())
+      const time = String(item.time)
+      const proto = String(item.proto)
+      if (!dataMap.has(time)) {
+        dataMap.set(time, new Map())
       }
-      dataMap.get(item.time)!.set(item.proto, item.profit_usd)
+      dataMap.get(time)!.set(proto, Number(item.profit_usd) || 0)
     })
     
     const transformedData = times.map(time => {
@@ -108,7 +112,7 @@ function MEVSection({
       return dataPoint
     })
     
-    const lineConfigs = protocols.map((proto, index) => ({
+    const lineConfigs: LineConfig[] = protocols.map((proto, index) => ({
       dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
       name: proto,
       strokeColor: chartColorPalette[index % chartColorPalette.length],
