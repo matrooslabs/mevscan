@@ -22,7 +22,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -87,7 +87,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -173,7 +173,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -258,7 +258,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -344,7 +344,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -429,7 +429,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

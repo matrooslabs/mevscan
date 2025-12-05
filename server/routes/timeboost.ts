@@ -86,7 +86,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<TimeboostRevenueResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -147,7 +147,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<BidsPerAddressResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -191,7 +191,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<AuctionWinCountResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -242,7 +242,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<TimeboostedTxPerSecondResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -300,7 +300,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<TimeboostedTxPerBlockResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -386,7 +386,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<ExpressLanePriceResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
