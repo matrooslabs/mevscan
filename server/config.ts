@@ -2,12 +2,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load environment variables from the root directory
-// In development (ts-node), __dirname is usually the server directory
-// In production (built), __dirname is server/dist/server
-const isDist = __filename.includes('dist');
-const envPath = isDist 
-  ? path.resolve(__dirname, '../../../.env') 
-  : path.resolve(__dirname, '../.env');
+// Both development and production resolve to the project root
+const envPath = path.resolve(__dirname, '../.env');
 
 dotenv.config({ path: envPath });
 
@@ -18,7 +14,7 @@ interface Config {
   clickhouse: {
     url: string;
     username: string;
-    password?: string;
+    password: string;
     database: string;
   };
 }
@@ -38,7 +34,7 @@ export const config: Config = {
   clickhouse: {
     url: getEnvVar('CLICKHOUSE_URL'),
     username: getEnvVar('CLICKHOUSE_USERNAME'),
-    password: process.env.CLICKHOUSE_PASSWORD, // Optional check handled by caller or specific logic
+    password: getEnvVar('CLICKHOUSE_PASSWORD'),
     database: getEnvVar('CLICKHOUSE_DATABASE'),
   },
 };
@@ -52,7 +48,7 @@ if (!config.clickhouse.username) {
   console.error('ERROR: CLICKHOUSE_USERNAME environment variable is required');
   process.exit(1);
 }
-if (config.clickhouse.password === undefined) {
+if (!config.clickhouse.password) {
   console.error('ERROR: CLICKHOUSE_PASSWORD environment variable is required');
   process.exit(1);
 }
@@ -60,4 +56,3 @@ if (!config.clickhouse.database) {
   console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
   process.exit(1);
 }
-
