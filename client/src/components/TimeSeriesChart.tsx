@@ -10,6 +10,7 @@ import {
   Legend, 
   ResponsiveContainer
 } from 'recharts'
+import type { LegendPayload } from 'recharts'
 
 /**
  * Time series data point for chart visualization
@@ -61,12 +62,7 @@ interface TooltipPayloadEntry {
   payload?: Record<string, unknown>;
 }
 
-interface LegendPayloadEntry {
-  dataKey?: string;
-  value?: string;
-  color?: string;
-  type?: string;
-}
+type LegendPayloadEntry = LegendPayload;
 
 // Constants
 const DEFAULT_STROKE_COLOR = '#8884d8';
@@ -154,11 +150,11 @@ function createLineConfigs(
   return [];
 }
 
-function filterLineEntries(payload: TooltipPayloadEntry[]): TooltipPayloadEntry[] {
+function filterLineEntries(payload: readonly TooltipPayloadEntry[]): TooltipPayloadEntry[] {
   return payload.filter(entry => entry.type !== 'area');
 }
 
-function deduplicateEntries(entries: TooltipPayloadEntry[]): TooltipPayloadEntry[] {
+function deduplicateEntries(entries: readonly TooltipPayloadEntry[]): TooltipPayloadEntry[] {
   const seen = new Set<string>();
   return entries.filter(entry => {
     const key = entry.dataKey || entry.name || '';
@@ -171,7 +167,7 @@ function deduplicateEntries(entries: TooltipPayloadEntry[]): TooltipPayloadEntry
 }
 
 function orderLegendPayload(
-  payload: LegendPayloadEntry[],
+  payload: readonly LegendPayloadEntry[],
   lineConfigs: LineConfig[]
 ): LegendPayloadEntry[] {
   return lineConfigs
@@ -195,7 +191,7 @@ interface TooltipContentProps {
 }
 
 interface LegendContentProps {
-  payload?: LegendPayloadEntry[];
+  payload?: readonly LegendPayloadEntry[];
   lineConfigs: LineConfig[];
 }
 
@@ -263,24 +259,33 @@ function CustomLegend({ payload, lineConfigs }: LegendContentProps) {
     return null;
   }
 
-  const linePayload = filterLineEntries(payload as TooltipPayloadEntry[]) as LegendPayloadEntry[];
+  const linePayload = filterLineEntries(
+    payload as readonly TooltipPayloadEntry[]
+  ) as LegendPayloadEntry[];
   const orderedPayload = orderLegendPayload(linePayload, lineConfigs);
 
   return (
     <ul style={legendListStyle}>
-      {orderedPayload.map((entry, index) => (
-        <li key={entry.dataKey || index} style={legendItemStyle}>
-          <span 
-            style={{ 
-              ...legendColorIndicatorStyle, 
-              backgroundColor: entry.color 
-            }} 
-          />
-          <span style={{ fontSize: `${FONT_SIZE_LARGE}px` }}>
-            {entry.value}
-          </span>
-        </li>
-      ))}
+      {orderedPayload.map((entry, index) => {
+        const key =
+          typeof entry.dataKey === 'string' || typeof entry.dataKey === 'number'
+            ? entry.dataKey
+            : index;
+
+        return (
+          <li key={key} style={legendItemStyle}>
+            <span 
+              style={{ 
+                ...legendColorIndicatorStyle, 
+                backgroundColor: entry.color 
+              }} 
+            />
+            <span style={{ fontSize: `${FONT_SIZE_LARGE}px` }}>
+              {entry.value}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
