@@ -8,6 +8,7 @@ import {
   BidsPerRoundResponse,
   Block,
   ErrorResponse,
+  ExpressLanePriceResponse,
   TimeboostRevenueResponse,
   TimeboostedTxPerBlockResponse,
   TimeboostedTxPerSecondResponse,
@@ -380,5 +381,63 @@ export function registerTimeboostRoutes(app: Express) {
   });
 
   // Get Express Lane Price
+  app.get('/api/timeboost/express-lane-price', async (
+    req: Request,
+    res: Response<ExpressLanePriceResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          round,
+          maxIf(price, rank = 1) AS first_price,
+          anyIf(bidder, rank = 1) AS winner,
+          maxIf(price, rank = 2) AS second_price,
+          anyIf(bidder, rank = 2) AS second_place
+        FROM (
+          SELECT
+            round,
+            toFloat64(amount) / 1e18 AS price,
+            bidder,
+            row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+          FROM timeboost.bids
+          WHERE ${timeFilter}
+        )
+        GROUP BY round
+        ORDER BY round ASC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        round: number;
+        first_price: number;
+        winner: string;
+        second_price: number;
+        second_place: string;
+      }>>();
+
+      const response: ExpressLanePriceResponse = data.map((row) => ({
+        round: row.round || 0,
+        first_price: row.first_price || 0,
+        second_price: row.second_price || 0,
+        winner: row.winner || '',
+        second_place: row.second_place || '',
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Express Lane Price:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Price',
+      });
+    }
+  });
 
 }
