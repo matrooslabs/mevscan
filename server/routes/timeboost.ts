@@ -2,22 +2,14 @@ import type { Express } from 'express';
 import {
   Request,
   Response,
-  Address,
   AuctionWinCountResponse,
   BidsPerAddressResponse,
   BidsPerRoundResponse,
-  Block,
   ErrorResponse,
   ExpressLanePriceResponse,
   TimeboostRevenueResponse,
-  TimeboostedTxPerBlockResponse,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
+import { getTimestampTimeRangeFilter } from './types';
 
 /**
  * Register timeboost routes
@@ -231,51 +223,6 @@ export function registerTimeboostRoutes(app: Express) {
       res.status(500).json({
         error: 'Internal Server Error',
         message: error instanceof Error ? error.message : 'Failed to fetch Auction Win Count',
-      });
-    }
-  });
-
-  // Get Timeboosted Tx per Block
-  app.get('/api/timeboost/tx-per-block', async (
-    req: Request,
-    res: Response<TimeboostedTxPerBlockResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
-        SELECT
-          e.block_number AS block_number,
-          m.timeboosted_tx_count AS tx_count
-        FROM mev.mev_blocks AS m
-        INNER JOIN ethereum.blocks AS e
-          ON m.block_number = e.block_number
-        WHERE ${timeFilter}
-        ORDER BY e.block_number ASC
-      `;
-
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
-
-      const data = await result.json<Array<{
-        block_number: number;
-        tx_count: number;
-      }>>();
-
-      const response: TimeboostedTxPerBlockResponse = data.map((row) => ({
-        block_number: row.block_number || 0,
-        tx_count: row.tx_count || 0,
-      }));
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching Timeboosted Tx per Block:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Block',
       });
     }
   });

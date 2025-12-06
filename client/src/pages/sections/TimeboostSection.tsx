@@ -13,7 +13,6 @@ import {
   usePeriodicApiRefreshByKeys,
   useTimeboostGrossRevenue,
   useTimeboostRevenue,
-  useTimeboostedTxPerBlock,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
 import './TimeboostSection.css'
@@ -22,7 +21,6 @@ import type {
   BidsPerAddressEntry,
   BidsPerRoundEntry,
   ExpressLanePriceEntry,
-  TimeboostedTxPerBlockEntry,
 } from '../../types/api'
 
 function TimeboostSection() {
@@ -30,7 +28,6 @@ function TimeboostSection() {
   const timeboostRevenue = useTimeboostRevenue()
   const bidsPerAddress = useBidsPerAddress()
   const auctionWinCount = useAuctionWinCount()
-  const timeboostedTxPerBlock = useTimeboostedTxPerBlock()
   const bidsPerRound = useBidsPerRound()
   const expressLanePrice = useExpressLanePrice()
 
@@ -40,7 +37,6 @@ function TimeboostSection() {
       ['timeboost-revenue'],
       ['bids-per-address'],
       ['auction-win-count'],
-      ['timeboosted-tx-per-block'],
       ['bids-per-round'],
       ['express-lane-price'],
     ],
@@ -77,18 +73,6 @@ function TimeboostSection() {
       color: chartColorPalette[index % chartColorPalette.length],
     }))
   }, [auctionWinCount.data])
-
-  // Transform Timeboosted Tx per Block data
-  const transformTimeboostedTxPerBlockData = useMemo(() => {
-    const txPerBlockData = timeboostedTxPerBlock.data as TimeboostedTxPerBlockEntry[] | undefined
-    if (!txPerBlockData || txPerBlockData.length === 0) {
-      return []
-    }
-    return txPerBlockData.map((item) => ({
-      name: item.block_number.toString(),
-      value: item.tx_count || 0,
-    }))
-  }, [timeboostedTxPerBlock.data])
 
   // Transform Bids per Round data
   const transformBidsPerRoundData = useMemo(() => {
@@ -221,26 +205,6 @@ function TimeboostSection() {
                 />
               </Box>
             </Box>
-          </ChartCard>
-
-          {/* Timeboosted Tx per Block */}
-          <ChartCard
-            title="Timeboosted Tx per Block"
-            isLoading={timeboostedTxPerBlock.isLoading}
-            isError={timeboostedTxPerBlock.isError}
-            errorMessage={timeboostedTxPerBlock.error?.message}
-            className="chart-card-full"
-            contentClassName="timeboost-chart-card-flex"
-          >
-            <BarChart 
-              data={transformTimeboostedTxPerBlockData}
-              xAxisKey="name"
-              yAxisLabel="Tx Count"
-              showGrid={true}
-              showLegend={false}
-              showTooltip={true}
-              barColor="#82ca9d"
-            />
           </ChartCard>
 
           {/* Bids per Round */}

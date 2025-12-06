@@ -44,7 +44,6 @@ export function registerHealthRoutes(app: Express) {
         'GET /api/timeboost/revenue?timeRange=24hours',
         'GET /api/timeboost/bids-per-address?timeRange=24hours',
         'GET /api/timeboost/auction-win-count?timeRange=24hours',
-        'GET /api/timeboost/tx-per-block?timeRange=24hours',
         'GET /api/timeboost/bids-per-round',
         'GET /api/timeboost/express-lane-price?timeRange=24hours',
         'GET /api/mev/atomic?tx_hash=<tx_hash>',
