@@ -14,7 +14,6 @@ import {
   useTimeboostGrossRevenue,
   useTimeboostRevenue,
   useTimeboostedTxPerBlock,
-  useTimeboostedTxPerSecond,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
 import './TimeboostSection.css'
@@ -24,7 +23,6 @@ import type {
   BidsPerRoundEntry,
   ExpressLanePriceEntry,
   TimeboostedTxPerBlockEntry,
-  TimeboostedTxPerSecondEntry,
 } from '../../types/api'
 
 function TimeboostSection() {
@@ -32,7 +30,6 @@ function TimeboostSection() {
   const timeboostRevenue = useTimeboostRevenue()
   const bidsPerAddress = useBidsPerAddress()
   const auctionWinCount = useAuctionWinCount()
-  const timeboostedTxPerSecond = useTimeboostedTxPerSecond()
   const timeboostedTxPerBlock = useTimeboostedTxPerBlock()
   const bidsPerRound = useBidsPerRound()
   const expressLanePrice = useExpressLanePrice()
@@ -43,7 +40,6 @@ function TimeboostSection() {
       ['timeboost-revenue'],
       ['bids-per-address'],
       ['auction-win-count'],
-      ['timeboosted-tx-per-second'],
       ['timeboosted-tx-per-block'],
       ['bids-per-round'],
       ['express-lane-price'],
@@ -81,20 +77,6 @@ function TimeboostSection() {
       color: chartColorPalette[index % chartColorPalette.length],
     }))
   }, [auctionWinCount.data])
-
-  // Transform Timeboosted Tx per Second data
-  const transformTimeboostedTxPerSecondData = useMemo((): TimeSeriesData => {
-    const txPerSecondData = timeboostedTxPerSecond.data as TimeboostedTxPerSecondEntry[] | undefined
-    if (!txPerSecondData || txPerSecondData.length === 0) {
-      return []
-    }
-    return txPerSecondData.map((item) => ({
-      time: item.time,
-      total: item.tx_count || 0,
-      normal: 0,
-      timeboost: item.tx_count || 0,
-    }))
-  }, [timeboostedTxPerSecond.data])
 
   // Transform Timeboosted Tx per Block data
   const transformTimeboostedTxPerBlockData = useMemo(() => {
@@ -239,27 +221,6 @@ function TimeboostSection() {
                 />
               </Box>
             </Box>
-          </ChartCard>
-
-          {/* Timeboosted Tx per Second */}
-          <ChartCard
-            title="Timeboosted Tx per Second"
-            isLoading={timeboostedTxPerSecond.isLoading}
-            isError={timeboostedTxPerSecond.isError}
-            errorMessage={timeboostedTxPerSecond.error?.message}
-            className="chart-card-full"
-            contentClassName="timeboost-chart-card-flex"
-          >
-            <TimeSeriesChart 
-              data={transformTimeboostedTxPerSecondData}
-              xAxisKey="time"
-              yAxisLabel="Tx Count"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                { dataKey: 'total', name: 'Tx Count', strokeColor: '#82ca9d' },
-              ]}
-            />
           </ChartCard>
 
           {/* Timeboosted Tx per Block */}

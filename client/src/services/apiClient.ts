@@ -13,7 +13,6 @@ import type {
   TimeboostRevenueResponse,
   BidsPerAddressResponse,
   AuctionWinCountResponse,
-  TimeboostedTxPerSecondResponse,
   TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
@@ -339,19 +338,6 @@ class ApiClient {
   async getAuctionWinCount(): Promise<AuctionWinCountResponse> {
     try {
       const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count');
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Get Timeboosted Tx per Second
-   * @returns Promise resolving to Timeboosted Tx per Second data
-   */
-  async getTimeboostedTxPerSecond(): Promise<TimeboostedTxPerSecondResponse> {
-    try {
-      const response = await this.client.get<TimeboostedTxPerSecondResponse>('/api/timeboost/tx-per-second');
       return response.data;
     } catch (error) {
       throw this.handleError(error);

@@ -16,7 +16,6 @@ import type {
   TimeboostRevenueResponse,
   BidsPerAddressResponse,
   AuctionWinCountResponse,
-  TimeboostedTxPerSecondResponse,
   TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
@@ -474,23 +473,6 @@ export function useAuctionWinCount(): UseQueryResult<AuctionWinCountResponse, Er
     ['auction-win-count'],
     async () => {
       const data = await apiClient.getAuctionWinCount()
-      return data
-    },
-    QueryPriority.MEDIUM,
-    { refetchInterval: 60000 }
-  )
-}
-
-/**
- * Query hook for fetching Timeboosted Tx per Second
- * Priority: MEDIUM - Loads after 300ms (time series data)
- * @returns Query result with Timeboosted Tx per Second data
- */
-export function useTimeboostedTxPerSecond(): UseQueryResult<TimeboostedTxPerSecondResponse, Error> {
-  return useStaggeredQuery<TimeboostedTxPerSecondResponse>(
-    ['timeboosted-tx-per-second'],
-    async () => {
-      const data = await apiClient.getTimeboostedTxPerSecond()
       return data
     },
     QueryPriority.MEDIUM,

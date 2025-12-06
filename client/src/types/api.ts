@@ -50,11 +50,6 @@ export interface AuctionWinCountEntry {
   wins?: number
 }
 
-export interface TimeboostedTxPerSecondEntry {
-  time: string
-  tx_count?: number
-}
-
 export interface TimeboostedTxPerBlockEntry {
   block_number: number
   tx_count?: number

@@ -11,7 +11,6 @@ import {
   ExpressLanePriceResponse,
   TimeboostRevenueResponse,
   TimeboostedTxPerBlockResponse,
-  TimeboostedTxPerSecondResponse,
 } from './types';
 import {
   formatRelativeTime,
@@ -232,64 +231,6 @@ export function registerTimeboostRoutes(app: Express) {
       res.status(500).json({
         error: 'Internal Server Error',
         message: error instanceof Error ? error.message : 'Failed to fetch Auction Win Count',
-      });
-    }
-  });
-
-  // Get Timeboosted Tx per Second
-  app.get('/api/timeboost/tx-per-second', async (
-    req: Request,
-    res: Response<TimeboostedTxPerSecondResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
-        SELECT
-          toDateTime(e.block_timestamp) AS time,
-          sum(m.timeboosted_tx_count) AS tx_count
-        FROM mev.mev_blocks AS m
-        INNER JOIN ethereum.blocks AS e
-          ON m.block_number = e.block_number
-        WHERE ${timeFilter}
-        GROUP BY e.block_timestamp
-        ORDER BY e.block_timestamp ASC
-      `;
-
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
-
-      const data = await result.json<Array<{
-        time: string;
-        tx_count: number;
-      }>>();
-
-      const response: TimeboostedTxPerSecondResponse = data
-        .filter((row) => row.time != null)
-        .map((row) => {
-          const date = new Date(row.time);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          const secs = date.getSeconds().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}:${secs}`,
-            tx_count: row.tx_count || 0,
-          };
-        })
-        .filter((item): item is { time: string; tx_count: number } => item !== null);
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching Timeboosted Tx per Second:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Second',
       });
     }
   });
