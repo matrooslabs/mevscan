@@ -109,7 +109,7 @@ function TimeSeriesChart({
   name,
   strokeColor,
   lines,
-  showGrid = true,
+  showGrid = false,
   showLegend = true,
   strokeWidth = DEFAULT_STROKE_WIDTH,
   showDots = true,
