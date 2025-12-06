@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
 import { ClickHouseClient } from '@clickhouse/client';
-import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
+import {
+  createCacheMiddleware,
+  cleanupExpiredCache,
+  DEFAULT_CACHE_EXPIRE_MS,
+} from './middleware/cache';
 import type { ErrorResponse } from '@mevscan/shared';
 export {
   formatRelativeTime,
@@ -98,10 +102,10 @@ export function loggingMiddleware() {
 }
 
 /**
- * Caching middleware - cache responses for the current minute
+ * Caching middleware factory - pass a custom expiry or use the default
  */
-export function cacheMiddleware() {
-  return minuteCacheMiddleware;
+export function cacheMiddleware(expireDurationMs = DEFAULT_CACHE_EXPIRE_MS) {
+  return createCacheMiddleware(expireDurationMs);
 }
 
 /**
