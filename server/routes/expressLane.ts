@@ -94,7 +94,7 @@ export function registerExpressLaneRoutes(app: Express) {
     
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd)                              AS total,
           sumIf(m.profit_usd, m.timeboosted = 1)         AS timeboost,
           timeboost / total * 100                        AS percentage

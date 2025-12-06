@@ -27,7 +27,7 @@ export function registerProtocolsRoutes(app: Express) {
     
       const query = `
   SELECT
-    toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+    toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
     proto,
     sum(a.profit_usd / length(a.protocols)) AS profit_usd
   FROM mev.bundle_header AS b
@@ -100,7 +100,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -186,7 +186,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -271,7 +271,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -357,7 +357,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -442,7 +442,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
