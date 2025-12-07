@@ -31,6 +31,7 @@ ChartJS.register(
 
 function Chart() {
   const pubnubRef = useRef<PubNub | null>(null);
+  const [allGrossMevData, setAllGrossMevData] = useState<GrossMevDataResponse[]>([]);
   const [grossMevData, setGrossMevData] = useState<GrossMevDataResponse[]>([]);
   const [timeRange, setTimeRange] = useState<string>('15min');
 
@@ -42,6 +43,24 @@ function Chart() {
     if (range === '1hour') return '1 hour';
     if (range === '12hours') return '12 hours';
     return range;
+  };
+
+  // Helper function to get number of data points based on time range
+  const getDataPointLimit = (range: string): number => {
+    switch (range) {
+      case '5min':
+        return 5;
+      case '15min':
+        return 15;
+      case '30min':
+        return 30;
+      case '1hour':
+        return 60;
+      case '12hours':
+        return 720;
+      default:
+        return 15;
+    }
   };
 
   
@@ -68,8 +87,7 @@ function Chart() {
         }
       }
       
-      // Keep only the last 60 data points
-      return uniqueData.slice(-60);
+      return uniqueData;
     };
 
     // Subscribe to Gross MEV channel
@@ -83,7 +101,7 @@ function Chart() {
         if (event.channel === PUBNUB_CHANNELS.GROSS_MEV) {
           const newData = (event.message as unknown as GrossMevDataResponse[]) || [];
           if (newData.length > 0) {
-            setGrossMevData((prevData) => mergeData(newData, prevData));
+            setAllGrossMevData((prevData) => mergeData(newData, prevData));
           }
         }
       },
@@ -122,8 +140,7 @@ function Chart() {
           }
         }
 
-        // Keep only the last 60 data points
-        setGrossMevData(uniqueData.slice(-60));
+        setAllGrossMevData(uniqueData);
       } catch (error) {
         console.error('Error fetching messages from PubNub:', error);
       }
@@ -137,6 +154,13 @@ function Chart() {
       });
     };
   }, []);
+
+  // Filter data based on selected time range
+  useEffect(() => {
+    const limit = getDataPointLimit(timeRange);
+    const filtered = allGrossMevData.slice(-limit);
+    setGrossMevData(filtered);
+  }, [timeRange, allGrossMevData]);
 
   // Transform sample data into chart format
   const chartData = {
