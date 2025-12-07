@@ -5,6 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  envDir: '../',
   resolve: {
     alias: {
       '@mevscan/shared': path.resolve(__dirname, '../shared'),

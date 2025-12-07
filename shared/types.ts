@@ -332,32 +332,6 @@ export interface AuctionWinCountDataPoint {
 export type AuctionWinCountResponse = AuctionWinCountDataPoint[];
 
 /**
- * Timeboosted tx per second data point
- */
-export interface TimeboostedTxPerSecondDataPoint {
-  time: string;
-  tx_count: number;
-}
-
-/**
- * Timeboosted tx per second response type
- */
-export type TimeboostedTxPerSecondResponse = TimeboostedTxPerSecondDataPoint[];
-
-/**
- * Timeboosted tx per block data point
- */
-export interface TimeboostedTxPerBlockDataPoint {
-  block_number: number;
-  tx_count: number;
-}
-
-/**
- * Timeboosted tx per block response type
- */
-export type TimeboostedTxPerBlockResponse = TimeboostedTxPerBlockDataPoint[];
-
-/**
  * Bids per round data point
  */
 export interface BidsPerRoundDataPoint {

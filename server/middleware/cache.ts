@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 interface CacheEntry {
   data: any;
-  minute: number;
+  expiresAt: number;
   timestamp: number;
 }
 
@@ -12,6 +12,9 @@ interface CacheStore {
 
 // In-memory cache store
 const cacheStore: CacheStore = {};
+
+// Default cache expiry (ms)
+export const DEFAULT_CACHE_EXPIRE_MS = 5 * 60 * 1000;
 
 /**
  * Generate a cache key from request path and query parameters
@@ -26,70 +29,71 @@ function generateCacheKey(req: Request): string {
 }
 
 /**
- * Get the current minute timestamp (Unix timestamp rounded to the minute)
+ * Determine whether a cache entry is expired
  */
-function getCurrentMinute(): number {
-  const now = Date.now();
-  return Math.floor(now / 60000); // Round down to the minute
+function isExpired(entry: CacheEntry, now: number): boolean {
+  return entry.expiresAt <= now;
 }
 
 /**
- * Express middleware for minute-based caching
- * Caches responses for the current minute and flushes when entering a new minute
+ * Factory to create a caching middleware with configurable expiry
  */
-export function minuteCacheMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  // Only cache GET requests
-  if (req.method !== 'GET') {
-    return next();
-  }
-
-  const cacheKey = generateCacheKey(req);
-  const currentMinute = getCurrentMinute();
-
-  // Check if we have cached data
-  const cachedEntry = cacheStore[cacheKey];
-
-  if (cachedEntry) {
-    // If cache is from the current minute, return cached response
-    if (cachedEntry.minute === currentMinute) {
-      console.log(`[CACHE HIT] ${cacheKey} (minute: ${currentMinute})`);
-      res.json(cachedEntry.data);
-      return;
+export function createCacheMiddleware(expireDurationMs = DEFAULT_CACHE_EXPIRE_MS) {
+  return function cacheMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): void {
+    // Only cache GET requests
+    if (req.method !== 'GET') {
+      return next();
     }
 
-    // Cache is from a previous minute, clear it
-    console.log(
-      `[CACHE EXPIRED] ${cacheKey} (old minute: ${cachedEntry.minute}, current minute: ${currentMinute})`
-    );
-    delete cacheStore[cacheKey];
-  }
+    const cacheKey = generateCacheKey(req);
+    const now = Date.now();
 
-  // Store original json method
-  const originalJson = res.json.bind(res);
+    // Check if we have cached data
+    const cachedEntry = cacheStore[cacheKey];
 
-  // Override json method to intercept response
-  res.json = function (body: any) {
-    // Only cache successful responses (status 200)
-    if (res.statusCode === 200) {
-      // Cache the response data
-      cacheStore[cacheKey] = {
-        data: body,
-        minute: currentMinute,
-        timestamp: Date.now(),
-      };
+    if (cachedEntry) {
+      // If cache is fresh, return cached response
+      if (!isExpired(cachedEntry, now)) {
+        console.log(`[CACHE HIT] ${cacheKey}`);
+        res.json(cachedEntry.data);
+        return;
+      }
 
-      console.log(`[CACHE SET] ${cacheKey} (minute: ${currentMinute})`);
+      // Cache is expired, clear it
+      console.log(`[CACHE EXPIRED] ${cacheKey}`);
+      delete cacheStore[cacheKey];
     }
 
-    // Call original json method
-    return originalJson(body);
+    // Store original json method
+    const originalJson = res.json.bind(res);
+
+    // Override json method to intercept response
+    res.json = function (body: any) {
+      // Only cache successful responses (status 200)
+      if (res.statusCode === 200) {
+        // Cache the response data
+        const timestamp = Date.now();
+        cacheStore[cacheKey] = {
+          data: body,
+          expiresAt: timestamp + expireDurationMs,
+          timestamp,
+        };
+
+        console.log(
+          `[CACHE SET] ${cacheKey} (expires in ${Math.round(expireDurationMs / 1000)}s)`
+        );
+      }
+
+      // Call original json method
+      return originalJson(body);
+    };
+
+    next();
   };
-
-  next();
 }
 
 /**
@@ -97,11 +101,11 @@ export function minuteCacheMiddleware(
  * Call this periodically to remove stale entries
  */
 export function cleanupExpiredCache(): void {
-  const currentMinute = getCurrentMinute();
+  const now = Date.now();
   let cleanedCount = 0;
 
   for (const key in cacheStore) {
-    if (cacheStore[key].minute < currentMinute) {
+    if (isExpired(cacheStore[key], now)) {
       delete cacheStore[key];
       cleanedCount++;
     }
@@ -117,11 +121,11 @@ export function cleanupExpiredCache(): void {
  */
 export function getCacheStats(): {
   size: number;
-  entries: Array<{ key: string; minute: number; timestamp: number }>;
+  entries: Array<{ key: string; expiresAt: number; timestamp: number }>;
 } {
   const entries = Object.keys(cacheStore).map(key => ({
     key,
-    minute: cacheStore[key].minute,
+    expiresAt: cacheStore[key].expiresAt,
     timestamp: cacheStore[key].timestamp,
   }));
 

@@ -25,7 +25,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<PieChartResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -89,12 +89,12 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<TimeSeriesPercentageResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd)                              AS total,
           sumIf(m.profit_usd, m.timeboosted = 1)         AS timeboost,
           timeboost / total * 100                        AS percentage
@@ -159,7 +159,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneNetProfitResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -224,7 +224,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

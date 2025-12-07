@@ -18,6 +18,8 @@
     "axios": "^1.13.1",
     "chart.js": "^4.5.1",
     "pubnub": "^10.2.4",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "react": "^19.1.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1.1",

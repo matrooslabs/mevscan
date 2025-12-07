@@ -1,5 +1,12 @@
-import React from 'react'
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import React, { useMemo } from 'react'
+import ReactECharts from 'echarts-for-react'
+import * as echarts from 'echarts/core'
+import { BarChart as EBarChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import type { EChartsOption, SeriesOption } from 'echarts'
+
+echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 
 export interface BarChartData {
   name: string
@@ -16,41 +23,6 @@ interface BarChartProps {
   barColor?: string
 }
 
-interface TooltipProps {
-  active?: boolean
-  payload?: Array<{
-    name?: string
-    value?: number
-    color?: string
-  }>
-}
-
-const CustomTooltip = ({ active, payload }: TooltipProps) => {
-  if (!active || !payload || payload.length === 0) {
-    return null
-  }
-
-  const entry = payload[0]
-  const roundedValue = typeof entry.value === 'number' 
-    ? entry.value.toFixed(2) 
-    : entry.value
-
-  return (
-    <div style={{
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      padding: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '12px' }}>
-        {entry.name}: {roundedValue}
-      </p>
-    </div>
-  )
-}
-
-const FONT_SIZE_SMALL = 11
 const FONT_SIZE_MEDIUM = 12
 
 /**
@@ -69,32 +41,52 @@ function BarChart({
     return <div>No data available</div>
   }
 
+  const labels = useMemo(() => data.map((d) => d[xAxisKey as keyof BarChartData] as string), [data, xAxisKey])
+  const seriesData = useMemo(() => data.map((d) => d.value ?? null), [data])
+
+  const series = useMemo<SeriesOption[]>(
+    () => [
+      {
+        type: 'bar',
+        data: seriesData,
+        itemStyle: { color: barColor },
+        barMaxWidth: 48,
+        animationDuration: 300,
+        animationEasing: 'quadraticOut',
+        progressive: 2000,
+        progressiveThreshold: 3000,
+      },
+    ],
+    [seriesData, barColor]
+  )
+
+  const option = useMemo<EChartsOption>(
+    () => ({
+      animation: true,
+      tooltip: showTooltip ? { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true } : undefined,
+      legend: showLegend ? { bottom: 0 } : { show: false },
+      grid: { top: 16, left: 48, right: 16, bottom: showLegend ? 48 : 24, containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: labels,
+        axisLabel: { fontSize: FONT_SIZE_MEDIUM },
+        axisTick: { alignWithLabel: true },
+      },
+      yAxis: {
+        type: 'value',
+        name: yAxisLabel,
+        nameGap: 30,
+        axisLabel: { fontSize: FONT_SIZE_MEDIUM },
+        splitLine: { show: showGrid },
+      },
+      series,
+    }),
+    [labels, series, showLegend, showTooltip, yAxisLabel, showGrid]
+  )
+
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsBarChart data={data as unknown as Array<Record<string, unknown>>}>
-          {showGrid && <CartesianGrid strokeDasharray="3 3" />}
-          <XAxis 
-            dataKey={xAxisKey}
-            tick={{ fontSize: FONT_SIZE_MEDIUM }}
-            interval="preserveStartEnd"
-          />
-          <YAxis 
-            tick={{ fontSize: FONT_SIZE_MEDIUM }}
-            {...(yAxisLabel && {
-              label: {
-                value: yAxisLabel,
-                angle: -90,
-                position: 'insideLeft',
-                style: { fontSize: FONT_SIZE_SMALL }
-              }
-            })}
-          />
-          {showTooltip && <Tooltip content={<CustomTooltip />} />}
-          {showLegend && <Legend />}
-          <Bar dataKey="value" fill={barColor} />
-        </RechartsBarChart>
-      </ResponsiveContainer>
+      <ReactECharts option={option} notMerge lazyUpdate style={{ width: '100%', height: '100%' }} />
     </div>
   )
 }

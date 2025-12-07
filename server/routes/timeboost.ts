@@ -2,22 +2,14 @@ import type { Express } from 'express';
 import {
   Request,
   Response,
-  Address,
   AuctionWinCountResponse,
   BidsPerAddressResponse,
   BidsPerRoundResponse,
-  Block,
   ErrorResponse,
+  ExpressLanePriceResponse,
   TimeboostRevenueResponse,
-  TimeboostedTxPerBlockResponse,
-  TimeboostedTxPerSecondResponse,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
+import { getTimestampTimeRangeFilter } from './types';
 
 /**
  * Register timeboost routes
@@ -85,7 +77,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<TimeboostRevenueResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -146,7 +138,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<BidsPerAddressResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -190,7 +182,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<AuctionWinCountResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -231,109 +223,6 @@ export function registerTimeboostRoutes(app: Express) {
       res.status(500).json({
         error: 'Internal Server Error',
         message: error instanceof Error ? error.message : 'Failed to fetch Auction Win Count',
-      });
-    }
-  });
-
-  // Get Timeboosted Tx per Second
-  app.get('/api/timeboost/tx-per-second', async (
-    req: Request,
-    res: Response<TimeboostedTxPerSecondResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '15min';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
-        SELECT
-          toDateTime(e.block_timestamp) AS time,
-          sum(m.timeboosted_tx_count) AS tx_count
-        FROM mev.mev_blocks AS m
-        INNER JOIN ethereum.blocks AS e
-          ON m.block_number = e.block_number
-        WHERE ${timeFilter}
-        GROUP BY e.block_timestamp
-        ORDER BY e.block_timestamp ASC
-      `;
-
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
-
-      const data = await result.json<Array<{
-        time: string;
-        tx_count: number;
-      }>>();
-
-      const response: TimeboostedTxPerSecondResponse = data
-        .filter((row) => row.time != null)
-        .map((row) => {
-          const date = new Date(row.time);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          const secs = date.getSeconds().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}:${secs}`,
-            tx_count: row.tx_count || 0,
-          };
-        })
-        .filter((item): item is { time: string; tx_count: number } => item !== null);
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching Timeboosted Tx per Second:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Second',
-      });
-    }
-  });
-
-  // Get Timeboosted Tx per Block
-  app.get('/api/timeboost/tx-per-block', async (
-    req: Request,
-    res: Response<TimeboostedTxPerBlockResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '15min';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
-        SELECT
-          e.block_number AS block_number,
-          m.timeboosted_tx_count AS tx_count
-        FROM mev.mev_blocks AS m
-        INNER JOIN ethereum.blocks AS e
-          ON m.block_number = e.block_number
-        WHERE ${timeFilter}
-        ORDER BY e.block_number ASC
-      `;
-
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
-
-      const data = await result.json<Array<{
-        block_number: number;
-        tx_count: number;
-      }>>();
-
-      const response: TimeboostedTxPerBlockResponse = data.map((row) => ({
-        block_number: row.block_number || 0,
-        tx_count: row.tx_count || 0,
-      }));
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching Timeboosted Tx per Block:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboosted Tx per Block',
       });
     }
   });
@@ -380,5 +269,63 @@ export function registerTimeboostRoutes(app: Express) {
   });
 
   // Get Express Lane Price
+  app.get('/api/timeboost/express-lane-price', async (
+    req: Request,
+    res: Response<ExpressLanePriceResponse | ErrorResponse>
+  ) => {
+    try {
+      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeFilter = getTimestampTimeRangeFilter(timeRange);
+    
+      const query = `
+        SELECT
+          round,
+          maxIf(price, rank = 1) AS first_price,
+          anyIf(bidder, rank = 1) AS winner,
+          maxIf(price, rank = 2) AS second_price,
+          anyIf(bidder, rank = 2) AS second_place
+        FROM (
+          SELECT
+            round,
+            toFloat64(amount) / 1e18 AS price,
+            bidder,
+            row_number() OVER (PARTITION BY round ORDER BY toFloat64(amount) DESC) AS rank
+          FROM timeboost.bids
+          WHERE ${timeFilter}
+        )
+        GROUP BY round
+        ORDER BY round ASC
+      `;
+
+      const result = await req.clickhouse.query({
+        query,
+        format: 'JSONEachRow',
+      });
+
+      const data = await result.json<Array<{
+        round: number;
+        first_price: number;
+        winner: string;
+        second_price: number;
+        second_place: string;
+      }>>();
+
+      const response: ExpressLanePriceResponse = data.map((row) => ({
+        round: row.round || 0,
+        first_price: row.first_price || 0,
+        second_price: row.second_price || 0,
+        winner: row.winner || '',
+        second_place: row.second_place || '',
+      }));
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching Express Lane Price:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Price',
+      });
+    }
+  });
 
 }

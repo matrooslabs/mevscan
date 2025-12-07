@@ -2,8 +2,18 @@ import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
 import { ClickHouseClient } from '@clickhouse/client';
-import { minuteCacheMiddleware, cleanupExpiredCache } from './middleware/cache';
+import {
+  createCacheMiddleware,
+  cleanupExpiredCache,
+  DEFAULT_CACHE_EXPIRE_MS,
+} from './middleware/cache';
 import type { ErrorResponse } from '@mevscan/shared';
+export {
+  formatRelativeTime,
+  formatEthValue,
+  getTimeRangeFilter,
+  getTimestampTimeRangeFilter,
+} from './helper';
 
 // Middleware to inject ClickHouse client into request context
 // TypeScript declaration merging requires namespace syntax
@@ -92,10 +102,10 @@ export function loggingMiddleware() {
 }
 
 /**
- * Caching middleware - cache responses for the current minute
+ * Caching middleware factory - pass a custom expiry or use the default
  */
-export function cacheMiddleware() {
-  return minuteCacheMiddleware;
+export function cacheMiddleware(expireDurationMs = DEFAULT_CACHE_EXPIRE_MS) {
+  return createCacheMiddleware(expireDurationMs);
 }
 
 /**
@@ -105,74 +115,6 @@ export function setupCacheCleanup() {
   setInterval(() => {
     cleanupExpiredCache();
   }, 5 * 60 * 1000);
-}
-
-// Helper function to format relative time
-export function formatRelativeTime(timestamp: number): string {
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - timestamp;
-  
-  if (diff < 60) return `${diff} secs ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
-  return `${Math.floor(diff / 86400)} days ago`;
-}
-
-// Helper function to format ETH value
-export function formatEthValue(wei: string | number): string {
-  const value = typeof wei === 'string' ? BigInt(wei) : BigInt(wei);
-  const eth = Number(value) / 1e18;
-  return eth.toFixed(5);
-}
-
-// Helper function to convert timeRange string to ClickHouse interval
-export function getTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
-  const range = timeRange || '15min';
-  
-  if (!validRanges.includes(range)) {
-    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
-  }
-  
-  switch (range) {
-    case '5min':
-      return `e.block_timestamp >= now() - INTERVAL 5 MINUTE`;
-    case '15min':
-      return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
-    case '30min':
-      return `e.block_timestamp >= now() - INTERVAL 30 MINUTE`;
-    case '1hour':
-      return `e.block_timestamp >= now() - INTERVAL 1 HOUR`;
-    case '12hours':
-      return `e.block_timestamp >= now() - INTERVAL 12 HOUR`;
-    default:
-      return `e.block_timestamp >= now() - INTERVAL 15 MINUTE`;
-  }
-}
-
-// Helper function to convert timeRange string to ClickHouse interval for timestamp column
-export function getTimestampTimeRangeFilter(timeRange: string): string {
-  const validRanges = ['5min', '15min', '30min', '1hour', '12hours'];
-  const range = timeRange || '15min';
-  
-  if (!validRanges.includes(range)) {
-    throw new Error(`Invalid timeRange. Must be one of: ${validRanges.join(', ')}`);
-  }
-  
-  switch (range) {
-    case '5min':
-      return `timestamp >= now() - INTERVAL 5 MINUTE`;
-    case '15min':
-      return `timestamp >= now() - INTERVAL 15 MINUTE`;
-    case '30min':
-      return `timestamp >= now() - INTERVAL 30 MINUTE`;
-    case '1hour':
-      return `timestamp >= now() - INTERVAL 1 HOUR`;
-    case '12hours':
-      return `timestamp >= now() - INTERVAL 12 HOUR`;
-    default:
-      return `timestamp >= now() - INTERVAL 15 MINUTE`;
-  }
 }
 
 // Error handling middleware

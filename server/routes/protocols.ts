@@ -22,12 +22,12 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
   SELECT
-    toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+    toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
     proto,
     sum(a.profit_usd / length(a.protocols)) AS profit_usd
   FROM mev.bundle_header AS b
@@ -87,7 +87,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -100,7 +100,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -173,7 +173,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -186,7 +186,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -258,7 +258,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -271,7 +271,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -344,7 +344,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -357,7 +357,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
@@ -429,7 +429,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '15min';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -442,7 +442,7 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfMinute(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b

@@ -25,8 +25,6 @@ import type {
   TimeboostRevenueResponse,
   BidsPerAddressResponse,
   AuctionWinCountResponse,
-  TimeboostedTxPerSecondResponse,
-  TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
   BlockBundle,
@@ -41,7 +39,7 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
-} from '../middlewares';
+} from '../helper';
 import type { Request, Response } from 'express';
 import type { Express } from 'express';
 
@@ -72,8 +70,6 @@ export type {
   TimeboostRevenueResponse,
   BidsPerAddressResponse,
   AuctionWinCountResponse,
-  TimeboostedTxPerSecondResponse,
-  TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
   BlockBundle,

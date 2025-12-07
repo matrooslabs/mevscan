@@ -13,8 +13,6 @@ import type {
   TimeboostRevenueResponse,
   BidsPerAddressResponse,
   AuctionWinCountResponse,
-  TimeboostedTxPerSecondResponse,
-  TimeboostedTxPerBlockResponse,
   BidsPerRoundResponse,
   ExpressLanePriceResponse,
   AtomicArbResponse,
@@ -113,14 +111,11 @@ class ApiClient {
 
   /**
    * Get Gross MEV time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
-  async getGrossMEV(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
+  async getGrossMEV(): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-mev', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-mev');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -129,14 +124,11 @@ class ApiClient {
 
   /**
    * Get Gross Atomic Arb time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
-  async getGrossAtomicArb(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
+  async getGrossAtomicArb(): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-atomic-arb', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-atomic-arb');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -145,14 +137,11 @@ class ApiClient {
 
   /**
    * Get Gross CexDexQuotes time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
-  async getGrossCexDexQuotes(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
+  async getGrossCexDexQuotes(): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-cex-dex-quotes', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-cex-dex-quotes');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -161,14 +150,11 @@ class ApiClient {
 
   /**
    * Get Gross Liquidation time series data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data
    */
-  async getGrossLiquidation(timeRange: string = '15min'): Promise<TimeSeriesResponse> {
+  async getGrossLiquidation(): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-liquidation', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-liquidation');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -177,14 +163,11 @@ class ApiClient {
 
   /**
    * Get Atomic MEV Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getAtomicMEVTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getAtomicMEVTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -193,14 +176,11 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to pie chart data
    */
-  async getExpressLaneMEVPercentage(timeRange: string = '15min'): Promise<PieChartResponse> {
+  async getExpressLaneMEVPercentage(): Promise<PieChartResponse> {
     try {
-      const response = await this.client.get<PieChartResponse>('/api/express-lane/mev-percentage', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<PieChartResponse>('/api/express-lane/mev-percentage');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -209,14 +189,11 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage per minute time series
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series percentage data
    */
-  async getExpressLaneMEVPercentagePerMinute(timeRange: string = '15min'): Promise<TimeSeriesPercentageResponse> {
+  async getExpressLaneMEVPercentagePerMinute(): Promise<TimeSeriesPercentageResponse> {
     try {
-      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -225,14 +202,11 @@ class ApiClient {
 
   /**
    * Get Atomic Arb MEV time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getAtomicMEV(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getAtomicMEV(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -241,14 +215,11 @@ class ApiClient {
 
   /**
    * Get CexDex Arb time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getCexDex(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getCexDex(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -257,14 +228,11 @@ class ApiClient {
 
   /**
    * Get CexDex MEV Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getCexDexTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getCexDexTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -273,14 +241,11 @@ class ApiClient {
 
   /**
    * Get Liquidation time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getLiquidation(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getLiquidation(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -289,14 +254,11 @@ class ApiClient {
 
   /**
    * Get Liquidation Timeboosted time series data by protocol
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to time series data by protocol
    */
-  async getLiquidationTimeboosted(timeRange: string = '15min'): Promise<TimeSeriesByProtocolResponse> {
+  async getLiquidationTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -305,14 +267,11 @@ class ApiClient {
 
   /**
    * Get Express Lane Net Profit data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Net Profit data
    */
-  async getExpressLaneNetProfit(timeRange: string = '15min'): Promise<ExpressLaneNetProfitResponse> {
+  async getExpressLaneNetProfit(): Promise<ExpressLaneNetProfitResponse> {
     try {
-      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -321,14 +280,11 @@ class ApiClient {
 
   /**
    * Get Express Lane Profit by Controller data
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Profit by Controller data
    */
-  async getExpressLaneProfitByController(timeRange: string = '15min'): Promise<ExpressLaneProfitByControllerResponse> {
+  async getExpressLaneProfitByController(): Promise<ExpressLaneProfitByControllerResponse> {
     try {
-      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -350,14 +306,11 @@ class ApiClient {
 
   /**
    * Get Timeboost Revenue (time-ranged)
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Timeboost Revenue data
    */
-  async getTimeboostRevenue(timeRange: string = '15min'): Promise<TimeboostRevenueResponse> {
+  async getTimeboostRevenue(): Promise<TimeboostRevenueResponse> {
     try {
-      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -366,14 +319,11 @@ class ApiClient {
 
   /**
    * Get Bids per Address
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Bids per Address data
    */
-  async getBidsPerAddress(timeRange: string = '15min'): Promise<BidsPerAddressResponse> {
+  async getBidsPerAddress(): Promise<BidsPerAddressResponse> {
     try {
-      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -382,46 +332,11 @@ class ApiClient {
 
   /**
    * Get Auction Win Count
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Auction Win Count data
    */
-  async getAuctionWinCount(timeRange: string = '15min'): Promise<AuctionWinCountResponse> {
+  async getAuctionWinCount(): Promise<AuctionWinCountResponse> {
     try {
-      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count', {
-        params: { timeRange },
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Get Timeboosted Tx per Second
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
-   * @returns Promise resolving to Timeboosted Tx per Second data
-   */
-  async getTimeboostedTxPerSecond(timeRange: string = '15min'): Promise<TimeboostedTxPerSecondResponse> {
-    try {
-      const response = await this.client.get<TimeboostedTxPerSecondResponse>('/api/timeboost/tx-per-second', {
-        params: { timeRange },
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Get Timeboosted Tx per Block
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
-   * @returns Promise resolving to Timeboosted Tx per Block data
-   */
-  async getTimeboostedTxPerBlock(timeRange: string = '15min'): Promise<TimeboostedTxPerBlockResponse> {
-    try {
-      const response = await this.client.get<TimeboostedTxPerBlockResponse>('/api/timeboost/tx-per-block', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -443,14 +358,11 @@ class ApiClient {
 
   /**
    * Get Express Lane Price
-   * @param timeRange - Time range string (5min, 15min, 30min, 1hour, 12hours)
    * @returns Promise resolving to Express Lane Price data
    */
-  async getExpressLanePrice(timeRange: string = '15min'): Promise<ExpressLanePriceResponse> {
+  async getExpressLanePrice(): Promise<ExpressLanePriceResponse> {
     try {
-      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
