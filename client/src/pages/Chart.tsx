@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Card, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import PubNub from 'pubnub';
 import {
   Chart as ChartJS,
@@ -13,7 +13,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { PUBNUB_CHANNELS } from '@mevscan/shared/constants';
+import { PUBNUB_CHANNELS, TIME_RANGES } from '@mevscan/shared/constants';
 import './Chart.css';
 import { GrossMevDataResponse } from '@mevscan/shared';
 
@@ -32,7 +32,19 @@ ChartJS.register(
 function Chart() {
   const pubnubRef = useRef<PubNub | null>(null);
   const [grossMevData, setGrossMevData] = useState<GrossMevDataResponse[]>([]);
+  const [timeRange, setTimeRange] = useState<string>('15min');
 
+  // Helper function to format time range label
+  const formatTimeRangeLabel = (range: string): string => {
+    if (range === '5min') return '5 min';
+    if (range === '15min') return '15 min';
+    if (range === '30min') return '30 min';
+    if (range === '1hour') return '1 hour';
+    if (range === '12hours') return '12 hours';
+    return range;
+  };
+
+  
   // Initialize PubNub and subscribe to channel
   useEffect(() => {
     const pubnub = new PubNub({
@@ -42,10 +54,42 @@ function Chart() {
 
     pubnubRef.current = pubnub;
 
+    // Helper function to merge new data with existing data
+    const mergeData = (newData: GrossMevDataResponse[], existingData: GrossMevDataResponse[]): GrossMevDataResponse[] => {
+      // Combine existing and new data
+      const combined = [...existingData, ...newData];
+      
+      // Sort by time and remove duplicates
+      const sortedData = combined.sort((a, b) => a.time - b.time);
+      const uniqueData: GrossMevDataResponse[] = [];
+      for (let i = 0; i < sortedData.length; i++) {
+        if (i === 0 || sortedData[i].time !== sortedData[i - 1].time) {
+          uniqueData.push(sortedData[i]);
+        }
+      }
+      
+      // Keep only the last 60 data points
+      return uniqueData.slice(-60);
+    };
+
     // Subscribe to Gross MEV channel
     pubnub.subscribe({
       channels: [PUBNUB_CHANNELS.GROSS_MEV],
     });
+
+    // Listen for real-time messages
+    const listener = {
+      message: (event: any) => {
+        if (event.channel === PUBNUB_CHANNELS.GROSS_MEV) {
+          const newData = (event.message as unknown as GrossMevDataResponse[]) || [];
+          if (newData.length > 0) {
+            setGrossMevData((prevData) => mergeData(newData, prevData));
+          }
+        }
+      },
+    };
+
+    pubnub.addListener(listener);
 
     // Fetch historical messages on startup
     (async () => {
@@ -78,8 +122,8 @@ function Chart() {
           }
         }
 
-        setGrossMevData(uniqueData);
-        console.log(`grossMevData: ${JSON.stringify(uniqueData)}`);
+        // Keep only the last 60 data points
+        setGrossMevData(uniqueData.slice(-60));
       } catch (error) {
         console.error('Error fetching messages from PubNub:', error);
       }
@@ -87,6 +131,7 @@ function Chart() {
 
     // Cleanup on unmount
     return () => {
+      pubnub.removeListener(listener);
       pubnub.unsubscribe({
         channels: [PUBNUB_CHANNELS.GROSS_MEV],
       });
@@ -146,7 +191,7 @@ function Chart() {
           title: (context: any) => {
             const index = context[0]?.dataIndex;
             if (index === undefined) return '';
-            const item = sampleData[index];
+            const item = grossMevData[index];
             if (!item) return '';
             const date = new Date(item.time * 1000);
             return `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -156,19 +201,6 @@ function Chart() {
             const value = context.parsed.y;
             return `${label}: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           },
-          // afterBody: (context: any) => {
-          //   const index = context[0]?.dataIndex;
-          //   if (index === undefined) return '';
-          //   const item = sampleData[index];
-          //   if (!item) return '';
-          //   return [
-          //     '',
-          //     'All Values:',
-          //     `Total: $${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          //     `Normal: $${item.normal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          //     `Timeboost: $${item.timeboost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          //   ];
-          // },
         },
       },
     },
@@ -182,9 +214,27 @@ function Chart() {
   return (
     <div className="chart-container">
       <Box sx={{ padding: 'var(--spacing-lg)' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Chart
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+          <Typography variant="h4" component="h1">
+            Chart
+          </Typography>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="time-range-select-label">Time Range</InputLabel>
+            <Select
+              labelId="time-range-select-label"
+              id="time-range-select"
+              value={timeRange}
+              label="Time Range"
+              onChange={(e) => setTimeRange(e.target.value)}
+            >
+              {TIME_RANGES.map((range) => (
+                <MenuItem key={range} value={range}>
+                  {formatTimeRangeLabel(range)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         <Card>
           <CardContent>
             <Box sx={{ height: 400 }}>
