@@ -1,0 +1,271 @@
+/* Express Lane Real-Time Section */
+.express-lane-realtime-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.express-lane-realtime-title {
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-lg);
+  font-weight: 700;
+  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 2rem;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.express-lane-realtime-title::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: var(--spacing-lg);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
+  border-radius: 2px;
+}
+
+/* Stats Row */
+.express-lane-stats-row {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin: 0 auto var(--spacing-lg) auto;
+  max-width: var(--max-width-content);
+  justify-content: space-between;
+}
+
+.express-lane-stat-card {
+  flex: 1 1 0;
+  min-width: 0;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.express-lane-stat-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.express-lane-stat-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg) !important;
+  text-align: center;
+  min-height: 100px;
+}
+
+.express-lane-stat-label {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.express-lane-stat-value {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: 1.5rem !important;
+}
+
+.express-lane-stat-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  margin-top: var(--spacing-xs);
+}
+
+/* Main Content Layout */
+.express-lane-main-content {
+  display: flex;
+  gap: var(--spacing-lg);
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+}
+
+/* Chart Card */
+.express-lane-chart-card {
+  flex: 2;
+  min-width: 400px;
+  min-height: 420px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base);
+}
+
+.express-lane-chart-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.express-lane-chart-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg) !important;
+}
+
+.express-lane-chart-container {
+  flex: 1;
+  min-height: 300px;
+  width: 100%;
+}
+
+/* Transactions Card */
+.express-lane-transactions-card {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 420px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.express-lane-transactions-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.express-lane-transactions-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg) !important;
+  overflow: hidden;
+}
+
+/* Shared Card Title */
+.express-lane-card-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md) !important;
+  font-size: 1.1rem !important;
+  position: relative;
+  padding-bottom: var(--spacing-sm);
+}
+
+.express-lane-card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
+  border-radius: 2px;
+}
+
+/* Transactions Table */
+.express-lane-table-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 320px;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.express-lane-table-container table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.express-lane-table-container th:nth-child(1),
+.express-lane-table-container td:nth-child(1) {
+  width: 45%;
+}
+
+.express-lane-table-container th:nth-child(2),
+.express-lane-table-container td:nth-child(2) {
+  width: 30%;
+}
+
+.express-lane-table-container th:nth-child(3),
+.express-lane-table-container td:nth-child(3) {
+  width: 25%;
+}
+
+.express-lane-table-container .MuiTableHead-root {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.express-lane-table-container .MuiTableCell-head {
+  background-color: var(--color-bg-tertiary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.express-lane-tx-row {
+  transition: background-color var(--transition-fast);
+}
+
+.express-lane-tx-row:hover {
+  background-color: var(--color-bg-quaternary);
+}
+
+.express-lane-tx-row .MuiTableCell-root {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.express-lane-tx-hash {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+}
+
+.express-lane-tx-profit {
+  font-weight: 600;
+  color: #10b981;
+  font-family: var(--font-family-mono);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .express-lane-main-content {
+    flex-direction: column;
+  }
+
+  .express-lane-chart-card,
+  .express-lane-transactions-card {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .express-lane-stats-row {
+    flex-wrap: wrap;
+  }
+
+  .express-lane-stat-card {
+    flex: 1 1 calc(33.333% - var(--spacing-lg));
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .express-lane-stats-row {
+    flex-direction: column;
+  }
+
+  .express-lane-stat-card {
+    flex: 1 1 100%;
+  }
+}
