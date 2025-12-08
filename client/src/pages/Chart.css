@@ -3,3 +3,22 @@
   background-color: var(--bg-primary, #f5f5f5);
 }
 
+.chart-content {
+  padding: var(--spacing-lg);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chart-time-range-select {
+  min-width: 150px;
+}
+
+.chart-box {
+  height: 400px;
+}
+

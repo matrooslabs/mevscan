@@ -237,12 +237,12 @@ function Chart() {
 
   return (
     <div className="chart-container">
-      <Box sx={{ padding: 'var(--spacing-lg)' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+      <Box className="chart-content">
+        <Box className="chart-header">
           <Typography variant="h4" component="h1">
             Chart
           </Typography>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl className="chart-time-range-select">
             <InputLabel id="time-range-select-label">Time Range</InputLabel>
             <Select
               labelId="time-range-select-label"
@@ -261,7 +261,7 @@ function Chart() {
         </Box>
         <Card>
           <CardContent>
-            <Box sx={{ height: 400 }}>
+            <Box className="chart-box">
               <Line data={chartData} options={options} />
             </Box>
           </CardContent>
