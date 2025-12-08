@@ -91,7 +91,7 @@ See [ENV_SETUP.md](./ENV_SETUP.md) for detailed instructions on configuring envi
 - **TanStack Query** - Data fetching and caching
 - **Axios** - HTTP client
 - **Material UI** - Component library
-- **Recharts** - Charting library
+- **ECharts** - Charting library
 
 ### Backend (Server)
 - **Express.js** - Web framework

@@ -4,7 +4,6 @@ import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
-import RadialBarChart from '../../components/RadialBarChart'
 import {
   useAuctionWinCount,
   useBidsPerAddress,
@@ -142,14 +141,23 @@ function TimeboostSection() {
             className="chart-card-half"
             contentClassName="timeboost-chart-card-flex"
           >
-            <Box className="timeboost-chart-card-inner">
-              <Box className="timeboost-chart-card-pie">
-                <RadialBarChart 
-                  data={timeboostRevenue.data || { total_first_price: 0, total_second_price: 0 }}
-                  showLegend={true}
-                  showTooltip={true}
-                />
-              </Box>
+            <Box className="timeboost-chart-card-center">
+              <Typography 
+                variant="h4" 
+                component="div"
+                className="timeboost-metric-large-value"
+              >
+                {timeboostRevenue.data?.total_second_price?.toFixed(2) || '0.00'} ETH
+              </Typography>
+              {timeboostRevenue.data?.total_first_price && (
+                <Typography 
+                  variant="body2" 
+                  component="div"
+                  sx={{ mt: 1, color: 'text.secondary' }}
+                >
+                  First Price: {timeboostRevenue.data.total_first_price.toFixed(2)} ETH
+                </Typography>
+              )}
             </Box>
           </ChartCard>
         </Box>

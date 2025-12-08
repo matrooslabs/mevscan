@@ -1,22 +1,8 @@
-import { useState, useMemo, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { useLatestBlocks, useLatestTransactions, useTimeboostGrossRevenue } from "../hooks/useApi";
 import type { BlockListItem, Transaction } from "@mevscan/shared";
 import "./Home.css";
-
-interface TransactionHistoryData {
-  date: string;
-  count: number;
-  fullDate: Date;
-}
 
 function Home() {
   const [txHash, setTxHash] = useState<string>("");
@@ -70,27 +56,6 @@ function Home() {
   // Get Timeboost Auction Revenue (total_first_price) - gross revenue (all-time)
   const timeboostAuctionRevenue = timeboostGrossRevenueData?.total_second_price ?? null;
 
-  // Generate transaction history data for last 14 days
-  const transactionHistory = useMemo<TransactionHistoryData[]>(() => {
-    const data: TransactionHistoryData[] = [];
-    const today = new Date();
-    for (let i = 13; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      // Random transaction count between 120k and 180k (similar to Etherscan)
-      const count = Math.floor(Math.random() * (180000 - 120000 + 1)) + 120000;
-      data.push({
-        date: date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        count,
-        fullDate: date,
-      });
-    }
-    return data;
-  }, []);
-
   return (
     <div className="home-container">
       <div className="search-section">
@@ -132,61 +97,6 @@ function Home() {
                   ? 'Error'
                   : 'N/A'}
           </span>
-        </div>
-        <div className="stat-item chart-item">
-          <span className="stat-label">Transaction History in 14 Days</span>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={80}>
-              <AreaChart
-                data={transactionHistory}
-                margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
-              >
-                <defs>
-                  <linearGradient
-                    id="colorTransactions"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#FFA726" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#FFA726" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: "#6b7280" }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis hide={true} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                    padding: "8px 12px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  }}
-                  labelStyle={{
-                    color: "#374151",
-                    fontWeight: 600,
-                    marginBottom: "4px",
-                  }}
-                  formatter={(value: number) => value.toLocaleString()}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#FFA726"
-                  strokeWidth={1.5}
-                  fillOpacity={1}
-                  fill="url(#colorTransactions)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
         </div>
       </div>
 

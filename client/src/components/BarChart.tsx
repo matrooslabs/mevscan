@@ -26,7 +26,7 @@ interface BarChartProps {
 const FONT_SIZE_MEDIUM = 12
 
 /**
- * BarChart - A reusable vertical bar chart component using Recharts
+ * BarChart - A reusable vertical bar chart component using ECharts
  */
 function BarChart({
   data,

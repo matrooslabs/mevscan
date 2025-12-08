@@ -23,7 +23,7 @@ interface PieChartProps {
 }
 
 /**
- * PieChart - A reusable pie chart component using Recharts
+ * PieChart - A reusable pie chart component using ECharts
  */
 function PieChart({
   data,
