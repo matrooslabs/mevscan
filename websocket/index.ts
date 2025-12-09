@@ -2,6 +2,7 @@ import PubNub from 'pubnub';
 import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getPubNub } from '@mevscan/shared/pubnub';
+import { publishExpressLaneProfit } from './services/expressLaneService';
 
 let channelLastStoredTime: Record<string, number> = {};
 let refreshInterval = 20 * 1000; // 20 seconds
@@ -28,48 +29,18 @@ async function init(): Promise<InitResult> {
     }
 }
 
-// async function refreshAndPublish(clickhouseClient: ClickHouseClient, pubnub: PubNub) {
-//     let lastStoredTime = channelLastStoredTime[PUBNUB_CHANNELS.GROSS_MEV];
-//     if (!lastStoredTime) {
-//         // Fetch from pubnub message to get last stored time
-//         const message = await pubnub.fetchMessages({
-//             channels: [PUBNUB_CHANNELS.GROSS_MEV],
-//             count: 1,
-//         });
-
-//         const fetchedMessage = message.channels[PUBNUB_CHANNELS.GROSS_MEV];
-//         if (!fetchedMessage || fetchedMessage.length === 0) {
-//             lastStoredTime = Math.floor((Date.now() - 60 * 60 * 1000) / 1000);
-//         } else {
-//             const grossData = fetchedMessage[0]!.message as unknown as GrossMevDataResponse[];
-//             lastStoredTime = grossData[grossData.length - 1]!.time + 1;
-//         }
-//     }
-
-//     const grossMevData = await getGrossMevFromBlocktime(clickhouseClient, lastStoredTime);
-//     if (!grossMevData || grossMevData.length === 0) {
-//         return;
-//     }
-//     console.log(grossMevData);
-
-//     pubnub.publish({
-//         channel: PUBNUB_CHANNELS.GROSS_MEV,
-//         message: grossMevData as any
-//     }, (status, response) => {
-//         if (status.error) {
-//             console.error('Error publishing Gross MEV data:', status.error);
-//         }
-//     });
-
-//     channelLastStoredTime[PUBNUB_CHANNELS.GROSS_MEV] = grossMevData[grossMevData.length - 1]!.time;
-// }
+// check last saved from local cache or from pubnub history
+// query for this round from this timestamp (including)
+// publish query result to pubnub
+// (there may be duplicated messages for a specific timestamp, deduplicate by selecting the later messages(published later))
+// (because there may be edge cases where the timestamp has not fully been processed yet)
 
 
 (async () => {
     const { pubnub, clickhouseClient } = await init();
 
     while (true) {
-        // await refreshAndPublish(clickhouseClient, pubnub);
+        await publishExpressLaneProfit(pubnub, clickhouseClient, channelLastStoredTime);
         await new Promise(resolve => setTimeout(resolve, refreshInterval));
     }
 })();
