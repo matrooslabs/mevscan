@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import PubNub from 'pubnub';
 import {
@@ -29,8 +29,7 @@ ChartJS.register(
   Filler
 );
 
-function Chart() {
-  const pubnubRef = useRef<PubNub | null>(null);
+function ChartContent({ pubnub }: { pubnub: PubNub }) {
   const [allGrossMevData, setAllGrossMevData] = useState<GrossMevDataResponse[]>([]);
   const [grossMevData, setGrossMevData] = useState<GrossMevDataResponse[]>([]);
   const [timeRange, setTimeRange] = useState<string>('15min');
@@ -63,38 +62,27 @@ function Chart() {
     }
   };
 
-  
-  // Initialize PubNub and subscribe to channel
-  useEffect(() => {
-    const pubnub = new PubNub({
-      subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
-      userId: 'chart-client',
-    });
-
-    pubnubRef.current = pubnub;
-
-    // Helper function to merge new data with existing data
-    const mergeData = (newData: GrossMevDataResponse[], existingData: GrossMevDataResponse[]): GrossMevDataResponse[] => {
-      // Combine existing and new data
-      const combined = [...existingData, ...newData];
-      
-      // Sort by time and remove duplicates
-      const sortedData = combined.sort((a, b) => a.time - b.time);
-      const uniqueData: GrossMevDataResponse[] = [];
-      for (let i = 0; i < sortedData.length; i++) {
-        if (i === 0 || sortedData[i].time !== sortedData[i - 1].time) {
-          uniqueData.push(sortedData[i]);
-        }
+  // Helper function to merge new data with existing data
+  const mergeData = (newData: GrossMevDataResponse[], existingData: GrossMevDataResponse[]): GrossMevDataResponse[] => {
+    // Combine existing and new data
+    const combined = [...existingData, ...newData];
+    
+    // Sort by time and remove duplicates
+    const sortedData = combined.sort((a, b) => a.time - b.time);
+    const uniqueData: GrossMevDataResponse[] = [];
+    for (let i = 0; i < sortedData.length; i++) {
+      if (i === 0 || sortedData[i].time !== sortedData[i - 1].time) {
+        uniqueData.push(sortedData[i]);
       }
-      
-      return uniqueData;
-    };
+    }
+    
+    return uniqueData;
+  };
 
-    // Subscribe to Gross MEV channel
-    pubnub.subscribe({
-      channels: [PUBNUB_CHANNELS.GROSS_MEV],
-    });
-
+  // Subscribe to Gross MEV channel and listen for real-time messages
+  useEffect(() => {
+    if (!pubnub) return;
+    
     // Listen for real-time messages
     const listener = {
       message: (event: any) => {
@@ -108,6 +96,12 @@ function Chart() {
     };
 
     pubnub.addListener(listener);
+
+    // Subscribe to Gross MEV channel
+    pubnub.subscribe({
+      channels: [PUBNUB_CHANNELS.GROSS_MEV],
+    });
+
 
     // Fetch historical messages on startup
     (async () => {
@@ -127,12 +121,12 @@ function Chart() {
         }
 
         // Flatten all messages from all fetched messages
-        const flattenedData = fetchedMessage.flatMap(msg =>
+        const flattenedData = fetchedMessage.flatMap((msg: any) =>
           (msg.message as unknown as GrossMevDataResponse[]) || []
         );
 
         // Sort by time first, then filter out duplicates by comparing with previous element
-        const sortedData = flattenedData.sort((a, b) => a.time - b.time);
+        const sortedData = flattenedData.sort((a: GrossMevDataResponse, b: GrossMevDataResponse) => a.time - b.time);
         const uniqueData: GrossMevDataResponse[] = [];
         for (let i = 0; i < sortedData.length; i++) {
           if (i === 0 || sortedData[i].time !== sortedData[i - 1].time) {
@@ -153,7 +147,7 @@ function Chart() {
         channels: [PUBNUB_CHANNELS.GROSS_MEV],
       });
     };
-  }, []);
+  }, [pubnub]);
 
   // Filter data based on selected time range
   useEffect(() => {
@@ -269,6 +263,17 @@ function Chart() {
       </Box>
     </div>
   );
+}
+
+function Chart() {
+  const pubnubClient = useMemo(() => {
+    return new PubNub({
+      subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
+      userId: 'chart-client',
+    });
+  }, []);
+
+  return <ChartContent pubnub={pubnubClient} />;
 }
 
 export default Chart;
