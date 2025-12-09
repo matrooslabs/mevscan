@@ -7,12 +7,8 @@ import {
   ErrorResponse,
   LiquidationResponse,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
+import { transformSwapsData, Swap } from '../utils/transformSwaps';
+import { handleRouteError } from '../utils/errorHandler';
 
 /**
  * Register mevdetails routes
@@ -65,12 +61,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.atomic_arbs
-        WHERE tx_hash = '${txHash}'
+        WHERE tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
@@ -107,31 +104,7 @@ export function registerMevDetailsRoutes(app: Express) {
       const row = data[0];
     
       // Transform nested swaps array
-      const swaps: Array<{
-        trace_idx: number;
-        from: string;
-        recipient: string;
-        pool: string;
-        token_in: [string, string];
-        token_out: [string, string];
-        amount_in: [string, string];
-        amount_out: [string, string];
-      }> = [];
-    
-      if (row['swaps.trace_idx'] && row['swaps.trace_idx'].length > 0) {
-        for (let i = 0; i < row['swaps.trace_idx'].length; i++) {
-          swaps.push({
-            trace_idx: row['swaps.trace_idx'][i],
-            from: row['swaps.from'][i] || '',
-            recipient: row['swaps.recipient'][i] || '',
-            pool: row['swaps.pool'][i] || '',
-            token_in: row['swaps.token_in'][i] || ['', ''],
-            token_out: row['swaps.token_out'][i] || ['', ''],
-            amount_in: row['swaps.amount_in'][i] || ['', ''],
-            amount_out: row['swaps.amount_out'][i] || ['', ''],
-          });
-        }
-      }
+      const swaps = transformSwapsData(row, 'swaps.');
 
       const response: AtomicArbResponse = {
         tx_hash: row.tx_hash,
@@ -152,11 +125,7 @@ export function registerMevDetailsRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching atomic arbitrage:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch atomic arbitrage',
-      });
+      handleRouteError(error, res, 'atomic arbitrage');
     }
   });
 
@@ -215,12 +184,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.cex_dex_quotes
-        WHERE tx_hash = '${txHash}'
+        WHERE tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
@@ -264,31 +234,7 @@ export function registerMevDetailsRoutes(app: Express) {
       const row = data[0];
     
       // Transform nested swaps array
-      const swaps: Array<{
-        trace_idx: number;
-        from: string;
-        recipient: string;
-        pool: string;
-        token_in: [string, string];
-        token_out: [string, string];
-        amount_in: [string, string];
-        amount_out: [string, string];
-      }> = [];
-    
-      if (row['swaps.trace_idx'] && row['swaps.trace_idx'].length > 0) {
-        for (let i = 0; i < row['swaps.trace_idx'].length; i++) {
-          swaps.push({
-            trace_idx: row['swaps.trace_idx'][i],
-            from: row['swaps.from'][i] || '',
-            recipient: row['swaps.recipient'][i] || '',
-            pool: row['swaps.pool'][i] || '',
-            token_in: row['swaps.token_in'][i] || ['', ''],
-            token_out: row['swaps.token_out'][i] || ['', ''],
-            amount_in: row['swaps.amount_in'][i] || ['', ''],
-            amount_out: row['swaps.amount_out'][i] || ['', ''],
-          });
-        }
-      }
+      const swaps = transformSwapsData(row, 'swaps.');
 
       const response: CexDexQuoteResponse = {
         tx_hash: row.tx_hash,
@@ -316,11 +262,7 @@ export function registerMevDetailsRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching CexDex quote:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch CexDex quote',
-      });
+      handleRouteError(error, res, 'CexDex quote');
     }
   });
 
@@ -378,12 +320,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.liquidations
-        WHERE liquidation_tx_hash = '${txHash}'
+        WHERE liquidation_tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
@@ -426,31 +369,7 @@ export function registerMevDetailsRoutes(app: Express) {
       const row = data[0];
     
       // Transform nested liquidation_swaps array
-      const liquidationSwaps: Array<{
-        trace_idx: number;
-        from: string;
-        recipient: string;
-        pool: string;
-        token_in: [string, string];
-        token_out: [string, string];
-        amount_in: [string, string];
-        amount_out: [string, string];
-      }> = [];
-    
-      if (row['liquidation_swaps.trace_idx'] && row['liquidation_swaps.trace_idx'].length > 0) {
-        for (let i = 0; i < row['liquidation_swaps.trace_idx'].length; i++) {
-          liquidationSwaps.push({
-            trace_idx: row['liquidation_swaps.trace_idx'][i],
-            from: row['liquidation_swaps.from'][i] || '',
-            recipient: row['liquidation_swaps.recipient'][i] || '',
-            pool: row['liquidation_swaps.pool'][i] || '',
-            token_in: row['liquidation_swaps.token_in'][i] || ['', ''],
-            token_out: row['liquidation_swaps.token_out'][i] || ['', ''],
-            amount_in: row['liquidation_swaps.amount_in'][i] || ['', ''],
-            amount_out: row['liquidation_swaps.amount_out'][i] || ['', ''],
-          });
-        }
-      }
+      const liquidationSwaps = transformSwapsData(row, 'liquidation_swaps.');
 
       // Transform nested liquidations array
       const liquidations: Array<{
@@ -497,11 +416,7 @@ export function registerMevDetailsRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching liquidation:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch liquidation',
-      });
+      handleRouteError(error, res, 'liquidation');
     }
   });
 

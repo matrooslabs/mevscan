@@ -16,6 +16,8 @@ import {
   getTimestampTimeRangeFilter,
 } from './types';
 import { DEFAULTS } from '../constants';
+import { transformTimeSeriesPercentageData, RawTimeSeriesPercentageRow } from '../utils/transformTimeSeries';
+import { handleRouteError } from '../utils/errorHandler';
 
 /**
  * Register expresslane routes
@@ -76,11 +78,7 @@ export function registerExpressLaneRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Express Lane MEV Percentage:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane MEV Percentage',
-      });
+      handleRouteError(error, res, 'Express Lane MEV Percentage');
     }
   });
 
@@ -126,31 +124,11 @@ export function registerExpressLaneRoutes(app: Express) {
         percentage: number;
       }>>();
 
-      const response: TimeSeriesPercentageResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            total: row.total || 0,
-            timeboost: row.timeboost || 0,
-            percentage: row.percentage || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesPercentageDataPoint => item !== null);
+      const response: TimeSeriesPercentageResponse = transformTimeSeriesPercentageData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Express Lane MEV Percentage per minute:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane MEV Percentage per minute',
-      });
+      handleRouteError(error, res, 'Express Lane MEV Percentage per minute');
     }
   });
 
@@ -211,11 +189,7 @@ export function registerExpressLaneRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Express Lane Net Profit:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Net Profit',
-      });
+      handleRouteError(error, res, 'Express Lane Net Profit');
     }
   });
 
@@ -278,11 +252,7 @@ export function registerExpressLaneRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Express Lane Profit by Controller:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Profit by Controller',
-      });
+      handleRouteError(error, res, 'Express Lane Profit by Controller');
     }
   });
 
