@@ -51,12 +51,6 @@ const MOCK_PROFIT_DATA = [
   { time: '12:03:00', profit: 321.50 },
 ]
 
-// Helper to truncate address
-const truncateAddress = (address: string) => {
-  if (address.length <= 12) return address
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
 // Helper to get chip color based on MEV type
 const getMevTypeColor = (mevType: string): 'primary' | 'secondary' | 'success' | 'warning' | 'error' => {
   switch (mevType) {
@@ -193,11 +187,30 @@ function ExpressLaneRealTimeSection() {
     }
   }, [bepPriceUSD])
 
+  // Get latest cumulative profit from chart data
+  const latestProfit = MOCK_PROFIT_DATA[MOCK_PROFIT_DATA.length - 1]?.profit || 0
+
   return (
     <Box className="dashboard-section-group section-spacing">
       <Typography variant="h4" component="h2" className="section-title">
         Express Lane
       </Typography>
+      {/* Stats Cards */}
+      <Box className="express-lane-stats-container">
+        <StatCard
+          title="Current Round"
+          value={MOCK_ROUND_INFO.currentRound}
+        />
+        <StatCard
+          title="Express Lane Price"
+          value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
+          subtitle={`~$${(MOCK_ROUND_INFO.expressLanePrice * 3500).toFixed(2)}`}
+        />
+        <StatCard
+          title="Cumulative Profit"
+          value={`$${latestProfit.toFixed(2)}`}
+        />
+      </Box>
       {/* Main Content: Chart + Transactions */}
       <Box className="express-lane-main-content">
         {/* Profit Chart */}
@@ -211,7 +224,7 @@ function ExpressLaneRealTimeSection() {
                 option={chartOptions}
                 notMerge
                 lazyUpdate
-                style={{ width: '100%', height: '100%' }}
+                className="express-lane-chart"
               />
             </Box>
           </CardContent>
