@@ -17,7 +17,7 @@ import {
   useLiquidationTimeboosted,
   usePeriodicApiRefreshByKeys,
 } from '../../hooks/useApi'
-import './MEVSection.css'
+import './SectionCommon.css'
 
 const transformTimeSeriesData = (data?: TimeSeriesPoint[]): TimeSeriesData => {
   if (!data) return []
@@ -121,11 +121,11 @@ function MEVSection() {
   return (
     <>
       {/* Gross MEV Statistics Section */}
-      <Box className="dashboard-section-group">
+      <Box className="dashboard-section-group section-spacing">
         <Typography 
           variant="h4" 
           component="h2" 
-          className="mev-section-title"
+          className="section-title"
         >
           MEV
         </Typography>

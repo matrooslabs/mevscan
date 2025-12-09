@@ -1,8 +1,8 @@
-.express-section-spacing {
+.section-spacing {
   margin-bottom: var(--spacing-xl);
 }
 
-.express-section-title {
+.section-title {
   margin-bottom: var(--spacing-2xl);
   padding: var(--spacing-lg);
   font-weight: 700;
@@ -17,7 +17,7 @@
   display: inline-block;
 }
 
-.express-section-title::after {
+.section-title::after {
   content: '';
   position: absolute;
   bottom: 8px;
@@ -28,7 +28,7 @@
   border-radius: 2px;
 }
 
-.express-chart-card-flex {
+.chart-card-flex {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -36,7 +36,7 @@
   gap: var(--spacing-md);
 }
 
-.express-chart-card-inner {
+.chart-card-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,9 +45,24 @@
   flex: 1;
 }
 
-.express-chart-card-pie {
+.chart-card-pie {
   width: 100%;
   height: 250px;
   flex: 1;
+}
+
+.chart-card-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex: 1;
+}
+
+.metric-large-value {
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--text-primary, inherit);
 }
 

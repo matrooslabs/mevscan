@@ -11,7 +11,7 @@ import {
   usePeriodicApiRefreshByKeys,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
-import './ExpressLaneSection.css'
+import './SectionCommon.css'
 import type {
   ExpressLaneMEVPercentage,
   ExpressLaneMEVPercentagePerMinute,
@@ -113,11 +113,11 @@ function ExpressLaneSection() {
   }, [expressLaneProfitByController.data])
 
   return (
-    <Box className="dashboard-section-group express-section-spacing">
+    <Box className="dashboard-section-group section-spacing">
       <Typography 
         variant="h4" 
         component="h2" 
-        className="express-section-title"
+        className="section-title"
       >
         Express Lane
       </Typography>
@@ -129,10 +129,10 @@ function ExpressLaneSection() {
           isError={expressLaneMEVPercentage.isError}
           errorMessage={expressLaneMEVPercentage.error?.message}
           className="chart-card-half"
-          contentClassName="express-chart-card-flex"
+          contentClassName="chart-card-flex"
         >
-          <Box className="express-chart-card-inner">
-            <Box className="express-chart-card-pie">
+          <Box className="chart-card-inner">
+            <Box className="chart-card-pie">
               <PieChart 
                 data={transformPieChartData}
                 innerRadius={40}
@@ -150,7 +150,7 @@ function ExpressLaneSection() {
           isError={expressLaneMEVPercentagePerMinute.isError}
           errorMessage={expressLaneMEVPercentagePerMinute.error?.message}
           className="chart-card-half"
-          contentClassName="express-chart-card-flex"
+          contentClassName="chart-card-flex"
         >
           <TimeSeriesChart 
             data={transformPercentageTimeSeriesData}
@@ -171,7 +171,7 @@ function ExpressLaneSection() {
           isError={expressLaneNetProfit.isError}
           errorMessage={expressLaneNetProfit.error?.message}
           className="chart-card-full"
-          contentClassName="express-chart-card-flex"
+          contentClassName="chart-card-flex"
         >
           <TimeSeriesChart 
             data={transformExpressLaneNetProfitData.map(item => ({
@@ -197,7 +197,7 @@ function ExpressLaneSection() {
           isError={expressLaneProfitByController.isError}
           errorMessage={expressLaneProfitByController.error?.message}
           className="chart-card-full"
-          contentClassName="express-chart-card-flex"
+          contentClassName="chart-card-flex"
         >
           <BarChart 
             data={transformExpressLaneProfitByControllerData}
