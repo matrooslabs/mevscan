@@ -7,12 +7,6 @@ import {
   ErrorResponse,
   LiquidationResponse,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
 import { transformSwapsData, Swap } from '../utils/transformSwaps';
 import { handleRouteError } from '../utils/errorHandler';
 

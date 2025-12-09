@@ -69,12 +69,13 @@ export function registerEntitiesRoutes(app: Express) {
         FROM mev.mev_blocks mb 
         INNER JOIN mev.bundle_header bh 
           ON mb.block_number = bh.block_number 
-        WHERE mb.block_number = ${blockNum}
+        WHERE mb.block_number = {blockNum:UInt64}
         ORDER BY bh.tx_index ASC
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { blockNum },
         format: 'JSONEachRow',
       });
 
@@ -133,11 +134,12 @@ export function registerEntitiesRoutes(app: Express) {
         const timestampQuery = `
           SELECT block_timestamp
           FROM ethereum.blocks
-          WHERE block_number = ${blockNum} AND valid = 1
+          WHERE block_number = {blockNum:UInt64} AND valid = 1
           LIMIT 1
         `;
         const timestampResult = await req.clickhouse.query({
           query: timestampQuery,
+          query_params: { blockNum },
           format: 'JSONEachRow',
         });
         const timestampData = await timestampResult.json<Array<{ block_timestamp: number }>>();
@@ -206,12 +208,13 @@ export function registerEntitiesRoutes(app: Express) {
           bh.balance_deltas.token_deltas as balance_deltas_token_deltas
         FROM mev.bundle_header bh
         INNER JOIN brontes.tree t ON bh.block_number = t.block_number AND bh.tx_hash = t.tx_hash
-        WHERE bh.tx_hash = '${transactionId}'
+        WHERE bh.tx_hash = {transactionId:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { transactionId },
         format: 'JSONEachRow',
       });
 
@@ -363,12 +366,13 @@ export function registerEntitiesRoutes(app: Express) {
           mev_contract,
           eoa
         FROM mev.bundle_header
-        WHERE (lower(mev_contract) = '${normalizedAddress}' OR lower(eoa) = '${normalizedAddress}')
+        WHERE (lower(mev_contract) = {normalizedAddress:String} OR lower(eoa) = {normalizedAddress:String})
         LIMIT 1
       `;
     
       const contractCheckResult = await req.clickhouse.query({
         query: contractCheckQuery,
+        query_params: { normalizedAddress },
         format: 'JSONEachRow',
       });
     
@@ -383,11 +387,12 @@ export function registerEntitiesRoutes(app: Express) {
     
       // Get total count for statistics and pagination
       const countQuery = isContract
-        ? `SELECT count() as total FROM mev.bundle_header WHERE lower(mev_contract) = '${normalizedAddress}'`
-        : `SELECT count() as total FROM mev.bundle_header WHERE lower(eoa) = '${normalizedAddress}'`;
+        ? `SELECT count() as total FROM mev.bundle_header WHERE lower(mev_contract) = {normalizedAddress:String}`
+        : `SELECT count() as total FROM mev.bundle_header WHERE lower(eoa) = {normalizedAddress:String}`;
     
       const countResult = await req.clickhouse.query({
         query: countQuery,
+        query_params: { normalizedAddress },
         format: 'JSONEachRow',
       });
     
@@ -414,13 +419,14 @@ export function registerEntitiesRoutes(app: Express) {
             express_lane_price_usd,
             express_lane_round
           FROM mev.bundle_header
-          WHERE lower(mev_contract) = '${normalizedAddress}'
+          WHERE lower(mev_contract) = {normalizedAddress:String}
           ORDER BY block_number DESC, tx_index DESC
-          LIMIT ${pageSize} OFFSET ${offset}
+          LIMIT {pageSize:UInt32} OFFSET {offset:UInt32}
         `;
       
         const contractResult = await req.clickhouse.query({
           query: contractQuery,
+          query_params: { normalizedAddress, pageSize, offset },
           format: 'JSONEachRow',
         });
       
@@ -471,13 +477,14 @@ export function registerEntitiesRoutes(app: Express) {
             express_lane_price_usd,
             express_lane_round
           FROM mev.bundle_header
-          WHERE lower(eoa) = '${normalizedAddress}'
+          WHERE lower(eoa) = {normalizedAddress:String}
           ORDER BY block_number DESC, tx_index DESC
-          LIMIT ${pageSize} OFFSET ${offset}
+          LIMIT {pageSize:UInt32} OFFSET {offset:UInt32}
         `;
       
         const eoaResult = await req.clickhouse.query({
           query: eoaQuery,
+          query_params: { normalizedAddress, pageSize, offset },
           format: 'JSONEachRow',
         });
       
@@ -521,7 +528,7 @@ export function registerEntitiesRoutes(app: Express) {
             sum(bribe_usd) as total_bribe,
             countIf(timeboosted = true) as timeboosted_count
           FROM mev.bundle_header
-          WHERE lower(mev_contract) = '${normalizedAddress}'
+          WHERE lower(mev_contract) = {normalizedAddress:String}
         `
         : `
           SELECT 
@@ -529,11 +536,12 @@ export function registerEntitiesRoutes(app: Express) {
             sum(bribe_usd) as total_bribe,
             countIf(timeboosted = true) as timeboosted_count
           FROM mev.bundle_header
-          WHERE lower(eoa) = '${normalizedAddress}'
+          WHERE lower(eoa) = {normalizedAddress:String}
         `;
     
       const overallStatsResult = await req.clickhouse.query({
         query: overallStatsQuery,
+        query_params: { normalizedAddress },
         format: 'JSONEachRow',
       });
     
@@ -550,7 +558,7 @@ export function registerEntitiesRoutes(app: Express) {
             mev_type,
             count() as mev_type_count
           FROM mev.bundle_header
-          WHERE lower(mev_contract) = '${normalizedAddress}'
+          WHERE lower(mev_contract) = {normalizedAddress:String}
           GROUP BY mev_type
         `
         : `
@@ -558,12 +566,13 @@ export function registerEntitiesRoutes(app: Express) {
             mev_type,
             count() as mev_type_count
           FROM mev.bundle_header
-          WHERE lower(eoa) = '${normalizedAddress}'
+          WHERE lower(eoa) = {normalizedAddress:String}
           GROUP BY mev_type
         `;
     
       const mevTypeResult = await req.clickhouse.query({
         query: mevTypeQuery,
+        query_params: { normalizedAddress },
         format: 'JSONEachRow',
       });
     
@@ -594,19 +603,20 @@ export function registerEntitiesRoutes(app: Express) {
               min(block_number) as min_block,
               max(block_number) as max_block
             FROM mev.bundle_header
-            WHERE lower(mev_contract) = '${normalizedAddress}'
+            WHERE lower(mev_contract) = {normalizedAddress:String}
           `
           : `
             SELECT 
               min(block_number) as min_block,
               max(block_number) as max_block
             FROM mev.bundle_header
-            WHERE lower(eoa) = '${normalizedAddress}'
+            WHERE lower(eoa) = {normalizedAddress:String}
           `;
       
         try {
           const blockRangeResult = await req.clickhouse.query({
             query: timestampQuery,
+            query_params: { normalizedAddress },
             format: 'JSONEachRow',
           });
           const blockRangeData = await blockRangeResult.json<Array<{
@@ -623,10 +633,11 @@ export function registerEntitiesRoutes(app: Express) {
                 min(block_timestamp) as first_seen,
                 max(block_timestamp) as last_seen
               FROM ethereum.blocks
-              WHERE block_number >= ${minBlock} AND block_number <= ${maxBlock} AND valid = 1
+              WHERE block_number >= {minBlock:UInt64} AND block_number <= {maxBlock:UInt64} AND valid = 1
             `;
             const timestampResult = await req.clickhouse.query({
               query: timestampQuery2,
+              query_params: { minBlock, maxBlock },
               format: 'JSONEachRow',
             });
             const timestampData = await timestampResult.json<Array<{
