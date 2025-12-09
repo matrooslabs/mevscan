@@ -196,27 +196,8 @@ function ExpressLaneRealTimeSection() {
   return (
     <Box className="dashboard-section-group section-spacing">
       <Typography variant="h4" component="h2" className="section-title">
-        Express Lane Real-Time Performance
+        Express Lane
       </Typography>
-
-      {/* Stats Row */}
-      <Box className="express-lane-stats-row">
-        <StatCard
-          title="Current Round"
-          value={MOCK_ROUND_INFO.currentRound.toLocaleString()}
-        />
-        <StatCard
-          title="Current Owner"
-          value={truncateAddress(MOCK_ROUND_INFO.currentOwner)}
-          subtitle="Express Lane Controller"
-        />
-        <StatCard
-          title="Express Lane Price"
-          value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
-          subtitle={`≈ $${bepPriceUSD.toFixed(2)}`}
-        />
-      </Box>
-
       {/* Main Content: Chart + Transactions */}
       <Box className="express-lane-main-content">
         {/* Profit Chart */}
