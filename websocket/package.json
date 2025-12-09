@@ -1,0 +1,33 @@
+{
+  "name": "@mevscan/websocket",
+  "version": "1.0.0",
+  "description": "WebSocket service for MEVScan",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts",
+    "dev:watch": "nodemon"
+  },
+  "keywords": [
+    "websocket",
+    "pubnub",
+    "blockchain",
+    "mev"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pubnub": "^10.2.3",
+    "@mevscan/server": "*",
+    "@mevscan/shared": "*",
+    "@clickhouse/client": "^0.2.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.14.0"
+  }
+}
