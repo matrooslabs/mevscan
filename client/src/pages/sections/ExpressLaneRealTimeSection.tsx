@@ -86,11 +86,6 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
         <Typography variant="h5" component="div" className="express-lane-stat-value">
           {value}
         </Typography>
-        {subtitle && (
-          <Typography variant="caption" className="express-lane-stat-subtitle">
-            {subtitle}
-          </Typography>
-        )}
       </CardContent>
     </Card>
   )
@@ -204,11 +199,14 @@ function ExpressLaneRealTimeSection() {
         <StatCard
           title="Express Lane Price"
           value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
-          subtitle={`~$${(MOCK_ROUND_INFO.expressLanePrice * 3500).toFixed(2)}`}
         />
         <StatCard
           title="Cumulative Profit"
           value={`$${latestProfit.toFixed(2)}`}
+        />
+        <StatCard
+          title="Number of Transactions"
+          value={MOCK_TRANSACTIONS.length}
         />
       </Box>
       {/* Main Content: Chart + Transactions */}
