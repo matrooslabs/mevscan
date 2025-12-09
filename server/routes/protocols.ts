@@ -12,6 +12,8 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { transformProtocolTimeSeriesData, RawProtocolTimeSeriesRow } from '../utils/transformTimeSeries';
+import { handleRouteError } from '../utils/errorHandler';
 
 /**
  * Register protocols routes
@@ -54,30 +56,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Atomic MEV Timeboosted:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Atomic MEV Timeboosted',
-      });
+      handleRouteError(error, res, 'Atomic MEV Timeboosted');
     }
   });
 
@@ -140,30 +123,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Atomic Arb MEV:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Atomic Arb MEV',
-      });
+      handleRouteError(error, res, 'Atomic Arb MEV');
     }
   });
 
@@ -225,30 +189,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching CexDex Arb:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch CexDex Arb',
-      });
+      handleRouteError(error, res, 'CexDex Arb');
     }
   });
 
@@ -311,30 +256,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching CexDex MEV Timeboosted:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch CexDex MEV Timeboosted',
-      });
+      handleRouteError(error, res, 'CexDex MEV Timeboosted');
     }
   });
 
@@ -396,30 +322,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Liquidation:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Liquidation',
-      });
+      handleRouteError(error, res, 'Liquidation');
     }
   });
 
@@ -482,30 +389,11 @@ export function registerProtocolsRoutes(app: Express) {
         profit_usd: number;
       }>>();
 
-      const response: TimeSeriesByProtocolResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            proto: row.proto || '',
-            profit_usd: row.profit_usd || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Liquidation Timeboosted:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Liquidation Timeboosted',
-      });
+      handleRouteError(error, res, 'Liquidation Timeboosted');
     }
   });
 
