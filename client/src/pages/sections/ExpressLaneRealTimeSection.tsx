@@ -23,6 +23,10 @@ const MOCK_ROUND_INFO = {
   currentRound: 1203,
   currentOwner: "0x96a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f803",
   expressLanePrice: 0.05, // in ETH
+  currentBlockNumber: 24567890,
+  gasUsed: 125000000, // in gas units
+  expressLaneWinRate: 0.752, // 75.2%
+  expressLaneTotalWins: 904,
 };
 
 interface Transaction {
@@ -223,11 +227,6 @@ function ExpressLaneRealTimeSection() {
 
   return (
     <Box className="dashboard-section-group section-spacing">
-      <Box className="express-lane-title-container">
-        <Typography variant="h4" component="h2" className="section-title">
-          Express Lane
-        </Typography>
-      </Box>
       {/* Stats Cards */}
       <Box className="express-lane-stats-container">
         <StatCard title="Current Round" value={MOCK_ROUND_INFO.currentRound} />
@@ -236,12 +235,28 @@ function ExpressLaneRealTimeSection() {
           value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
         />
         <StatCard
-          title="Cumulative Profit"
+          title="Profit"
           value={`$${latestProfit.toFixed(2)}`}
         />
         <StatCard
           title="Number of Transactions"
           value={MOCK_TRANSACTIONS.length}
+        />
+        <StatCard
+          title="Current Block Number"
+          value={MOCK_ROUND_INFO.currentBlockNumber}
+        />
+        <StatCard
+          title="Gas Used"
+          value={MOCK_ROUND_INFO.gasUsed.toLocaleString()}
+        />
+        <StatCard
+          title="Express Lane Win Rate"
+          value={`${(MOCK_ROUND_INFO.expressLaneWinRate * 100).toFixed(1)}%`}
+        />
+        <StatCard
+          title="Express Lane Total Wins"
+          value={MOCK_ROUND_INFO.expressLaneTotalWins}
         />
       </Box>
       {/* Main Content: Chart + Transactions */}

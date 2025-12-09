@@ -48,9 +48,11 @@
 /* Stats Container */
 .express-lane-stats-container {
   display: flex;
-  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: space-between;
   max-width: var(--max-width-content);
-  width: auto;
+  width: 100%;
   margin: 0 auto var(--spacing-lg) auto;
 }
 
@@ -64,7 +66,7 @@
 }
 
 .express-lane-stat-card {
-  flex: 1 1 0;
+  flex: 0 1 calc((100% - 3 * var(--spacing-md)) / 4);
   min-width: 0;
   background-color: var(--color-bg-primary);
   border-radius: var(--radius-lg);
@@ -279,6 +281,12 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .express-lane-stat-card {
+    flex: 0 1 calc((100% - 2 * var(--spacing-md)) / 3);
+  }
+}
+
 @media (max-width: 900px) {
   .express-lane-main-content {
     flex-direction: column;
@@ -295,7 +303,7 @@
   }
 
   .express-lane-stat-card {
-    flex: 1 1 calc(33.333% - var(--spacing-lg));
+    flex: 0 1 calc((100% - var(--spacing-md)) / 2);
     min-width: 180px;
   }
 }
