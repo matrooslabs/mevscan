@@ -65,12 +65,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.atomic_arbs
-        WHERE tx_hash = '${txHash}'
+        WHERE tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
@@ -215,12 +216,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.cex_dex_quotes
-        WHERE tx_hash = '${txHash}'
+        WHERE tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
@@ -378,12 +380,13 @@ export function registerMevDetailsRoutes(app: Express) {
           profit_usd,
           protocols
         FROM mev.liquidations
-        WHERE liquidation_tx_hash = '${txHash}'
+        WHERE liquidation_tx_hash = {txHash:String}
         LIMIT 1
       `;
 
       const result = await req.clickhouse.query({
         query,
+        query_params: { txHash },
         format: 'JSONEachRow',
       });
 
