@@ -48,7 +48,7 @@ If any of the above is missing ask the user. Add the visualization to Dashboard 
 
 # Guidelines 
 
-- For the time range the given SQL should use should be the last 15 minutes. When you design the api endpoint, support the time range parameter and use that in the query. The option for time ranges are: 5min, 15min, 30min, 1 hour
+- For the time range the given SQL should use should be the last 15 minutes. When you design the api endpoint, support the time range parameter and use that in the query. The option for time ranges are: 6hours, 12hours, 24hours, 3days, 7days, 14days, 30days
 - The Database schema is located under ./schema directory
 
 # Deployment
