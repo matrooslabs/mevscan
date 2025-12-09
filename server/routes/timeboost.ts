@@ -10,6 +10,7 @@ import {
   TimeboostRevenueResponse,
 } from './types';
 import { getTimestampTimeRangeFilter } from './types';
+import { handleRouteError } from '../utils/errorHandler';
 
 /**
  * Register timeboost routes
@@ -63,11 +64,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Timeboost Gross Revenue:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Gross Revenue',
-      });
+      handleRouteError(error, res, 'Timeboost Gross Revenue');
     }
   });
 
@@ -124,11 +121,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Timeboost Revenue:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Timeboost Revenue',
-      });
+      handleRouteError(error, res, 'Timeboost Revenue');
     }
   });
 
@@ -168,11 +161,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Bids per Address:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Bids per Address',
-      });
+      handleRouteError(error, res, 'Bids per Address');
     }
   });
 
@@ -219,11 +208,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Auction Win Count:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Auction Win Count',
-      });
+      handleRouteError(error, res, 'Auction Win Count');
     }
   });
 
@@ -260,11 +245,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Bids per Round:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Bids per Round',
-      });
+      handleRouteError(error, res, 'Bids per Round');
     }
   });
 
@@ -320,11 +301,7 @@ export function registerTimeboostRoutes(app: Express) {
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Express Lane Price:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Express Lane Price',
-      });
+      handleRouteError(error, res, 'Express Lane Price');
     }
   });
 

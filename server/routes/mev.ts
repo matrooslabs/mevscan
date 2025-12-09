@@ -12,6 +12,8 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { transformTimeSeriesData, RawTimeSeriesRow } from '../utils/transformTimeSeries';
+import { handleRouteError } from '../utils/errorHandler';
 
 /**
  * Register mev routes
@@ -60,31 +62,11 @@ export function registerMevRoutes(app: Express) {
         timeboost: number;
       }>>();
 
-      const response: TimeSeriesResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            total: row.total || 0,
-            normal: row.normal || 0,
-            timeboost: row.timeboost || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesDataPoint => item !== null);
+      const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Gross MEV:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Gross MEV',
-      });
+      handleRouteError(error, res, 'Gross MEV');
     }
   });
 
@@ -133,31 +115,11 @@ export function registerMevRoutes(app: Express) {
         timeboost: number;
       }>>();
 
-      const response: TimeSeriesResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            total: row.total || 0,
-            normal: row.normal || 0,
-            timeboost: row.timeboost || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesDataPoint => item !== null);
+      const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Gross Atomic Arb:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Gross Atomic Arb',
-      });
+      handleRouteError(error, res, 'Gross Atomic Arb');
     }
   });
 
@@ -205,31 +167,11 @@ export function registerMevRoutes(app: Express) {
         timeboost: number;
       }>>();
 
-      const response: TimeSeriesResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            total: row.total || 0,
-            normal: row.normal || 0,
-            timeboost: row.timeboost || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesDataPoint => item !== null);
+      const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Gross CexDexQuotes:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Gross CexDexQuotes',
-      });
+      handleRouteError(error, res, 'Gross CexDexQuotes');
     }
   });
 
@@ -280,31 +222,11 @@ export function registerMevRoutes(app: Express) {
         timeboost: number;
       }>>();
 
-      const response: TimeSeriesResponse = data
-        .filter((row) => row.time != null && !isNaN(row.time))
-        .map((row) => {
-          const date = new Date(row.time * 1000);
-          if (isNaN(date.getTime())) {
-            return null;
-          }
-          const hours = date.getHours().toString().padStart(2, '0');
-          const mins = date.getMinutes().toString().padStart(2, '0');
-          return {
-            time: `${hours}:${mins}`,
-            total: row.total || 0,
-            normal: row.normal || 0,
-            timeboost: row.timeboost || 0,
-          };
-        })
-        .filter((item): item is TimeSeriesDataPoint => item !== null);
+      const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching Gross Liquidation:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Failed to fetch Gross Liquidation',
-      });
+      handleRouteError(error, res, 'Gross Liquidation');
     }
   });
 
