@@ -5,9 +5,14 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules']),
+  globalIgnores(['**/dist/**', '**/node_modules/**']),
   // Server configuration (Node.js environment) - JavaScript
   {
     files: ['server/**/*.js'],
@@ -39,6 +44,7 @@ export default defineConfig([
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: './server/tsconfig.json',
+        tsconfigRootDir: __dirname,
       },
     },
     plugins: {
@@ -86,6 +92,7 @@ export default defineConfig([
         ecmaFeatures: { jsx: true },
         sourceType: 'module',
         project: './client/tsconfig.json',
+        tsconfigRootDir: __dirname,
       },
     },
     plugins: {
