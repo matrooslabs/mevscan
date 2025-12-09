@@ -6,6 +6,7 @@ import {
   ErrorResponse,
   Transaction,
 } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register latest/recent data routes
@@ -16,7 +17,7 @@ export function registerLatestRoutes(app: Express) {
     res: Response<Transaction[] | ErrorResponse>
   ) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseInt(req.query.limit as string) || DEFAULTS.QUERY_LIMITS.LATEST_TRANSACTIONS;
       
       // Query bundle_header table only
       // Using PRIMARY KEY (block_number, tx_hash) for efficient querying
@@ -80,7 +81,7 @@ export function registerLatestRoutes(app: Express) {
     res: Response<BlockListItem[] | ErrorResponse>
   ) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseInt(req.query.limit as string) || DEFAULTS.QUERY_LIMITS.LATEST_TRANSACTIONS;
       
       // Query mev_blocks table
       // Using PRIMARY KEY (block_number, block_hash) for efficient querying

@@ -15,6 +15,7 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register expresslane routes
@@ -25,7 +26,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<PieChartResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -89,7 +90,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<TimeSeriesPercentageResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -159,7 +160,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneNetProfitResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -184,7 +185,7 @@ export function registerExpressLaneRoutes(app: Express) {
           bh.express_lane_round, bh.express_lane_controller
         ORDER BY
           bh.express_lane_round DESC
-        LIMIT 100
+        LIMIT ${DEFAULTS.QUERY_LIMITS.EXPRESS_LANE_ROUNDS}
       `;
 
       const result = await req.clickhouse.query({
@@ -224,7 +225,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

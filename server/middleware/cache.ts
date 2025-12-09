@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
+import { DEFAULTS } from '../constants';
 
-interface CacheEntry {
-  data: any;
+// JSON-serializable type constraint
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
+interface CacheEntry<T = JsonValue> {
+  data: T;
   expiresAt: number;
   timestamp: number;
 }
@@ -14,7 +18,7 @@ interface CacheStore {
 const cacheStore: CacheStore = {};
 
 // Default cache expiry (ms)
-export const DEFAULT_CACHE_EXPIRE_MS = 5 * 60 * 1000;
+export const DEFAULT_CACHE_EXPIRE_MS = DEFAULTS.CACHE_EXPIRE_MS;
 
 /**
  * Generate a cache key from request path and query parameters
@@ -72,7 +76,7 @@ export function createCacheMiddleware(expireDurationMs = DEFAULT_CACHE_EXPIRE_MS
     const originalJson = res.json.bind(res);
 
     // Override json method to intercept response
-    res.json = function (body: any) {
+    res.json = function (body: JsonValue) {
       // Only cache successful responses (status 200)
       if (res.statusCode === 200) {
         // Cache the response data

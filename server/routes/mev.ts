@@ -12,6 +12,7 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register mev routes
@@ -22,7 +23,7 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -94,7 +95,7 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -167,7 +168,7 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -239,7 +240,7 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

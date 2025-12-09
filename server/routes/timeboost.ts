@@ -10,6 +10,7 @@ import {
   TimeboostRevenueResponse,
 } from './types';
 import { getTimestampTimeRangeFilter } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register timeboost routes
@@ -77,7 +78,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<TimeboostRevenueResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -138,7 +139,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<BidsPerAddressResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -182,7 +183,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<AuctionWinCountResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `
@@ -199,7 +200,7 @@ export function registerTimeboostRoutes(app: Express) {
         )
         GROUP BY address
         ORDER BY wins DESC
-        LIMIT 15
+        LIMIT ${DEFAULTS.QUERY_LIMITS.AUCTION_WIN_COUNT}
       `;
 
       const result = await req.clickhouse.query({
@@ -238,7 +239,7 @@ export function registerTimeboostRoutes(app: Express) {
           round, 
           count(*) AS bid_count 
         FROM timeboost.bids 
-        WHERE round > (SELECT max(round) FROM timeboost.bids) - 15 
+        WHERE round > (SELECT max(round) FROM timeboost.bids) - ${DEFAULTS.QUERY_LIMITS.BIDS_PER_ROUND} 
         GROUP BY round 
         ORDER BY round ASC
       `;
@@ -274,7 +275,7 @@ export function registerTimeboostRoutes(app: Express) {
     res: Response<ExpressLanePriceResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimestampTimeRangeFilter(timeRange);
     
       const query = `

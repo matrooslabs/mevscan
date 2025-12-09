@@ -12,6 +12,7 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register protocols routes
@@ -22,7 +23,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -87,7 +88,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -173,7 +174,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -258,7 +259,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -344,7 +345,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -429,7 +430,7 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || DEFAULTS.TIME_RANGE;
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

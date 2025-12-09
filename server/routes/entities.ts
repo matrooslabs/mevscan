@@ -19,6 +19,7 @@ import {
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
 } from './types';
+import { DEFAULTS } from '../constants';
 
 /**
  * Register entities routes
@@ -353,7 +354,13 @@ export function registerEntitiesRoutes(app: Express) {
     
       // Pagination parameters
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const pageSize = Math.min(100, Math.max(10, parseInt(req.query.pageSize as string) || 20));
+      const pageSize = Math.min(
+        DEFAULTS.PAGINATION.MAX_PAGE_SIZE,
+        Math.max(
+          DEFAULTS.PAGINATION.MIN_PAGE_SIZE,
+          parseInt(req.query.pageSize as string) || DEFAULTS.PAGINATION.DEFAULT_PAGE_SIZE
+        )
+      );
       const offset = (page - 1) * pageSize;
     
       // First, check if address is a contract by looking at mev_contract column
