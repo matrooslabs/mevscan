@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
+import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
 
 // Mock data for step 1 - will be replaced with real data via hooks
@@ -193,8 +194,8 @@ function ExpressLaneRealTimeSection() {
   }, [bepPriceUSD])
 
   return (
-    <Box className="dashboard-section-group express-lane-realtime-section">
-      <Typography variant="h4" component="h2" className="express-lane-realtime-title">
+    <Box className="dashboard-section-group section-spacing">
+      <Typography variant="h4" component="h2" className="section-title">
         Express Lane Real-Time Performance
       </Typography>
 

@@ -14,7 +14,7 @@ import {
   useTimeboostRevenue,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
-import './TimeboostSection.css'
+import './SectionCommon.css'
 import type {
   AuctionWinCountEntry,
   BidsPerAddressEntry,
@@ -103,11 +103,11 @@ function TimeboostSection() {
   return (
     <>
       {/* Timeboost Section */}
-      <Box className="dashboard-section-group timeboost-section-spacing">
+      <Box className="dashboard-section-group section-spacing">
         <Typography 
           variant="h4" 
           component="h2" 
-          className="timeboost-section-title"
+          className="section-title"
         >
           Timeboost
         </Typography>
@@ -119,13 +119,13 @@ function TimeboostSection() {
             isError={timeboostGrossRevenue.isError}
             errorMessage={timeboostGrossRevenue.error?.message}
             className="chart-card-half"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
-            <Box className="timeboost-chart-card-center">
+            <Box className="chart-card-center">
               <Typography 
                 variant="h4" 
                 component="div"
-                className="timeboost-metric-large-value"
+                className="metric-large-value"
               >
                 {timeboostGrossRevenue.data?.total_second_price?.toFixed(2) || '0.00'} ETH
               </Typography>
@@ -139,13 +139,13 @@ function TimeboostSection() {
             isError={timeboostRevenue.isError}
             errorMessage={timeboostRevenue.error?.message}
             className="chart-card-half"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
-            <Box className="timeboost-chart-card-center">
+            <Box className="chart-card-center">
               <Typography 
                 variant="h4" 
                 component="div"
-                className="timeboost-metric-large-value"
+                className="metric-large-value"
               >
                 {timeboostRevenue.data?.total_second_price?.toFixed(2) || '0.00'} ETH
               </Typography>
@@ -164,11 +164,11 @@ function TimeboostSection() {
       </Box>
 
       {/* Timeboost Bids Section */}
-      <Box className="dashboard-section-group timeboost-section-spacing">
+      <Box className="dashboard-section-group section-spacing">
         <Typography 
           variant="h4" 
           component="h2" 
-          className="timeboost-section-title"
+          className="section-title"
         >
           Timeboost Bids
         </Typography>
@@ -180,10 +180,10 @@ function TimeboostSection() {
             isError={bidsPerAddress.isError}
             errorMessage={bidsPerAddress.error?.message}
             className="chart-card-half"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
-            <Box className="timeboost-chart-card-inner">
-              <Box className="timeboost-chart-card-pie">
+            <Box className="chart-card-inner">
+              <Box className="chart-card-pie">
                 <PieChart 
                   data={transformBidsPerAddressData}
                   innerRadius={40}
@@ -201,10 +201,10 @@ function TimeboostSection() {
             isError={auctionWinCount.isError}
             errorMessage={auctionWinCount.error?.message}
             className="chart-card-half"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
-            <Box className="timeboost-chart-card-inner">
-              <Box className="timeboost-chart-card-pie">
+            <Box className="chart-card-inner">
+              <Box className="chart-card-pie">
                 <PieChart 
                   data={transformAuctionWinCountData}
                   innerRadius={40}
@@ -222,7 +222,7 @@ function TimeboostSection() {
             isError={bidsPerRound.isError}
             errorMessage={bidsPerRound.error?.message}
             className="chart-card-full"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
             <BarChart 
               data={transformBidsPerRoundData}
@@ -242,7 +242,7 @@ function TimeboostSection() {
             isError={expressLanePrice.isError}
             errorMessage={expressLanePrice.error?.message}
             className="chart-card-full"
-            contentClassName="timeboost-chart-card-flex"
+            contentClassName="chart-card-flex"
           >
             <TimeSeriesChart 
               data={transformExpressLanePriceData}
