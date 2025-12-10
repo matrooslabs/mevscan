@@ -22,6 +22,7 @@ interface Config {
     publishKey: string;
     secretKey: string;
     userId: string;
+    isTest: boolean;
   };
 }
 
@@ -48,6 +49,7 @@ export const config: Config = {
     publishKey: getEnvVar('PUBNUB_PUBLISH_KEY'),
     secretKey: getEnvVar('PUBNUB_SECRET_KEY'),
     userId: getEnvVar('PUBNUB_USER_ID'),
+    isTest: getEnvVar('TEST_PUBNUB') === 'true' || false,
   },
 };
 
