@@ -183,10 +183,11 @@ function ExpressLaneRealTimeSectionContent() {
             return;
           }
 
-          const fetchedMessage = messages.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
+          let fetchedMessage = messages.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
           if (!fetchedMessage || fetchedMessage.length === 0) {
             return;
           }
+          fetchedMessage.reverse();
 
           // Flatten all messages into a single array
           const expressLaneProfitData = fetchedMessage.flatMap((msg: any) =>
