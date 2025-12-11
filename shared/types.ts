@@ -471,4 +471,5 @@ export interface ExpressLaneProfitData {
   profitUsd: number;
   expressLanePrice: number;
   currentRound: number;
+  expressLaneController: string | null;
 }

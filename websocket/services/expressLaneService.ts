@@ -16,7 +16,8 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
           toUnixTimestamp(toStartOfInterval(toDateTime(eth.block_timestamp), INTERVAL 30 second)) as time,
           sum(bh.profit_usd) as profitUsd,
           any(bh.express_lane_price) as expressLanePrice,
-          any(bh.express_lane_round) as currentRound
+          any(bh.express_lane_round) as currentRound,
+          any(bh.express_lane_controller) as expressLaneController
         FROM mev.bundle_header bh 
         JOIN ethereum.blocks eth
           ON eth.block_number = bh.block_number 
@@ -40,6 +41,7 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
         profitUsd: row.profitUsd || 0,
         expressLanePrice: row.expressLanePrice || 0,
         currentRound: row.currentRound || 0,
+        expressLaneController: row.expressLaneController || null,
     }));
 }
 
