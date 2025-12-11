@@ -15,6 +15,8 @@ import {
 } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
+import PubNub from 'pubnub'
+import { PubNubProvider } from 'pubnub-react'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
 
@@ -102,7 +104,10 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
   )
 }
 
-function ExpressLaneRealTimeSection() {
+function ExpressLaneRealTimeSectionContent() {
+  // PubNub instance available via usePubNub() hook when needed
+  // const pubnub = usePubNub()
+
   // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
   const bepPriceUSD = MOCK_ROUND_INFO.expressLanePrice * 3500
 
@@ -277,6 +282,35 @@ function ExpressLaneRealTimeSection() {
         </Card>
       </Box>
     </Box>
+  )
+}
+
+// Generate or retrieve a unique userId for this user
+function getOrCreateUserId(): string {
+  const STORAGE_KEY = 'pubnub_user_id'
+  let userId = localStorage.getItem(STORAGE_KEY)
+  
+  if (!userId) {
+    // Generate a unique ID using crypto.randomUUID if available, otherwise fallback
+    userId = crypto.randomUUID ? crypto.randomUUID() : `user_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+    localStorage.setItem(STORAGE_KEY, userId)
+  }
+  
+  return userId
+}
+
+function ExpressLaneRealTimeSection() {
+  const pubnubClient = useMemo(() => {
+    return new PubNub({
+      subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
+      userId: getOrCreateUserId(),
+    })
+  }, [])
+
+  return (
+    <PubNubProvider client={pubnubClient}>
+      <ExpressLaneRealTimeSectionContent />
+    </PubNubProvider>
   )
 }
 
