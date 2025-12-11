@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import {
   Typography,
   Box,
@@ -16,7 +16,8 @@ import {
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
 import PubNub from 'pubnub'
-import { PubNubProvider } from 'pubnub-react'
+import { PubNubProvider, usePubNub } from 'pubnub-react'
+import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnub'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
 
@@ -105,8 +106,36 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
 }
 
 function ExpressLaneRealTimeSectionContent() {
-  // PubNub instance available via usePubNub() hook when needed
-  // const pubnub = usePubNub()
+  const pubnub = usePubNub()
+
+  // Subscribe to PubNub channel and listen for messages
+  useEffect(() => {
+    if (!pubnub) return
+
+    // Subscribe to the channel
+    pubnub.subscribe({
+      channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+    })
+
+    // Set up message listener
+    const listener = {
+      message: (event: any) => {
+        if (event.channel === PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT) {
+          console.log('Received message from PubNub:', event.message)
+        }
+      },
+    }
+
+    pubnub.addListener(listener)
+
+    // Cleanup on unmount
+    return () => {
+      pubnub.removeListener(listener)
+      pubnub.unsubscribe({
+        channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+      })
+    }
+  }, [pubnub])
 
   // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
   const bepPriceUSD = MOCK_ROUND_INFO.expressLanePrice * 3500
