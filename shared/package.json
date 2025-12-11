@@ -8,7 +8,8 @@
     ".": "./types.ts",
     "./clickhouse": "./clickhouse.ts",
     "./config": "./config.ts",
-    "./pubnub": "./pubnub.ts"
+    "./pubnub": "./pubnub.ts",
+    "./pubnubConstants": "./pubnubConstants.ts"
   },
   "scripts": {
     "build": "tsc --noEmit"

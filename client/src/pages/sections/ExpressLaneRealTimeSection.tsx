@@ -17,7 +17,7 @@ import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
 import PubNub from 'pubnub'
 import { PubNubProvider, usePubNub } from 'pubnub-react'
-import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnub'
+import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnubConstants'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
 import { ExpressLaneProfitData } from '@mevscan/shared'
@@ -111,7 +111,7 @@ function ExpressLaneRealTimeSectionContent() {
   const [currentRound, setCurrentRound] = useState<number>(0);
   const [expressLanePrice, setExpressLanePrice] = useState<number>(0);
   const [profitData, setProfitData] = useState<ExpressLaneProfitData[]>([]);
-
+  const [expressLaneController, setExpressLaneController] = useState<string | null>(null);
   // Helper function to process express lane profit data
   const processExpressLaneData = (data: ExpressLaneProfitData[]) => {
     if (!data || data.length === 0) {
@@ -126,12 +126,14 @@ function ExpressLaneRealTimeSectionContent() {
 
     setCurrentRound(newRound);
     setExpressLanePrice(roundData[0]!.expressLanePrice);
+    setExpressLaneController(roundData[0]!.expressLaneController);
 
     // Deduplicate by timestamp
     const unique = roundData.filter((item, index, self) =>
       index === self.findIndex((t) => t.time === item.time)
     );
 
+    console.log('unique', unique);
     setProfitData(unique.reverse());
   };
 

@@ -6,7 +6,7 @@
 
 import PubNub from "pubnub";
 import { ClickHouseClient } from "@clickhouse/client";
-import { PUBNUB_CHANNELS } from "@mevscan/shared/pubnub";
+import { PUBNUB_CHANNELS } from "@mevscan/shared/pubnubConstants";
 import { config } from "@mevscan/shared/config";
 import { ExpressLaneProfitData } from "@mevscan/shared/types";
 
