@@ -6,15 +6,18 @@
   "workspaces": [
     "shared",
     "server",
-    "client"
+    "client", 
+    "websocket"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
     "dev:watch": "npm run dev:watch --workspace=server",
+    "dev:websocket": "npm run dev --workspace=websocket",
     "build": "npm run build --workspaces --if-present",
     "build:client": "npm run build --workspace=client",
     "build:server": "npm run build --workspace=server",
+    "build:websocket": "npm run build --workspace=websocket",
     "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
