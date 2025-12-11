@@ -3,9 +3,9 @@ import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getPubNub } from '@mevscan/shared/pubnub';
 import { publishExpressLaneProfit } from './services/expressLaneService';
+import { config } from '@mevscan/shared/config';
 
 let channelLastStoredTime: Record<string, number> = {};
-let refreshInterval = 20 * 1000; // 20 seconds
 
 interface InitResult {
     pubnub: PubNub;
@@ -29,18 +29,11 @@ async function init(): Promise<InitResult> {
     }
 }
 
-// check last saved from local cache or from pubnub history
-// query for this round from this timestamp (including)
-// publish query result to pubnub
-// (there may be duplicated messages for a specific timestamp, deduplicate by selecting the later messages(published later))
-// (because there may be edge cases where the timestamp has not fully been processed yet)
-
-
 (async () => {
     const { pubnub, clickhouseClient } = await init();
 
     while (true) {
         await publishExpressLaneProfit(pubnub, clickhouseClient, channelLastStoredTime);
-        await new Promise(resolve => setTimeout(resolve, refreshInterval));
+        await new Promise(resolve => setTimeout(resolve, config.pubnub.refreshIntervalMs));
     }
 })();
