@@ -86,6 +86,38 @@ interface StatCardProps {
   subtitle?: string
 }
 
+// Helper function to format numbers with commas (e.g., 1000 -> "1,000")
+function formatNumber(num: number): string {
+  // Convert to string and add commas
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+// Helper function to convert wei (BigInt) to ETH string
+function weiToEth(wei: bigint | BigInt): string {
+  // Convert to bigint if it's BigInt constructor type
+  const weiValue = typeof wei === 'bigint' ? wei : BigInt(wei.toString())
+  const ETH_DECIMALS = 18
+  const divisor = BigInt(10 ** ETH_DECIMALS)
+
+  // Get the whole part and remainder
+  const wholePart = weiValue / divisor
+  const remainder = weiValue % divisor
+
+  // Convert remainder to string with leading zeros
+  const remainderStr = remainder.toString().padStart(ETH_DECIMALS, '0')
+
+  // Remove trailing zeros from remainder
+  const trimmedRemainder = remainderStr.replace(/0+$/, '')
+
+  if (trimmedRemainder === '') {
+    return wholePart.toString()
+  }
+
+  // Format with up to 6 decimal places
+  const decimalPart = trimmedRemainder.substring(0, 8)
+  return `${wholePart}.${decimalPart}`
+}
+
 function StatCard({ title, value, subtitle }: StatCardProps) {
   return (
     <Card className="express-lane-stat-card">
@@ -109,7 +141,8 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
 function ExpressLaneRealTimeSectionContent() {
   const pubnub = usePubNub()
   const [currentRound, setCurrentRound] = useState<number>(0);
-  const [expressLanePrice, setExpressLanePrice] = useState<number>(0);
+  const [expressLanePrice, setExpressLanePrice] = useState<BigInt>(BigInt(0));
+  const [expressLanePriceUsd, setExpressLanePriceUsd] = useState<number>(0);
   const [profitData, setProfitData] = useState<ExpressLaneProfitData[]>([]);
   const [expressLaneController, setExpressLaneController] = useState<string | null>(null);
   // Helper function to process express lane profit data
@@ -125,7 +158,13 @@ function ExpressLaneRealTimeSectionContent() {
     }
 
     setCurrentRound(newRound);
-    setExpressLanePrice(roundData[0]!.expressLanePrice);
+    // Convert expressLanePrice to bigint (handles string/number/bigint)
+    const ethPrice = typeof roundData[0]!.expressLanePrice === 'bigint'
+      ? roundData[0]!.expressLanePrice
+      : roundData[0]!.expressLanePrice;
+    setExpressLanePrice(ethPrice);
+    
+    setExpressLanePriceUsd(Math.round(roundData[0]!.expressLanePriceUsd * 100) / 100);
     setExpressLaneController(roundData[0]!.expressLaneController);
 
     // Deduplicate by timestamp
@@ -309,17 +348,17 @@ function ExpressLaneRealTimeSectionContent() {
       <Box className="express-lane-stats-row">
         <StatCard
           title="Current Round"
-          value={MOCK_ROUND_INFO.currentRound.toLocaleString()}
+          value={formatNumber(currentRound)}
         />
         <StatCard
           title="Current Owner"
-          value={truncateAddress(MOCK_ROUND_INFO.currentOwner)}
+          value={truncateAddress(expressLaneController || '')}
           subtitle="Express Lane Controller"
         />
         <StatCard
           title="Express Lane Price"
-          value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
-          subtitle={`≈ $${bepPriceUSD.toFixed(2)}`}
+          value={`${weiToEth(expressLanePrice)} ETH`}
+          subtitle={`≈ $${expressLanePriceUsd}`}
         />
       </Box>
 

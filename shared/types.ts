@@ -469,7 +469,8 @@ export interface LiquidationResponse {
 export interface ExpressLaneProfitData {
   time: number;
   profitUsd: number;
-  expressLanePrice: number;
+  expressLanePrice: BigInt;
+  expressLanePriceUsd: number;
   currentRound: number;
   expressLaneController: string | null;
 }
