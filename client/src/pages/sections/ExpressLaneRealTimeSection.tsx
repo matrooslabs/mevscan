@@ -92,6 +92,22 @@ function formatNumber(num: number): string {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
+// Helper function to round number to 2 decimal places
+function roundToTwoDecimals(num: number): number {
+  return Math.round(num * 100) / 100
+}
+
+// Helper function to convert Unix timestamp to readable datetime string
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp * 1000) // Convert Unix timestamp (seconds) to milliseconds
+  return date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+}
+
 // Helper function to convert wei (BigInt) to ETH string
 function weiToEth(wei: bigint | BigInt): string {
   // Convert to bigint if it's BigInt constructor type
@@ -163,8 +179,8 @@ function ExpressLaneRealTimeSectionContent() {
       ? roundData[0]!.expressLanePrice
       : roundData[0]!.expressLanePrice;
     setExpressLanePrice(ethPrice);
-    
-    setExpressLanePriceUsd(Math.round(roundData[0]!.expressLanePriceUsd * 100) / 100);
+
+    setExpressLanePriceUsd(roundToTwoDecimals(roundData[0]!.expressLanePriceUsd));
     setExpressLaneController(roundData[0]!.expressLaneController);
 
     // Deduplicate by timestamp
@@ -226,6 +242,7 @@ function ExpressLaneRealTimeSectionContent() {
           if (!fetchedMessage || fetchedMessage.length === 0) {
             return;
           }
+
           fetchedMessage.reverse();
 
           // Flatten all messages into a single array
@@ -248,13 +265,53 @@ function ExpressLaneRealTimeSectionContent() {
     }
   }, [pubnub])
 
-  // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
-  const bepPriceUSD = MOCK_ROUND_INFO.expressLanePrice * 3500
-
   // Chart options for Profit vs Time with BEP line
   const chartOptions = useMemo<EChartsOption>(() => {
-    const times = MOCK_PROFIT_DATA.map((d) => d.time)
-    const profits = MOCK_PROFIT_DATA.map((d) => d.profit)
+    if (profitData.length === 0) {
+      return {
+        xAxis: { type: 'category', data: [] },
+        yAxis: { type: 'value' },
+        series: [],
+      } as EChartsOption;
+    }
+
+    // Data is already sorted, start from the first timestamp
+    const filledData: { time: number; profitUsd: number }[] = [];
+    const data = profitData.reverse();
+    const lastTime = data[profitData.length - 1]!.time;
+    let currentTime = data[0]!.time;
+    let dataIndex = 0;
+
+    // Iterate through all seconds from first to last timestamp, filling missing intervals
+    while (currentTime <= lastTime) {
+      // console.log('currentTime at dataIndex', dataIndex, currentTime);
+      const dataPoint = data[dataIndex];
+
+      // If current time matches the data point, use it and advance index
+      if (dataPoint && currentTime === dataPoint.time) {
+        filledData.push({
+          time: currentTime,
+          profitUsd: dataPoint.profitUsd,
+        });
+        dataIndex++;
+      } else {
+        // Insert missing interval with profit=0
+        filledData.push({
+          time: currentTime,
+          profitUsd: 0,
+        });
+      }
+
+      // Increment timestamp by 1 second
+      // console.log('currentTime, profitUsd', currentTime, filledData[filledData.length - 1]!.profitUsd);
+      currentTime++;
+    }
+
+    // Format for plotting
+    const toPlot: { time: string; profit: number }[] = filledData.map((d) => ({
+      time: formatTimestamp(d.time),
+      profit: roundToTwoDecimals(d.profitUsd),
+    }));
 
     return {
       animation: true,
@@ -286,7 +343,7 @@ function ExpressLaneRealTimeSectionContent() {
       },
       xAxis: {
         type: 'category',
-        data: times,
+        data: toPlot.map((d) => d.time),
         boundaryGap: false,
         name: 'Time',
         nameLocation: 'end',
@@ -308,7 +365,7 @@ function ExpressLaneRealTimeSectionContent() {
         {
           name: 'Cumulative Profit',
           type: 'line',
-          data: profits,
+          data: toPlot.map((d) => d.profit),
           smooth: 0.2,
           showSymbol: true,
           symbolSize: 6,
@@ -325,7 +382,7 @@ function ExpressLaneRealTimeSectionContent() {
         {
           name: 'Break-Even Price',
           type: 'line',
-          data: times.map(() => bepPriceUSD),
+          data: toPlot.map(() => expressLanePriceUsd),
           showSymbol: false,
           lineStyle: {
             width: 2,
@@ -336,7 +393,7 @@ function ExpressLaneRealTimeSectionContent() {
         },
       ],
     }
-  }, [bepPriceUSD])
+  }, [profitData, expressLanePriceUsd])
 
   return (
     <Box className="dashboard-section-group section-spacing">
