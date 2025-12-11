@@ -13,7 +13,7 @@ export interface ExpressLaneProfitData {
     time: number;
     profitUsd: number;
     expressLanePrice: number;
-
+    currentRound: number;
 }
 
 export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClient, lastStoredTime: number): Promise<ExpressLaneProfitData[]> {
@@ -21,7 +21,8 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
         SELECT 
           toUnixTimestamp(toStartOfInterval(toDateTime(eth.block_timestamp), INTERVAL 30 second)) as time,
           sum(bh.profit_usd) as profitUsd,
-          any(bh.express_lane_price) as expressLanePrice
+          any(bh.express_lane_price) as expressLanePrice,
+          any(bh.express_lane_round) as currentRound
         FROM mev.bundle_header bh 
         JOIN ethereum.blocks eth
           ON eth.block_number = bh.block_number 
@@ -44,6 +45,7 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
         time: row.time,
         profitUsd: row.profitUsd || 0,
         expressLanePrice: row.expressLanePrice || 0,
+        currentRound: row.currentRound || 0,
     }));
 }
 
