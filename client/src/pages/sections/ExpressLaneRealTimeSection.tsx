@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import {
   Typography,
   Box,
@@ -20,6 +20,7 @@ import { PubNubProvider, usePubNub } from 'pubnub-react'
 import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnub'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
+import { ExpressLaneProfitData } from '@mevscan/shared'
 
 // Mock data for step 1 - will be replaced with real data via hooks
 const MOCK_ROUND_INFO = {
@@ -107,6 +108,32 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
 
 function ExpressLaneRealTimeSectionContent() {
   const pubnub = usePubNub()
+  const [currentRound, setCurrentRound] = useState<number>(0);
+  const [expressLanePrice, setExpressLanePrice] = useState<number>(0);
+  const [profitData, setProfitData] = useState<ExpressLaneProfitData[]>([]);
+
+  // Helper function to process express lane profit data
+  const processExpressLaneData = (data: ExpressLaneProfitData[]) => {
+    if (!data || data.length === 0) {
+      return;
+    }
+
+    const newRound = data[0]!.currentRound;
+    const roundData = data.filter((item) => item.currentRound === newRound);
+    if (roundData.length === 0) {
+      return;
+    }
+
+    setCurrentRound(newRound);
+    setExpressLanePrice(roundData[0]!.expressLanePrice);
+
+    // Deduplicate by timestamp
+    const unique = roundData.filter((item, index, self) =>
+      index === self.findIndex((t) => t.time === item.time)
+    );
+
+    setProfitData(unique.reverse());
+  };
 
   // Subscribe to PubNub channel and listen for messages
   useEffect(() => {
@@ -122,11 +149,53 @@ function ExpressLaneRealTimeSectionContent() {
       message: (event: any) => {
         if (event.channel === PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT) {
           console.log('Received message from PubNub:', event.message)
+
+          const messageData = event.message as unknown as ExpressLaneProfitData[];
+          if (!messageData || messageData.length === 0) {
+            return;
+          }
+          if (messageData[0]!.currentRound === currentRound) {
+            // remove duplicate timestamps from profitData when compared to messageData
+            // then reverse messageData and append to end of profitData
+            const uniqueProfitData = profitData.filter((item) => !messageData.some((msg) => msg.time === item.time));
+            setProfitData([...uniqueProfitData, ...messageData.reverse()]);
+
+          } else {
+            processExpressLaneData(messageData);
+          }
         }
-      },
+      }
     }
 
     pubnub.addListener(listener)
+
+      // Fetch historical messages
+      ; (async () => {
+        try {
+          const messages = await pubnub.fetchMessages({
+            channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+            count: 5,
+          })
+
+          if (!messages) {
+            return;
+          }
+
+          const fetchedMessage = messages.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
+          if (!fetchedMessage || fetchedMessage.length === 0) {
+            return;
+          }
+
+          // Flatten all messages into a single array
+          const expressLaneProfitData = fetchedMessage.flatMap((msg: any) =>
+            (msg.message as unknown as ExpressLaneProfitData[]) || []
+          );
+
+          processExpressLaneData(expressLaneProfitData);
+        } catch (error) {
+          console.error('Error fetching messages from PubNub:', error)
+        }
+      })()
 
     // Cleanup on unmount
     return () => {
@@ -318,13 +387,13 @@ function ExpressLaneRealTimeSectionContent() {
 function getOrCreateUserId(): string {
   const STORAGE_KEY = 'pubnub_user_id'
   let userId = localStorage.getItem(STORAGE_KEY)
-  
+
   if (!userId) {
     // Generate a unique ID using crypto.randomUUID if available, otherwise fallback
     userId = crypto.randomUUID ? crypto.randomUUID() : `user_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
     localStorage.setItem(STORAGE_KEY, userId)
   }
-  
+
   return userId
 }
 

@@ -8,13 +8,7 @@ import PubNub from "pubnub";
 import { ClickHouseClient } from "@clickhouse/client";
 import { PUBNUB_CHANNELS } from "@mevscan/shared/pubnub";
 import { config } from "@mevscan/shared/config";
-
-export interface ExpressLaneProfitData {
-    time: number;
-    profitUsd: number;
-    expressLanePrice: number;
-    currentRound: number;
-}
+import { ExpressLaneProfitData } from "@mevscan/shared/types";
 
 export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClient, lastStoredTime: number): Promise<ExpressLaneProfitData[]> {
     const query = `
