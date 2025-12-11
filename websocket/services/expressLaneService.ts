@@ -16,7 +16,7 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
           toUnixTimestamp(toStartOfInterval(toDateTime(eth.block_timestamp), INTERVAL 1 second)) as time,
           sum(bh.profit_usd) as profitUsd,
           any(bh.express_lane_price) as expressLanePrice,
-          any(bh.express_lane_price_usd) as express_lane_price_usd,
+          any(bh.express_lane_price_usd) as expressLanePriceUsd,
           any(bh.express_lane_round) as currentRound,
           any(bh.express_lane_controller) as expressLaneController
         FROM mev.bundle_header bh 
