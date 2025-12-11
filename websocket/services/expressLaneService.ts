@@ -13,7 +13,7 @@ import { ExpressLaneProfitData } from "@mevscan/shared/types";
 export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClient, lastStoredTime: number): Promise<ExpressLaneProfitData[]> {
     const query = `
         SELECT 
-          toUnixTimestamp(toStartOfInterval(toDateTime(eth.block_timestamp), INTERVAL 30 second)) as time,
+          toUnixTimestamp(toStartOfInterval(toDateTime(eth.block_timestamp), INTERVAL 1 second)) as time,
           sum(bh.profit_usd) as profitUsd,
           any(bh.express_lane_price) as expressLanePrice,
           any(bh.express_lane_price_usd) as express_lane_price_usd,
