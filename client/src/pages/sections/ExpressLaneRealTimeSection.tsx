@@ -188,7 +188,6 @@ function ExpressLaneRealTimeSectionContent() {
       index === self.findIndex((t) => t.time === item.time)
     );
 
-    console.log('unique', unique);
     setProfitData(unique.reverse());
   };
 
@@ -205,7 +204,6 @@ function ExpressLaneRealTimeSectionContent() {
     const listener = {
       message: (event: any) => {
         if (event.channel === PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT) {
-          console.log('Received message from PubNub:', event.message)
 
           const messageData = event.message as unknown as ExpressLaneProfitData[];
           if (!messageData || messageData.length === 0) {
@@ -284,7 +282,6 @@ function ExpressLaneRealTimeSectionContent() {
 
     // Iterate through all seconds from first to last timestamp, filling missing intervals
     while (currentTime <= lastTime) {
-      // console.log('currentTime at dataIndex', dataIndex, currentTime);
       const dataPoint = data[dataIndex];
 
       // If current time matches the data point, use it and advance index
@@ -303,7 +300,6 @@ function ExpressLaneRealTimeSectionContent() {
       }
 
       // Increment timestamp by 1 second
-      // console.log('currentTime, profitUsd', currentTime, filledData[filledData.length - 1]!.profitUsd);
       currentTime++;
     }
 
