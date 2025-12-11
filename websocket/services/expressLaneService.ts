@@ -81,5 +81,7 @@ export async function publishExpressLaneProfit(pubnub: PubNub, clickhouseClient:
             }
         });
     }
-    channelLastStoredTime[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT] = expressLaneProfitData[expressLaneProfitData.length - 1]!.time;
+    const lastUpdatedTime = expressLaneProfitData[expressLaneProfitData.length - 1]!.time;
+    channelLastStoredTime[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT] = lastUpdatedTime;
+    console.log('Last updated time:', lastUpdatedTime);
 } 
