@@ -1,5 +1,8 @@
 import PubNub from 'pubnub';
 import { config } from './config';
+import { PUBNUB_CHANNELS } from './pubnubConstants';
+
+export { PUBNUB_CHANNELS };
 
 export function getPubNub(): PubNub {
     return new PubNub({
@@ -9,7 +12,3 @@ export function getPubNub(): PubNub {
         userId: config.pubnub.userId,
     });
 }
-
-export const PUBNUB_CHANNELS = {
-    EXPRESS_LANE_PROFIT: 'express_lane_profit',
-} as const;

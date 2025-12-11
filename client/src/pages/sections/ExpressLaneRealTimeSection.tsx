@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import {
   Typography,
   Box,
@@ -15,8 +15,12 @@ import {
 } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
+import PubNub from 'pubnub'
+import { PubNubProvider, usePubNub } from 'pubnub-react'
+import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnubConstants'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
+import { ExpressLaneProfitData } from '@mevscan/shared'
 
 // Mock data for step 1 - will be replaced with real data via hooks
 const MOCK_ROUND_INFO = {
@@ -82,6 +86,54 @@ interface StatCardProps {
   subtitle?: string
 }
 
+// Helper function to format numbers with commas (e.g., 1000 -> "1,000")
+function formatNumber(num: number): string {
+  // Convert to string and add commas
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+// Helper function to round number to 2 decimal places
+function roundToTwoDecimals(num: number): number {
+  return Math.round(num * 100) / 100
+}
+
+// Helper function to convert Unix timestamp to readable datetime string
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp * 1000) // Convert Unix timestamp (seconds) to milliseconds
+  return date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+}
+
+// Helper function to convert wei (BigInt) to ETH string
+function weiToEth(wei: bigint | BigInt): string {
+  // Convert to bigint if it's BigInt constructor type
+  const weiValue = typeof wei === 'bigint' ? wei : BigInt(wei.toString())
+  const ETH_DECIMALS = 18
+  const divisor = BigInt(10 ** ETH_DECIMALS)
+
+  // Get the whole part and remainder
+  const wholePart = weiValue / divisor
+  const remainder = weiValue % divisor
+
+  // Convert remainder to string with leading zeros
+  const remainderStr = remainder.toString().padStart(ETH_DECIMALS, '0')
+
+  // Remove trailing zeros from remainder
+  const trimmedRemainder = remainderStr.replace(/0+$/, '')
+
+  if (trimmedRemainder === '') {
+    return wholePart.toString()
+  }
+
+  // Format with up to 6 decimal places
+  const decimalPart = trimmedRemainder.substring(0, 8)
+  return `${wholePart}.${decimalPart}`
+}
+
 function StatCard({ title, value, subtitle }: StatCardProps) {
   return (
     <Card className="express-lane-stat-card">
@@ -102,14 +154,160 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
   )
 }
 
-function ExpressLaneRealTimeSection() {
-  // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
-  const bepPriceUSD = MOCK_ROUND_INFO.expressLanePrice * 3500
+function ExpressLaneRealTimeSectionContent() {
+  const pubnub = usePubNub()
+  const [currentRound, setCurrentRound] = useState<number>(0);
+  const [expressLanePrice, setExpressLanePrice] = useState<BigInt>(BigInt(0));
+  const [expressLanePriceUsd, setExpressLanePriceUsd] = useState<number>(0);
+  const [profitData, setProfitData] = useState<ExpressLaneProfitData[]>([]);
+  const [expressLaneController, setExpressLaneController] = useState<string | null>(null);
+  // Helper function to process express lane profit data
+  const processExpressLaneData = (data: ExpressLaneProfitData[]) => {
+    if (!data || data.length === 0) {
+      return;
+    }
+
+    const newRound = data[0]!.currentRound;
+    const roundData = data.filter((item) => item.currentRound === newRound);
+    if (roundData.length === 0) {
+      return;
+    }
+
+    setCurrentRound(newRound);
+    // Convert expressLanePrice to bigint (handles string/number/bigint)
+    const ethPrice = typeof roundData[0]!.expressLanePrice === 'bigint'
+      ? roundData[0]!.expressLanePrice
+      : roundData[0]!.expressLanePrice;
+    setExpressLanePrice(ethPrice);
+
+    setExpressLanePriceUsd(roundToTwoDecimals(roundData[0]!.expressLanePriceUsd));
+    setExpressLaneController(roundData[0]!.expressLaneController);
+
+    // Deduplicate by timestamp
+    const unique = roundData.filter((item, index, self) =>
+      index === self.findIndex((t) => t.time === item.time)
+    );
+
+    setProfitData(unique.reverse());
+  };
+
+  // Subscribe to PubNub channel and listen for messages
+  useEffect(() => {
+    if (!pubnub) return
+
+    // Subscribe to the channel
+    pubnub.subscribe({
+      channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+    })
+
+    // Set up message listener
+    const listener = {
+      message: (event: any) => {
+        if (event.channel === PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT) {
+
+          const messageData = event.message as unknown as ExpressLaneProfitData[];
+          if (!messageData || messageData.length === 0) {
+            return;
+          }
+          if (messageData[0]!.currentRound === currentRound) {
+            // remove duplicate timestamps from profitData when compared to messageData
+            // then reverse messageData and append to end of profitData
+            const uniqueProfitData = profitData.filter((item) => !messageData.some((msg) => msg.time === item.time));
+            setProfitData([ ...messageData.reverse(), ...uniqueProfitData]);
+
+          } else {
+            processExpressLaneData(messageData);
+          }
+        }
+      }
+    }
+
+    pubnub.addListener(listener)
+
+      // Fetch historical messages
+      ; (async () => {
+        try {
+          const messages = await pubnub.fetchMessages({
+            channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+            count: 5,
+          })
+
+          if (!messages) {
+            return;
+          }
+
+          let fetchedMessage = messages.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
+          if (!fetchedMessage || fetchedMessage.length === 0) {
+            return;
+          }
+
+          fetchedMessage.reverse();
+
+          // Flatten all messages into a single array
+          const expressLaneProfitData = fetchedMessage.flatMap((msg: any) =>
+            (msg.message as unknown as ExpressLaneProfitData[]) || []
+          );
+
+          processExpressLaneData(expressLaneProfitData);
+        } catch (error) {
+          console.error('Error fetching messages from PubNub:', error)
+        }
+      })()
+
+    // Cleanup on unmount
+    return () => {
+      pubnub.removeListener(listener)
+      pubnub.unsubscribe({
+        channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
+      })
+    }
+  }, [pubnub])
 
   // Chart options for Profit vs Time with BEP line
   const chartOptions = useMemo<EChartsOption>(() => {
-    const times = MOCK_PROFIT_DATA.map((d) => d.time)
-    const profits = MOCK_PROFIT_DATA.map((d) => d.profit)
+    if (profitData.length === 0) {
+      return {
+        xAxis: { type: 'category', data: [] },
+        yAxis: { type: 'value' },
+        series: [],
+      } as EChartsOption;
+    }
+
+    // Data is already sorted, start from the first timestamp
+    const filledData: { time: number; profitUsd: number }[] = [];
+    const data = profitData.reverse();
+    const lastTime = data[profitData.length - 1]!.time;
+    let currentTime = data[0]!.time;
+    let dataIndex = 0;
+
+    // Iterate through all seconds from first to last timestamp, filling missing intervals
+    while (currentTime <= lastTime) {
+      const dataPoint = data[dataIndex];
+
+      // If current time matches the data point, use it and advance index
+      if (dataPoint && currentTime === dataPoint.time) {
+        filledData.push({
+          time: currentTime,
+          profitUsd: dataPoint.profitUsd,
+        });
+        dataIndex++;
+      } else {
+        // Insert missing interval with profit=0
+        filledData.push({
+          time: currentTime,
+          profitUsd: 0,
+        });
+      }
+
+      // Increment timestamp by 1 second
+      currentTime++;
+    }
+
+    // Format for plotting
+    const toPlot: { time: string; profit: number }[] = filledData.map((d) => ({
+      time: formatTimestamp(d.time),
+      profit: roundToTwoDecimals(d.profitUsd),
+    }));
 
     return {
       animation: true,
@@ -141,7 +339,7 @@ function ExpressLaneRealTimeSection() {
       },
       xAxis: {
         type: 'category',
-        data: times,
+        data: toPlot.map((d) => d.time),
         boundaryGap: false,
         name: 'Time',
         nameLocation: 'end',
@@ -163,7 +361,7 @@ function ExpressLaneRealTimeSection() {
         {
           name: 'Cumulative Profit',
           type: 'line',
-          data: profits,
+          data: toPlot.map((d) => d.profit),
           smooth: 0.2,
           showSymbol: true,
           symbolSize: 6,
@@ -180,7 +378,7 @@ function ExpressLaneRealTimeSection() {
         {
           name: 'Break-Even Price',
           type: 'line',
-          data: times.map(() => bepPriceUSD),
+          data: toPlot.map(() => expressLanePriceUsd),
           showSymbol: false,
           lineStyle: {
             width: 2,
@@ -191,7 +389,7 @@ function ExpressLaneRealTimeSection() {
         },
       ],
     }
-  }, [bepPriceUSD])
+  }, [profitData, expressLanePriceUsd])
 
   return (
     <Box className="dashboard-section-group section-spacing">
@@ -203,17 +401,17 @@ function ExpressLaneRealTimeSection() {
       <Box className="express-lane-stats-row">
         <StatCard
           title="Current Round"
-          value={MOCK_ROUND_INFO.currentRound.toLocaleString()}
+          value={formatNumber(currentRound)}
         />
         <StatCard
           title="Current Owner"
-          value={truncateAddress(MOCK_ROUND_INFO.currentOwner)}
+          value={truncateAddress(expressLaneController || '')}
           subtitle="Express Lane Controller"
         />
         <StatCard
           title="Express Lane Price"
-          value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
-          subtitle={`≈ $${bepPriceUSD.toFixed(2)}`}
+          value={`${weiToEth(expressLanePrice)} ETH`}
+          subtitle={`≈ $${expressLanePriceUsd}`}
         />
       </Box>
 
@@ -277,6 +475,35 @@ function ExpressLaneRealTimeSection() {
         </Card>
       </Box>
     </Box>
+  )
+}
+
+// Generate or retrieve a unique userId for this user
+function getOrCreateUserId(): string {
+  const STORAGE_KEY = 'pubnub_user_id'
+  let userId = localStorage.getItem(STORAGE_KEY)
+
+  if (!userId) {
+    // Generate a unique ID using crypto.randomUUID if available, otherwise fallback
+    userId = crypto.randomUUID ? crypto.randomUUID() : `user_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+    localStorage.setItem(STORAGE_KEY, userId)
+  }
+
+  return userId
+}
+
+function ExpressLaneRealTimeSection() {
+  const pubnubClient = useMemo(() => {
+    return new PubNub({
+      subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
+      userId: getOrCreateUserId(),
+    })
+  }, [])
+
+  return (
+    <PubNubProvider client={pubnubClient}>
+      <ExpressLaneRealTimeSectionContent />
+    </PubNubProvider>
   )
 }
 

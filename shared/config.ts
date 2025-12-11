@@ -23,6 +23,7 @@ interface Config {
     secretKey: string;
     userId: string;
     isTest: boolean;
+    refreshIntervalMs: number;
   };
 }
 
@@ -50,6 +51,7 @@ export const config: Config = {
     secretKey: getEnvVar('PUBNUB_SECRET_KEY'),
     userId: getEnvVar('PUBNUB_USER_ID'),
     isTest: getEnvVar('TEST_PUBNUB') === 'true' || false,
+    refreshIntervalMs: parseInt(process.env.REFRESH_INTERVAL_MS || '20000', 10),
   },
 };
 
