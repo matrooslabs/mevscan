@@ -215,7 +215,7 @@ function ExpressLaneRealTimeSectionContent() {
             // remove duplicate timestamps from profitData when compared to messageData
             // then reverse messageData and append to end of profitData
             const uniqueProfitData = profitData.filter((item) => !messageData.some((msg) => msg.time === item.time));
-            setProfitData([...uniqueProfitData, ...messageData.reverse()]);
+            setProfitData([ ...messageData.reverse(), ...uniqueProfitData]);
 
           } else {
             processExpressLaneData(messageData);
