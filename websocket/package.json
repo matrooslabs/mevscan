@@ -22,8 +22,7 @@
     "@clickhouse/client": "^0.2.7",
     "@mevscan/server": "*",
     "@mevscan/shared": "*",
-    "ably": "^2.15.0",
-    "pubnub": "^10.2.3"
+    "ably": "^2.15.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

@@ -17,15 +17,9 @@ interface Config {
     password: string;
     database: string;
   };
-  pubnub: {
-    subscribeKey: string;
-    publishKey: string;
-    secretKey: string;
-    userId: string;
-    isTest: boolean;
-  };
   ably: {
     apiKey: string;
+    isTest: boolean;
   };
 }
 
@@ -47,15 +41,9 @@ export const config: Config = {
     password: getEnvVar('CLICKHOUSE_PASSWORD'),
     database: getEnvVar('CLICKHOUSE_DATABASE'),
   },
-  pubnub: {
-    subscribeKey: getEnvVar('PUBNUB_SUBSCRIBE_KEY'),
-    publishKey: getEnvVar('PUBNUB_PUBLISH_KEY'),
-    secretKey: getEnvVar('PUBNUB_SECRET_KEY'),
-    userId: getEnvVar('PUBNUB_USER_ID'),
-    isTest: getEnvVar('TEST_PUBNUB') === 'true' || false,
-  },
   ably: {
     apiKey: getEnvVar('ABLY_API_KEY'),
+    isTest: getEnvVar('TEST_ABLY') === 'true' || false,
   },
 };
 
@@ -74,18 +62,6 @@ if (!config.clickhouse.password) {
 }
 if (!config.clickhouse.database) {
   console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
-  process.exit(1);
-}
-if (!config.pubnub.subscribeKey) {
-  console.error('ERROR: PUBNUB_SUBSCRIBE_KEY environment variable is required');
-  process.exit(1);
-}
-if (!config.pubnub.publishKey) {
-  console.error('ERROR: PUBNUB_PUBLISH_KEY environment variable is required');
-  process.exit(1);
-}
-if (!config.pubnub.secretKey) {
-  console.error('ERROR: PUBNUB_SECRET_KEY environment variable is required');
   process.exit(1);
 }
 if (!config.ably.apiKey) {
