@@ -1,8 +1,6 @@
-import PubNub from 'pubnub';
 import Ably from 'ably';
 import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
-import { getPubNub } from '@mevscan/shared/pubnub';
 import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneProfit } from './services/expressLaneService';
 
@@ -10,14 +8,12 @@ let channelLastStoredTime: Record<string, number> = {};
 let refreshInterval = 20 * 1000; // 20 seconds
 
 interface InitResult {
-    pubnub: PubNub;
     clickhouseClient: ClickHouseClient;
     ably: Ably.Realtime;
 }
 
 async function init(): Promise<InitResult> {
     try {
-        const pubnub = getPubNub();
         const ably = getAbly();
         const clickhouseClient = initClickHouseClient();
         const pingResult = await clickhouseClient.ping();
@@ -26,7 +22,7 @@ async function init(): Promise<InitResult> {
             process.exit(1);
         }
         console.log('✓ ClickHouse client initialized successfully');
-        return { pubnub, clickhouseClient, ably };
+        return { clickhouseClient, ably };
     } catch (error) {
         console.error('ERROR: Failed to initialize ClickHouse client:', error);
         process.exit(1);
@@ -41,10 +37,10 @@ async function init(): Promise<InitResult> {
 
 
 (async () => {
-    const { pubnub, clickhouseClient } = await init();
+    const { clickhouseClient, ably } = await init();
 
     while (true) {
-        await publishExpressLaneProfit(pubnub, clickhouseClient, channelLastStoredTime);
+        await publishExpressLaneProfit(ably, clickhouseClient, channelLastStoredTime);
         await new Promise(resolve => setTimeout(resolve, refreshInterval));
     }
 })();
