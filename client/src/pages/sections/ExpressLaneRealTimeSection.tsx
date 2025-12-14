@@ -15,9 +15,9 @@ import {
 } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
-import PubNub from 'pubnub'
-import { PubNubProvider, usePubNub } from 'pubnub-react'
-import { PUBNUB_CHANNELS } from '@mevscan/shared/pubnubConstants'
+import Ably from 'ably'
+import { AblyProvider, useChannel, ChannelProvider } from 'ably/react';
+import { ABLY_CHANNELS } from '@mevscan/shared/ablyConstants'
 import './SectionCommon.css'
 import './ExpressLaneRealTimeSection.css'
 import { ExpressLaneProfitData } from '@mevscan/shared'
@@ -155,7 +155,7 @@ function StatCard({ title, value, subtitle }: StatCardProps) {
 }
 
 function ExpressLaneRealTimeSectionContent() {
-  const pubnub = usePubNub()
+  const ablyChannel = useChannel(ABLY_CHANNELS.EXPRESS_LANE_PROFIT);
   const [currentRound, setCurrentRound] = useState<number>(0);
   const [expressLanePrice, setExpressLanePrice] = useState<BigInt>(BigInt(0));
   const [expressLanePriceUsd, setExpressLanePriceUsd] = useState<number>(0);
@@ -191,77 +191,58 @@ function ExpressLaneRealTimeSectionContent() {
     setProfitData(unique.reverse());
   };
 
-  // Subscribe to PubNub channel and listen for messages
+  // Subscribe to Ably channel and listen for messages
   useEffect(() => {
-    if (!pubnub) return
-
-    // Subscribe to the channel
-    pubnub.subscribe({
-      channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
-    })
+    if (!ablyChannel) return
 
     // Set up message listener
-    const listener = {
-      message: (event: any) => {
-        if (event.channel === PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT) {
-
-          const messageData = event.message as unknown as ExpressLaneProfitData[];
-          if (!messageData || messageData.length === 0) {
-            return;
-          }
-          if (messageData[0]!.currentRound === currentRound) {
-            // remove duplicate timestamps from profitData when compared to messageData
-            // then reverse messageData and append to end of profitData
-            const uniqueProfitData = profitData.filter((item) => !messageData.some((msg) => msg.time === item.time));
-            setProfitData([ ...messageData.reverse(), ...uniqueProfitData]);
-
-          } else {
-            processExpressLaneData(messageData);
-          }
-        }
+    const handleMessage = (message: any) => {
+      const messageData = message.data as unknown as ExpressLaneProfitData[];
+      if (!messageData || messageData.length === 0) {
+        return;
       }
-    }
 
-    pubnub.addListener(listener)
+      if (messageData[0]!.currentRound === currentRound) {
+        // Remove duplicate timestamps from profitData when compared to messageData
+        // then reverse messageData and append to end of profitData
+        const uniqueProfitData = profitData.filter((item) => !messageData.some((msg) => msg.time === item.time));
+        setProfitData([...messageData.reverse(), ...uniqueProfitData]);
+      } else {
+        processExpressLaneData(messageData);
+      }
+    };
 
-      // Fetch historical messages
-      ; (async () => {
-        try {
-          const messages = await pubnub.fetchMessages({
-            channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
-            count: 5,
-          })
+    // Subscribe to the channel
+    ablyChannel.channel.subscribe(handleMessage);
 
-          if (!messages) {
-            return;
-          }
-
-          let fetchedMessage = messages.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
-          if (!fetchedMessage || fetchedMessage.length === 0) {
-            return;
-          }
-
-          fetchedMessage.reverse();
-
-          // Flatten all messages into a single array
-          const expressLaneProfitData = fetchedMessage.flatMap((msg: any) =>
-            (msg.message as unknown as ExpressLaneProfitData[]) || []
-          );
-
-          processExpressLaneData(expressLaneProfitData);
-        } catch (error) {
-          console.error('Error fetching messages from PubNub:', error)
+    // Fetch historical messages
+    (async () => {
+      try {
+        const history = await ablyChannel.channel.history({ limit: 5 });
+        
+        if (!history || !history.items || history.items.length === 0) {
+          return;
         }
-      })()
+
+        // Reverse to get oldest first
+        const reversedHistory = [...history.items].reverse();
+
+        // Flatten all messages into a single array
+        const expressLaneProfitData = reversedHistory.flatMap((msg: any) =>
+          (msg.data as unknown as ExpressLaneProfitData[]) || []
+        );
+
+        processExpressLaneData(expressLaneProfitData);
+      } catch (error) {
+        console.error('Error fetching messages from Ably:', error);
+      }
+    })();
 
     // Cleanup on unmount
     return () => {
-      pubnub.removeListener(listener)
-      pubnub.unsubscribe({
-        channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
-      })
-    }
-  }, [pubnub])
+      ablyChannel.channel.unsubscribe();
+    };
+  }, [ablyChannel, currentRound, profitData])
 
   // Chart options for Profit vs Time with BEP line
   const chartOptions = useMemo<EChartsOption>(() => {
@@ -275,8 +256,9 @@ function ExpressLaneRealTimeSectionContent() {
 
     // Data is already sorted, start from the first timestamp
     const filledData: { time: number; profitUsd: number }[] = [];
-    const data = profitData.reverse();
-    const lastTime = data[profitData.length - 1]!.time;
+    // Create a copy and reverse it to avoid mutating state
+    const data = [...profitData].reverse();
+    const lastTime = data[data.length - 1]!.time;
     let currentTime = data[0]!.time;
     let dataIndex = 0;
 
@@ -493,17 +475,25 @@ function getOrCreateUserId(): string {
 }
 
 function ExpressLaneRealTimeSection() {
-  const pubnubClient = useMemo(() => {
-    return new PubNub({
-      subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
-      userId: getOrCreateUserId(),
-    })
+  // const pubnubClient = useMemo(() => {
+  //   return new PubNub({
+  //     subscribeKey: import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY || '',
+  //     userId: getOrCreateUserId(),
+  //   })
+  // }, [])
+
+  const ablyClient = useMemo(() => {
+    return new Ably.Realtime({
+      key: import.meta.env.VITE_ABLY_SUBSCRIBE_KEY || '',
+    });
   }, [])
 
   return (
-    <PubNubProvider client={pubnubClient}>
-      <ExpressLaneRealTimeSectionContent />
-    </PubNubProvider>
+    <AblyProvider client={ablyClient}>
+      <ChannelProvider channelName={ABLY_CHANNELS.EXPRESS_LANE_PROFIT}>
+        <ExpressLaneRealTimeSectionContent />
+      </ChannelProvider>
+    </AblyProvider>
   )
 }
 
