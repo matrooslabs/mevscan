@@ -8,15 +8,15 @@
     ".": "./types.ts",
     "./clickhouse": "./clickhouse.ts",
     "./config": "./config.ts",
-    "./pubnub": "./pubnub.ts",
-    "./pubnubConstants": "./pubnubConstants.ts"
+    "./ably": "./ably.ts",
+    "./ablyConstants": "./ablyConstants.ts"
   },
   "scripts": {
     "build": "tsc --noEmit"
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.7",
-    "pubnub": "^10.2.3"
+    "ably": "^2.15.0"
   },
   "devDependencies": {
     "typescript": "^5.6.0"

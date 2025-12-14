@@ -5,8 +5,9 @@
 // (because there may be edge cases where the timestamp has not fully been processed yet)
 
 import PubNub from "pubnub";
+import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
-import { PUBNUB_CHANNELS } from "@mevscan/shared/pubnubConstants";
+import { ABLY_CHANNELS } from "@mevscan/shared/ablyConstants";
 import { config } from "@mevscan/shared/config";
 import { ExpressLaneProfitData } from "@mevscan/shared/types";
 
@@ -47,19 +48,18 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
     }));
 }
 
-export async function publishExpressLaneProfit(pubnub: PubNub, clickhouseClient: ClickHouseClient, channelLastStoredTime: Record<string, number>) {
-    let lastStoredTime = channelLastStoredTime[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
+export async function publishExpressLaneProfit(ably: Ably.Realtime, clickhouseClient: ClickHouseClient, channelLastStoredTime: Record<string, number>) {
+    let ableChannel = ably.channels.get(ABLY_CHANNELS.EXPRESS_LANE_PROFIT);
+    let lastStoredTime = channelLastStoredTime[ABLY_CHANNELS.EXPRESS_LANE_PROFIT];
+
     if (!lastStoredTime) {
-        const message = await pubnub.fetchMessages({
-            channels: [PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT],
-            count: 1,
-        });
-        const fetchedMessage = message.channels[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
-        if (!fetchedMessage || fetchedMessage.length === 0) {
+        const history = await ableChannel.history({ limit: 1 });
+        const message = history.items.map((message) => message.data);
+        if (!message || message.length === 0) {
             lastStoredTime = Math.floor((Date.now() - 5 * 60 * 1000) / 1000); // 5 minutes ago
         } else {
-            const expressLaneProfitData = fetchedMessage[0]!.message as unknown as ExpressLaneProfitData[];
-            lastStoredTime = expressLaneProfitData[expressLaneProfitData.length - 1]!.time + 1;
+            const expressLaneProfitData = message[0] as unknown as ExpressLaneProfitData[];
+            lastStoredTime = expressLaneProfitData[expressLaneProfitData.length - 1]!.time;
         }
     }
 
@@ -68,20 +68,11 @@ export async function publishExpressLaneProfit(pubnub: PubNub, clickhouseClient:
         return;
     }
 
-    if (config.pubnub.isTest) {
+    if (config.ably.isTest) {
         console.log('Publishing Express Lane Profit data:', expressLaneProfitData);
         return;
     } else {
-        pubnub.publish({
-            channel: PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT,
-            message: expressLaneProfitData as any
-        }, (status, response) => {
-            if (status.error) {
-                console.error('Error publishing Express Lane Profit data:', status.error);
-            }
-        });
+        await ableChannel.publish(ABLY_CHANNELS.EXPRESS_LANE_PROFIT, expressLaneProfitData);
     }
-    const lastUpdatedTime = expressLaneProfitData[expressLaneProfitData.length - 1]!.time;
-    channelLastStoredTime[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT] = lastUpdatedTime;
-    console.log('Last updated time:', lastUpdatedTime);
+    channelLastStoredTime[ABLY_CHANNELS.EXPRESS_LANE_PROFIT] = expressLaneProfitData[expressLaneProfitData.length - 1]!.time;
 } 

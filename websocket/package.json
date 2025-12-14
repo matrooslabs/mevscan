@@ -19,15 +19,15 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "pubnub": "^10.2.3",
+    "@clickhouse/client": "^0.2.7",
     "@mevscan/server": "*",
     "@mevscan/shared": "*",
-    "@clickhouse/client": "^0.2.7"
+    "ably": "^2.15.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
+    "@types/node": "^20.14.0",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.2",
-    "@types/node": "^20.14.0"
+    "typescript": "^5.9.3"
   }
 }
