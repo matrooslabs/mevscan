@@ -24,6 +24,9 @@ interface Config {
     userId: string;
     isTest: boolean;
   };
+  ably: {
+    apiKey: string;
+  };
 }
 
 const getEnvVar = (key: string, required: boolean = true): string => {
@@ -50,6 +53,9 @@ export const config: Config = {
     secretKey: getEnvVar('PUBNUB_SECRET_KEY'),
     userId: getEnvVar('PUBNUB_USER_ID'),
     isTest: getEnvVar('TEST_PUBNUB') === 'true' || false,
+  },
+  ably: {
+    apiKey: getEnvVar('ABLY_API_KEY'),
   },
 };
 
@@ -80,5 +86,9 @@ if (!config.pubnub.publishKey) {
 }
 if (!config.pubnub.secretKey) {
   console.error('ERROR: PUBNUB_SECRET_KEY environment variable is required');
+  process.exit(1);
+}
+if (!config.ably.apiKey) {
+  console.error('ERROR: ABLY_API_KEY environment variable is required');
   process.exit(1);
 }

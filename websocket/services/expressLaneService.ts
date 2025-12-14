@@ -5,6 +5,7 @@
 // (because there may be edge cases where the timestamp has not fully been processed yet)
 
 import PubNub from "pubnub";
+import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
 import { PUBNUB_CHANNELS } from "@mevscan/shared/pubnub";
 import { config } from "@mevscan/shared/config";
@@ -49,7 +50,7 @@ export async function getExpressLaneProfitData(clickhouseClient: ClickHouseClien
     }));
 }
 
-export async function publishExpressLaneProfit(pubnub: PubNub, clickhouseClient: ClickHouseClient, channelLastStoredTime: Record<string, number>) {
+export async function publishExpressLaneProfit(pubnub: PubNub, ably: Ably.Realtime, clickhouseClient: ClickHouseClient, channelLastStoredTime: Record<string, number>) {
     let lastStoredTime = channelLastStoredTime[PUBNUB_CHANNELS.EXPRESS_LANE_PROFIT];
     if (!lastStoredTime) {
         const message = await pubnub.fetchMessages({
