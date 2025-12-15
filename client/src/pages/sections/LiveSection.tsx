@@ -348,6 +348,10 @@ function LiveSection() {
         <Stack direction="row" spacing={1} justifyContent="space-between">
           <StatCard title="Profit" value={latestProfit} suffix="$" />
           <StatCard
+            title="Current Round"
+            value={MOCK_ROUND_INFO.currentRound}
+          />
+          <StatCard
             title="Current Block Number"
             value={MOCK_ROUND_INFO.currentBlockNumber}
           />
