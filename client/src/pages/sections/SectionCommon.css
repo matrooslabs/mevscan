@@ -44,21 +44,6 @@
   gap: var(--spacing-md);
 }
 
-.chart-card-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-  height: 100%;
-  flex: 1;
-}
-
-.chart-card-pie {
-  width: 100%;
-  height: 250px;
-  flex: 1;
-}
-
 .chart-card-center {
   display: flex;
   flex-direction: column;
