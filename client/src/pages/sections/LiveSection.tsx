@@ -158,7 +158,7 @@ function LiveSection() {
       legend: {
         show: true,
         bottom: 0,
-        data: ["Cumulative Profit", "Break-Even Price"],
+        data: ["Cumulative Profit", "Express Lane Price"],
       },
       grid: {
         top: 24,
@@ -172,14 +172,15 @@ function LiveSection() {
         data: times,
         boundaryGap: false,
         name: "Time",
-        nameLocation: "end",
-        nameGap: 8,
+        nameLocation: "middle",
+        nameGap: 20,
         axisLabel: { fontSize: 11 },
         axisTick: { alignWithLabel: true },
       },
       yAxis: {
         type: "value",
         name: "Profit (USD)",
+        nameLocation: "middle",
         nameGap: 40,
         axisLabel: {
           fontSize: 11,
@@ -206,7 +207,7 @@ function LiveSection() {
           },
         },
         {
-          name: "Break-Even Price",
+          name: "Express Lane Price",
           type: "line",
           data: times.map(() => bepPriceUSD),
           showSymbol: false,
@@ -229,11 +230,6 @@ function LiveSection() {
     <Box className="dashboard-section-group section-spacing">
       {/* Stats Cards */}
       <Box className="express-lane-stats-container">
-        <StatCard title="Current Round" value={MOCK_ROUND_INFO.currentRound} />
-        <StatCard
-          title="Express Lane Price"
-          value={`${MOCK_ROUND_INFO.expressLanePrice} ETH`}
-        />
         <StatCard
           title="Profit"
           value={`$${latestProfit.toFixed(2)}`}
@@ -250,14 +246,6 @@ function LiveSection() {
           title="Gas Used"
           value={MOCK_ROUND_INFO.gasUsed.toLocaleString()}
         />
-        <StatCard
-          title="Express Lane Win Rate"
-          value={`${(MOCK_ROUND_INFO.expressLaneWinRate * 100).toFixed(1)}%`}
-        />
-        <StatCard
-          title="Express Lane Total Wins"
-          value={MOCK_ROUND_INFO.expressLaneTotalWins}
-        />
       </Box>
       {/* Main Content: Chart + Transactions */}
       <Box className="express-lane-main-content">
@@ -270,7 +258,7 @@ function LiveSection() {
                 component="h3"
                 className="express-lane-card-title"
               >
-                Profit vs Time
+                Round 1,234 Profit
               </Typography>
               <Box className="express-lane-live-indicator">
                 <Box className="express-lane-live-dot" />
