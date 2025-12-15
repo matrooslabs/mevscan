@@ -362,100 +362,102 @@ function LiveSection() {
             suffix="wei"
           />
         </Stack>
-        <Card className="express-lane-chart-card">
-          <CardContent className="express-lane-chart-card-content">
-            <Box className="express-lane-card-title-container">
+        <Stack direction="column" spacing={1}>
+          <Card className="express-lane-chart-card">
+            <CardContent className="express-lane-chart-card-content">
+              <Box className="express-lane-card-title-container">
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  className="express-lane-card-title"
+                >
+                  Express Lane MEV Profit
+                </Typography>
+                <Box className="express-lane-live-indicator">
+                  <Box className="express-lane-live-dot" />
+                  <Typography
+                    variant="caption"
+                    className="express-lane-live-text"
+                  >
+                    LIVE - Round {MOCK_ROUND_INFO.currentRound} -{" "}
+                    {MOCK_ROUND_INFO.currentOwner.slice(0, 6)}...
+                    {MOCK_ROUND_INFO.currentOwner.slice(-4)}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box className="express-lane-chart-container">
+                <ReactECharts
+                  option={chartOptions}
+                  notMerge
+                  lazyUpdate
+                  className="express-lane-chart"
+                />
+              </Box>
+            </CardContent>
+          </Card>
+          <Card className="express-lane-transactions-card">
+            <CardContent className="express-lane-transactions-card-content">
               <Typography
                 variant="h6"
                 component="h3"
                 className="express-lane-card-title"
               >
-                Express Lane MEV Profit
+                Transactions
               </Typography>
-              <Box className="express-lane-live-indicator">
-                <Box className="express-lane-live-dot" />
-                <Typography
-                  variant="caption"
-                  className="express-lane-live-text"
-                >
-                  LIVE - Round {MOCK_ROUND_INFO.currentRound} -{" "}
-                  {MOCK_ROUND_INFO.currentOwner.slice(0, 6)}...
-                  {MOCK_ROUND_INFO.currentOwner.slice(-4)}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box className="express-lane-chart-container">
-              <ReactECharts
-                option={chartOptions}
-                notMerge
-                lazyUpdate
-                className="express-lane-chart"
-              />
-            </Box>
-          </CardContent>
-        </Card>
-        <Card className="express-lane-transactions-card">
-          <CardContent className="express-lane-transactions-card-content">
-            <Typography
-              variant="h6"
-              component="h3"
-              className="express-lane-card-title"
-            >
-              Transactions
-            </Typography>
-            <TableContainer
-              component={Paper}
-              className="express-lane-table-container"
-            >
-              <Table size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tx Hash</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell align="right">Profit</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {MOCK_TRANSACTIONS.map((tx, index) => (
-                    <TableRow key={index} className="express-lane-tx-row">
-                      <TableCell className="express-lane-tx-hash monospace">
-                        {tx.txHash}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={tx.mevType}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            borderColor: getMevTypeColor(tx.mevType),
-                            color: getMevTypeColor(tx.mevType),
-                            backgroundColor: hexToRgba(
-                              getMevTypeColor(tx.mevType),
-                              0.08
-                            ),
-                            "&:hover": {
+              <TableContainer
+                component={Paper}
+                className="express-lane-table-container"
+              >
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Tx Hash</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell align="right">Profit</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {MOCK_TRANSACTIONS.map((tx, index) => (
+                      <TableRow key={index} className="express-lane-tx-row">
+                        <TableCell className="express-lane-tx-hash monospace">
+                          {tx.txHash}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={tx.mevType}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              borderColor: getMevTypeColor(tx.mevType),
+                              color: getMevTypeColor(tx.mevType),
                               backgroundColor: hexToRgba(
                                 getMevTypeColor(tx.mevType),
-                                0.15
+                                0.08
                               ),
-                            },
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="express-lane-tx-profit"
-                      >
-                        ${tx.profit.toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
+                              "&:hover": {
+                                backgroundColor: hexToRgba(
+                                  getMevTypeColor(tx.mevType),
+                                  0.15
+                                ),
+                              },
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="express-lane-tx-profit"
+                        >
+                          ${tx.profit.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        </Stack>
       </Box>
     </Box>
   );

@@ -195,8 +195,7 @@
 .express-lane-card-title {
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: 0 !important;
-  font-size: 1.1rem !important;
+  margin-bottom: var(--spacing-md);
 }
 
 /* Transactions Table */

@@ -77,6 +77,19 @@ const theme = createTheme({
     ...Array(21).fill('0 2px 4px rgba(0, 0, 0, 0.1)'),
   ] as Shadows,
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          minWidth: 320,
+          minHeight: '100vh',
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', Arial, sans-serif",
+          color: '#111827',
+          backgroundColor: '#f5f5f5',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         disableElevation: true,
