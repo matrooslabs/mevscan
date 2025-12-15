@@ -348,12 +348,12 @@ function LiveSection() {
         <Stack direction="row" spacing={1} justifyContent="space-between">
           <StatCard title="Profit" value={latestProfit} suffix="$" />
           <StatCard
-            title="Number of Transactions"
-            value={MOCK_TRANSACTIONS.length}
-          />
-          <StatCard
             title="Current Block Number"
             value={MOCK_ROUND_INFO.currentBlockNumber}
+          />
+          <StatCard
+            title="Number of Transactions"
+            value={MOCK_TRANSACTIONS.length}
           />
           <StatCard
             title="Gas Used"
@@ -384,7 +384,6 @@ function LiveSection() {
                   </Typography>
                 </Box>
               </Box>
-
               <Box className="live-section-chart-container">
                 <ReactECharts
                   option={chartOptions}
