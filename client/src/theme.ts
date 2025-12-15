@@ -1,6 +1,7 @@
 // src/theme.ts
 
 import { createTheme } from '@mui/material/styles';
+import type { Shadows } from '@mui/material/styles';
 
 // Optional: extend the palette a tiny bit for borders
 
@@ -74,7 +75,7 @@ const theme = createTheme({
     '0 4px 8px rgba(0, 0, 0, 0.15)', // --shadow-lg
     // rest can just reuse MUI defaults, so we spread them:
     ...Array(21).fill('0 2px 4px rgba(0, 0, 0, 0.1)'),
-  ] as any,
+  ] as Shadows,
   components: {
     MuiButton: {
       defaultProps: {
@@ -177,4 +178,11 @@ export const chartColorPalette = [
   '#00c49f', '#ffbb28', '#ff8042', '#8884d8', '#82ca9d',
   '#ffc658', '#ff7300', '#0088fe', '#00c49f', '#ffbb28'
 ];
+
+// Named chart colors for specific use cases
+export const chartColors = {
+  total: '#555555',      // Gray for total values
+  normal: '#ffc658',     // Yellow/amber for normal values
+  timeboost: '#82ca9d',  // Green for timeboost values
+} as const;
 
