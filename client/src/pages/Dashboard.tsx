@@ -4,7 +4,7 @@ import TwitterIcon from '@mui/icons-material/Twitter'
 import GitHubIcon from '@mui/icons-material/GitHub'
 import MEVSection from './sections/MEVSection'
 import ExpressLaneSection from './sections/ExpressLaneSection'
-import ExpressLaneRealTimeSection from './sections/ExpressLaneRealTimeSection'
+import LiveSection from './sections/LiveSection'
 import TimeboostSection from './sections/TimeboostSection'
 
 function Dashboard() {
@@ -41,7 +41,7 @@ function Dashboard() {
           </Box>
         </Box>
       </Box>
-      <ExpressLaneRealTimeSection />
+      <LiveSection />
       <MEVSection />
       <ExpressLaneSection />
       <TimeboostSection />

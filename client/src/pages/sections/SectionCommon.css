@@ -17,15 +17,10 @@
   display: inline-block;
 }
 
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: 8px;
-  left: var(--spacing-lg);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
-  border-radius: 2px;
+.section-container {
+  display: block;
+  max-width: var(--max-width-container);
+  margin: 0 auto;
 }
 
 .chart-card-flex {
