@@ -4,7 +4,6 @@ import {
   Box,
   Card,
   CardContent,
-  Divider,
   Stack,
   Table,
   TableBody,
@@ -172,15 +171,15 @@ interface StatCardProps {
 
 function StatCard({ title, value, prefix, suffix }: StatCardProps) {
   return (
-    <Card className="express-lane-stat-card">
-      <CardContent className="express-lane-stat-card-content">
-        <Typography variant="caption" className="express-lane-stat-label">
+    <Card className="live-section-stat-card">
+      <CardContent className="live-section-stat-card-content">
+        <Typography variant="caption" className="live-section-stat-label">
           {title}
         </Typography>
         <Typography
           variant="h5"
           component="div"
-          className="express-lane-stat-value"
+          className="live-section-stat-value"
         >
           <NumberFlow value={value} prefix={prefix} suffix={suffix} />
         </Typography>
@@ -345,7 +344,7 @@ function LiveSection() {
 
   return (
     <Box className="section-container">
-      <Box className="express-lane-main-content">
+      <Box className="live-section-main-content">
         <Stack direction="row" spacing={1} justifyContent="space-between">
           <StatCard title="Profit" value={latestProfit} suffix="$" />
           <StatCard
@@ -363,21 +362,21 @@ function LiveSection() {
           />
         </Stack>
         <Stack direction="column" spacing={1}>
-          <Card className="express-lane-chart-card">
-            <CardContent className="express-lane-chart-card-content">
-              <Box className="express-lane-card-title-container">
+          <Card className="live-section-chart-card">
+            <CardContent className="live-section-chart-card-content">
+              <Box className="live-section-card-title-container">
                 <Typography
                   variant="h6"
                   component="h3"
-                  className="express-lane-card-title"
+                  className="live-section-card-title"
                 >
                   Express Lane MEV Profit
                 </Typography>
-                <Box className="express-lane-live-indicator">
-                  <Box className="express-lane-live-dot" />
+                <Box className="live-section-live-indicator">
+                  <Box className="live-section-live-dot" />
                   <Typography
                     variant="caption"
-                    className="express-lane-live-text"
+                    className="live-section-live-text"
                   >
                     LIVE - Round {MOCK_ROUND_INFO.currentRound} -{" "}
                     {MOCK_ROUND_INFO.currentOwner.slice(0, 6)}...
@@ -386,28 +385,30 @@ function LiveSection() {
                 </Box>
               </Box>
 
-              <Box className="express-lane-chart-container">
+              <Box className="live-section-chart-container">
                 <ReactECharts
                   option={chartOptions}
                   notMerge
                   lazyUpdate
-                  className="express-lane-chart"
+                  className="live-section-chart"
                 />
               </Box>
             </CardContent>
           </Card>
-          <Card className="express-lane-transactions-card">
-            <CardContent className="express-lane-transactions-card-content">
-              <Typography
-                variant="h6"
-                component="h3"
-                className="express-lane-card-title"
-              >
-                Transactions
-              </Typography>
+          <Card className="live-section-transactions-card">
+            <CardContent className="live-section-transactions-card-content">
+              <Box className="live-section-card-title-container">
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  className="live-section-card-title"
+                >
+                  Transactions
+                </Typography>
+              </Box>
               <TableContainer
                 component={Paper}
-                className="express-lane-table-container"
+                className="live-section-table-container"
               >
                 <Table size="small" stickyHeader>
                   <TableHead>
@@ -419,8 +420,8 @@ function LiveSection() {
                   </TableHead>
                   <TableBody>
                     {MOCK_TRANSACTIONS.map((tx, index) => (
-                      <TableRow key={index} className="express-lane-tx-row">
-                        <TableCell className="express-lane-tx-hash monospace">
+                      <TableRow key={index} className="live-section-tx-row">
+                        <TableCell className="live-section-tx-hash monospace">
                           {tx.txHash}
                         </TableCell>
                         <TableCell>
@@ -446,7 +447,7 @@ function LiveSection() {
                         </TableCell>
                         <TableCell
                           align="right"
-                          className="express-lane-tx-profit"
+                          className="live-section-tx-profit"
                         >
                           ${tx.profit.toFixed(2)}
                         </TableCell>
