@@ -227,7 +227,7 @@ function TimeSeriesChart({
 
   return (
     <div className="chart-container">
-      <ReactECharts option={options} notMerge lazyUpdate style={{ width: '100%', height: '100%' }} />
+      <ReactECharts option={options} notMerge lazyUpdate/>
     </div>
   );
 }

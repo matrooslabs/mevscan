@@ -37,12 +37,8 @@ function BarChart({
   showTooltip = true,
   barColor = '#8884d8',
 }: BarChartProps) {
-  if (!data || data.length === 0) {
-    return <div>No data available</div>
-  }
-
-  const labels = useMemo(() => data.map((d) => d[xAxisKey as keyof BarChartData] as string), [data, xAxisKey])
-  const seriesData = useMemo(() => data.map((d) => d.value ?? null), [data])
+  const labels = useMemo(() => (data ?? []).map((d) => d[xAxisKey as keyof BarChartData] as string), [data, xAxisKey])
+  const seriesData = useMemo(() => (data ?? []).map((d) => d.value ?? null), [data])
 
   const series = useMemo<SeriesOption[]>(
     () => [
@@ -84,9 +80,13 @@ function BarChart({
     [labels, series, showLegend, showTooltip, yAxisLabel, showGrid]
   )
 
+  if (!data || data.length === 0) {
+    return <div>No data available</div>
+  }
+
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>
-      <ReactECharts option={option} notMerge lazyUpdate style={{ width: '100%', height: '100%' }} />
+      <ReactECharts option={option} notMerge lazyUpdate />
     </div>
   )
 }

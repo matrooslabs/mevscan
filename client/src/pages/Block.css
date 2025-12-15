@@ -101,9 +101,6 @@
   font-weight: 500;
 }
 
-.section-content {
-  padding: var(--spacing-lg);
-}
 
 /* Overview Grid */
 .overview-grid {

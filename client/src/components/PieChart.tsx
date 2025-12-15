@@ -71,7 +71,7 @@ function PieChart({
 
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>
-      <ReactECharts option={option} notMerge lazyUpdate style={{ width: '100%', height: '100%' }} />
+      <ReactECharts option={option} notMerge lazyUpdate />
     </div>
   )
 }
