@@ -10,8 +10,6 @@ import {
   useBidsPerRound,
   useExpressLanePrice,
   usePeriodicApiRefreshByKeys,
-  useTimeboostGrossRevenue,
-  useTimeboostRevenue,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
 import './SectionCommon.css'
@@ -23,8 +21,6 @@ import type {
 } from '../../types/api'
 
 function TimeboostSection() {
-  const timeboostGrossRevenue = useTimeboostGrossRevenue()
-  const timeboostRevenue = useTimeboostRevenue()
   const bidsPerAddress = useBidsPerAddress()
   const auctionWinCount = useAuctionWinCount()
   const bidsPerRound = useBidsPerRound()
