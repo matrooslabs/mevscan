@@ -474,3 +474,13 @@ export interface ExpressLaneProfitData {
   currentRound: number;
   expressLaneController: string | null;
 }
+
+export interface ExpressLaneTransaction {
+  blockTimestamp: number;
+  blockNumber: number;
+  txIndex: number;
+  txHash: string;
+  profitUsd: number;
+  expressLanePrice: BigInt;
+  expressLaneRound: number;
+}
