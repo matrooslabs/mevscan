@@ -25,7 +25,6 @@ interface Config {
   };
   ably: {
     apiKey: string;
-    isTest: boolean;
     refreshIntervalMs: number;
   };
   nodeEnv: NodeEnv;
@@ -64,8 +63,7 @@ export const config: Config = {
   },
   ably: {
     apiKey: getEnvVar('ABLY_API_KEY'),
-    isTest: getEnvVar('TEST_ABLY') === 'true' || false,
-    refreshIntervalMs: parseInt(process.env.REFRESH_INTERVAL_MS || '20000', 10),
+    refreshIntervalMs: parseInt(process.env.REFRESH_INTERVAL_MS || '1000', 10),
   },
   nodeEnv: getNodeEnv(),
 };

@@ -2,10 +2,10 @@ import Ably from 'ably';
 import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getAbly } from '@mevscan/shared/ably';
-import { publishExpressLaneProfit } from './services/expressLaneService';
+import { publishExpressLaneTransactions } from './services/expressLaneService';
 import { config } from '@mevscan/shared/config';
 
-let channelLastStoredTime: Record<string, number> = {};
+let lastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
 
 interface InitResult {
     clickhouseClient: ClickHouseClient;
@@ -33,7 +33,7 @@ async function init(): Promise<InitResult> {
     const { clickhouseClient, ably } = await init();
 
     while (true) {
-        await publishExpressLaneProfit(ably, clickhouseClient, channelLastStoredTime);
+        await publishExpressLaneTransactions(ably, clickhouseClient, lastStoredBlockNumberTxIndex);
         await new Promise(resolve => setTimeout(resolve, config.ably.refreshIntervalMs));
     }
 })();
