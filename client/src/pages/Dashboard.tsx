@@ -13,7 +13,7 @@ function Dashboard() {
       <div className="dashboard-container">
         <Box className="dashboard-title-section">
           <Typography variant="h1" className="dashboard-title">
-            <span className="dashboard-title-emoji">🚀</span>
+            {/* <span className="dashboard-title-emoji">🚀</span> */}
             <span className="dashboard-title-text">Timeboost.Art</span>
           </Typography>
           <Box className="dashboard-subtitle-container">

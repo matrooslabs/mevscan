@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@mui/material'
+import logoImage from '../assets/logo-timeboost.png'
 import './Navbar.css'
 
 function Navbar() {
@@ -36,7 +37,8 @@ function Navbar() {
           className="navbar-logo"
           onClick={handleLogoClick}
         >
-          timeboost.art
+          <img src={logoImage} alt="Timeboost Logo" className="navbar-logo-img" />
+          <span className="navbar-logo-text">timeboost.art</span>
         </button>
         <div className="navbar-menu" role="navigation" aria-label="Section navigation">
           <Button
