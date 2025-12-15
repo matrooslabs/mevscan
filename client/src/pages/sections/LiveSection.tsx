@@ -188,7 +188,7 @@ function StatCard({ title, value, prefix, suffix }: StatCardProps) {
   );
 }
 
-function LiveSection() {
+function LiveSection({ id }: { id?: string }) {
   // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
   const bepPriceUSD = 30;
 
@@ -343,7 +343,7 @@ function LiveSection() {
     MOCK_PROFIT_DATA[MOCK_PROFIT_DATA.length - 1]?.profit || 0;
 
   return (
-    <Box className="section-container">
+    <Box id={id} className="section-container">
       <Box className="live-section-main-content">
         <Stack direction="row" spacing={1} justifyContent="space-between">
           <StatCard title="Profit" value={latestProfit} suffix="$" />

@@ -20,7 +20,7 @@ import type {
   ExpressLanePriceEntry,
 } from '../../types/api'
 
-function TimeboostSection() {
+function TimeboostSection({ id }: { id?: string }) {
   const bidsPerAddress = useBidsPerAddress()
   const auctionWinCount = useAuctionWinCount()
   const bidsPerRound = useBidsPerRound()
@@ -97,7 +97,7 @@ function TimeboostSection() {
   }, [expressLanePrice.data])
 
   return (
-      <Box className="section-container">
+      <Box id={id} className="section-container">
         <Box className="section-header">
           <Typography variant="h4" component="h2" className="section-title">
             Timeboost Bids
