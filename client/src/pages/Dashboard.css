@@ -78,11 +78,3 @@
 .dashboard-section-group {
   margin-bottom: var(--spacing-xl);
 }
-
-.chart-container {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  margin-top: 0;
-}
-

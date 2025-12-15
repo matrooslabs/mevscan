@@ -4,7 +4,6 @@
 
 .section-title {
   margin-bottom: var(--spacing-2xl);
-  padding: var(--spacing-lg);
   font-weight: 700;
   background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
   -webkit-background-clip: text;
@@ -21,6 +20,11 @@
   display: block;
   max-width: var(--max-width-container);
   margin: 0 auto;
+}
+
+.section-content {
+  margin: 0 auto;
+  max-width: var(--max-width-content);
 }
 
 .chart-card-flex {
