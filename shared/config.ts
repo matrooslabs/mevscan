@@ -7,6 +7,12 @@ const envPath = path.resolve(__dirname, '../.env');
 
 dotenv.config({ path: envPath });
 
+export enum NodeEnv {
+  DEVELOPMENT = 'development',
+  PRODUCTION = 'production',
+  TEST = 'test',
+}
+
 interface Config {
   server: {
     port: number;
@@ -21,6 +27,7 @@ interface Config {
     apiKey: string;
     isTest: boolean;
   };
+  nodeEnv: NodeEnv;
 }
 
 const getEnvVar = (key: string, required: boolean = true): string => {
@@ -29,6 +36,19 @@ const getEnvVar = (key: string, required: boolean = true): string => {
     throw new Error(`ERROR: ${key} environment variable is required`);
   }
   return value || '';
+};
+
+const getNodeEnv = (): NodeEnv => {
+  const env = process.env.NODE_ENV || 'development';
+  switch (env) {
+    case 'production':
+      return NodeEnv.PRODUCTION;
+    case 'test':
+      return NodeEnv.TEST;
+    case 'development':
+    default:
+      return NodeEnv.DEVELOPMENT;
+  }
 };
 
 export const config: Config = {
@@ -45,6 +65,7 @@ export const config: Config = {
     apiKey: getEnvVar('ABLY_API_KEY'),
     isTest: getEnvVar('TEST_ABLY') === 'true' || false,
   },
+  nodeEnv: getNodeEnv(),
 };
 
 // Validate critical configurations immediately
