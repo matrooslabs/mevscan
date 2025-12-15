@@ -4,6 +4,8 @@ import {
   Box,
   Card,
   CardContent,
+  Divider,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -247,11 +249,7 @@ function LiveSection() {
       legend: {
         show: true,
         bottom: 0,
-        data: [
-          ...mevTypes,
-          "Cumulative Profit",
-          "Express Lane Price",
-        ],
+        data: [...mevTypes, "Cumulative Profit", "Express Lane Price"],
       },
       grid: {
         top: 24,
@@ -346,27 +344,24 @@ function LiveSection() {
     MOCK_PROFIT_DATA[MOCK_PROFIT_DATA.length - 1]?.profit || 0;
 
   return (
-    <Box className="dashboard-section-group section-spacing">
-      {/* Stats Cards */}
-      <Box className="express-lane-stats-container">
-        <StatCard title="Profit" value={latestProfit} suffix="$" />
-        <StatCard
-          title="Number of Transactions"
-          value={MOCK_TRANSACTIONS.length}
-        />
-        <StatCard
-          title="Current Block Number"
-          value={MOCK_ROUND_INFO.currentBlockNumber}
-        />
-        <StatCard
-          title="Gas Used"
-          value={MOCK_ROUND_INFO.gasUsed}
-          suffix="wei"
-        />
-      </Box>
-      {/* Main Content: Chart + Transactions */}
+    <Box className="section-container">
       <Box className="express-lane-main-content">
-        {/* Profit Chart */}
+        <Stack direction="row" spacing={1} justifyContent="space-between">
+          <StatCard title="Profit" value={latestProfit} suffix="$" />
+          <StatCard
+            title="Number of Transactions"
+            value={MOCK_TRANSACTIONS.length}
+          />
+          <StatCard
+            title="Current Block Number"
+            value={MOCK_ROUND_INFO.currentBlockNumber}
+          />
+          <StatCard
+            title="Gas Used"
+            value={MOCK_ROUND_INFO.gasUsed}
+            suffix="wei"
+          />
+        </Stack>
         <Card className="express-lane-chart-card">
           <CardContent className="express-lane-chart-card-content">
             <Box className="express-lane-card-title-container">
@@ -400,8 +395,6 @@ function LiveSection() {
             </Box>
           </CardContent>
         </Card>
-
-        {/* Transactions List */}
         <Card className="express-lane-transactions-card">
           <CardContent className="express-lane-transactions-card-content">
             <Typography
@@ -437,9 +430,15 @@ function LiveSection() {
                           sx={{
                             borderColor: getMevTypeColor(tx.mevType),
                             color: getMevTypeColor(tx.mevType),
-                            backgroundColor: hexToRgba(getMevTypeColor(tx.mevType), 0.08),
-                            '&:hover': {
-                              backgroundColor: hexToRgba(getMevTypeColor(tx.mevType), 0.15),
+                            backgroundColor: hexToRgba(
+                              getMevTypeColor(tx.mevType),
+                              0.08
+                            ),
+                            "&:hover": {
+                              backgroundColor: hexToRgba(
+                                getMevTypeColor(tx.mevType),
+                                0.15
+                              ),
                             },
                           }}
                         />
