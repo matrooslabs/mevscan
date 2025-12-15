@@ -18,7 +18,7 @@ import type {
   ExpressLaneProfitByControllerEntry,
 } from "../../types/api";
 
-function ExpressLaneSection() {
+function ExpressLaneSection({ id }: { id?: string }) {
   const expressLaneMEVPercentagePerMinute =
     useExpressLaneMEVPercentagePerMinute();
   const expressLaneNetProfit = useExpressLaneNetProfit();
@@ -93,7 +93,7 @@ function ExpressLaneSection() {
   }, [expressLaneProfitByController.data]);
 
   return (
-    <Box className="section-container">
+    <Box id={id} className="section-container">
       <Box className="section-header">
         <Typography variant="h4" component="h2" className="section-title">
           Express Lane

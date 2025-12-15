@@ -1,25 +1,15 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '@mui/material'
 import './Navbar.css'
-
-const SECTION_TITLES = [
-  { key: 'express-lane-rt', label: 'Express Lane Real-Time Performance' },
-  { key: 'mev', label: 'MEV' },
-  { key: 'express-lane', label: 'Express Lane' },
-  { key: 'timeboost', label: 'Timeboost' },
-  { key: 'timeboost-bids', label: 'Timeboost Bids' },
-]
 
 function Navbar() {
   const navigate = useNavigate()
 
-  const scrollToSection = useCallback((label: string) => {
+  const scrollToSection = useCallback((targetId: string) => {
     if (typeof window === 'undefined') return
 
-    const sectionHeading = Array.from(
-      document.querySelectorAll<HTMLElement>('.section-title')
-    ).find((element) => element.textContent?.trim().toLowerCase() === label.toLowerCase())
-
+    const sectionHeading = document.getElementById(targetId)
     if (!sectionHeading) return
 
     const navbarHeight = document.querySelector('.navbar')?.clientHeight || 0
@@ -46,19 +36,41 @@ function Navbar() {
           className="navbar-logo"
           onClick={handleLogoClick}
         >
-          MevScan
+          timeboost.art
         </button>
         <div className="navbar-menu" role="navigation" aria-label="Section navigation">
-          {SECTION_TITLES.map((section) => (
-            <button
-              key={section.key}
-              type="button"
-              className="navbar-menu-item"
-              onClick={() => scrollToSection(section.label)}
-            >
-              {section.label}
-            </button>
-          ))}
+          <Button
+            type="button"
+            className="navbar-menu-item"
+            variant="text"
+            onClick={() => scrollToSection('live-section')}
+          >
+            Express Lane Live
+          </Button>
+          <Button
+            type="button"
+            className="navbar-menu-item"
+            variant="text"
+            onClick={() => scrollToSection('mev-section')}
+          >
+            MEV
+          </Button>
+          <Button
+            type="button"
+            className="navbar-menu-item"
+            variant="text"
+            onClick={() => scrollToSection('express-lane-section')}
+          >
+            Express Lane
+          </Button>
+          <Button
+            type="button"
+            className="navbar-menu-item"
+            variant="text"
+            onClick={() => scrollToSection('timeboost-section')}
+          >
+            Timeboost
+          </Button>
         </div>
       </div>
     </nav>

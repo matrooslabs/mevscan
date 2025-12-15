@@ -83,7 +83,7 @@ const transformProtocolData = (
   };
 };
 
-function MEVSection() {
+function MEVSection({ id }: { id?: string }) {
   const grossMEV = useGrossMEV();
   const grossAtomicArb = useGrossAtomicArb();
   const grossCexDexQuotes = useGrossCexDexQuotes();
@@ -138,7 +138,7 @@ function MEVSection() {
   );
 
   return (
-    <Box className="section-container">
+    <Box id={id} className="section-container">
       <Box className="section-header">
         <Typography variant="h4" component="h2" className="section-title">
           MEV
