@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
+import NumberFlow from "@number-flow/react";
 import "./SectionCommon.css";
 import "./LiveSection.css";
 
@@ -103,10 +104,12 @@ const getMevTypeColor = (
 // Stat Card Component
 interface StatCardProps {
   title: string;
-  value: string | number;
+  value: number;
+  prefix?: string;
+  suffix?: string;
 }
 
-function StatCard({ title, value }: StatCardProps) {
+function StatCard({ title, value, prefix, suffix }: StatCardProps) {
   return (
     <Card className="express-lane-stat-card">
       <CardContent className="express-lane-stat-card-content">
@@ -118,7 +121,7 @@ function StatCard({ title, value }: StatCardProps) {
           component="div"
           className="express-lane-stat-value"
         >
-          {value}
+          <NumberFlow value={value} prefix={prefix} suffix={suffix} />
         </Typography>
       </CardContent>
     </Card>
@@ -232,7 +235,8 @@ function LiveSection() {
       <Box className="express-lane-stats-container">
         <StatCard
           title="Profit"
-          value={`$${latestProfit.toFixed(2)}`}
+          value={latestProfit}
+          suffix="$"
         />
         <StatCard
           title="Number of Transactions"
@@ -244,7 +248,8 @@ function LiveSection() {
         />
         <StatCard
           title="Gas Used"
-          value={MOCK_ROUND_INFO.gasUsed.toLocaleString()}
+          value={MOCK_ROUND_INFO.gasUsed}
+          suffix="wei"
         />
       </Box>
       {/* Main Content: Chart + Transactions */}
