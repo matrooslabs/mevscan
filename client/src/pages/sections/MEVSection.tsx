@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Typography, Box, Stack } from "@mui/material";
+import { Typography, Box, Stack, Divider } from "@mui/material";
 import { chartColorPalette, chartColors } from "../../theme";
 import TimeSeriesChart, {
   type TimeSeriesData,
@@ -139,6 +139,11 @@ function MEVSection() {
 
   return (
     <Box className="section-container">
+      <Box className="section-header">
+        <Typography variant="h4" component="h2" className="section-title">
+          MEV
+        </Typography>
+      </Box>
       <Box className="section-content">
         <Stack direction="column" spacing={2}>
           {/* Gross MEV */}
