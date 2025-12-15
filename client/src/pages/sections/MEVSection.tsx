@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Typography, Box, Stack, Divider } from "@mui/material";
+import { Typography, Box, Stack } from "@mui/material";
 import { chartColorPalette, chartColors } from "../../theme";
 import TimeSeriesChart, {
   type TimeSeriesData,

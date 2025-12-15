@@ -32,20 +32,16 @@ function PieChart({
   innerRadius = 0,
   outerRadius = 80,
 }: PieChartProps) {
-  if (!data || data.length === 0) {
-    return <div>No data available</div>
-  }
-
   const series = useMemo<SeriesOption[]>(
     () => [
       {
         type: 'pie',
         radius: [innerRadius, outerRadius],
-        data: data.map((d) => ({
+        data: data?.map((d) => ({
           value: d.value,
           name: d.name,
           itemStyle: { color: d.color },
-        })),
+        })) || [],
         label: {
           formatter: ({ name, percent }) => {
             const pct = typeof percent === 'number' ? percent : 0;
@@ -68,6 +64,10 @@ function PieChart({
     }),
     [series, showLegend, showTooltip]
   )
+
+  if (!data || data.length === 0) {
+    return <div>No data available</div>
+  }
 
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>

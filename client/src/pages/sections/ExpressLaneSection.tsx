@@ -3,10 +3,8 @@ import { Typography, Box, Stack } from "@mui/material";
 import TimeSeriesChart, {
   type TimeSeriesData,
 } from "../../components/TimeSeriesChart";
-import PieChart, { type PieChartData } from "../../components/PieChart";
 import BarChart from "../../components/BarChart";
 import {
-  useExpressLaneMEVPercentage,
   useExpressLaneMEVPercentagePerMinute,
   useExpressLaneNetProfit,
   useExpressLaneProfitByController,
@@ -15,14 +13,12 @@ import {
 import ChartCard from "../../components/ChartCard";
 import "./SectionCommon.css";
 import type {
-  ExpressLaneMEVPercentage,
   ExpressLaneMEVPercentagePerMinute,
   ExpressLaneNetProfitEntry,
   ExpressLaneProfitByControllerEntry,
 } from "../../types/api";
 
 function ExpressLaneSection() {
-  const expressLaneMEVPercentage = useExpressLaneMEVPercentage();
   const expressLaneMEVPercentagePerMinute =
     useExpressLaneMEVPercentagePerMinute();
   const expressLaneNetProfit = useExpressLaneNetProfit();
@@ -39,34 +35,6 @@ function ExpressLaneSection() {
     true,
     200
   );
-  // Transform pie chart data
-  const transformPieChartData = useMemo((): PieChartData[] => {
-    const mevData = expressLaneMEVPercentage.data as
-      | ExpressLaneMEVPercentage
-      | undefined;
-    if (!mevData) return [];
-
-    const { total, timeboost } = mevData;
-    const normal = Math.max(0, total - timeboost);
-    const timeboostValue = Math.max(0, timeboost || 0);
-
-    if (total === 0 || (normal === 0 && timeboostValue === 0)) {
-      return [];
-    }
-
-    return [
-      {
-        name: "Normal",
-        value: normal,
-        color: "#ffc658",
-      },
-      {
-        name: "Timeboost",
-        value: timeboostValue,
-        color: "#82ca9d",
-      },
-    ];
-  }, [expressLaneMEVPercentage.data]);
 
   // Transform Express Lane MEV Percentage per minute data
   const transformPercentageTimeSeriesData = useMemo<TimeSeriesData>(() => {
