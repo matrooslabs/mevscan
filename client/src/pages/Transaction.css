@@ -82,10 +82,6 @@
   letter-spacing: 0.05em;
 }
 
-.section-content {
-  padding: var(--spacing-lg);
-}
-
 /* Details Table */
 .details-table {
   display: grid;

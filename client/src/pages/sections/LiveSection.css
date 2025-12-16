@@ -1,5 +1,63 @@
+/* Title Container with Live Indicator */
+.live-section-title-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.live-section-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  width: fit-content;
+}
+
+.live-section-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.live-section-live-text {
+  font-weight: 700;
+  color: #ef4444;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--font-family-mono, monospace);
+}
+
+/* Stats Container */
+.live-section-stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  max-width: var(--max-width-content);
+  width: 100%;
+  margin: 0 auto var(--spacing-lg) auto;
+}
+
 /* Stats Row */
-.express-lane-stats-row {
+.live-section-stats-row {
   display: flex;
   gap: var(--spacing-lg);
   margin: 0 auto var(--spacing-lg) auto;
@@ -7,8 +65,8 @@
   justify-content: space-between;
 }
 
-.express-lane-stat-card {
-  flex: 1 1 0;
+.live-section-stat-card {
+  flex: 0 1 calc((100% - 3 * var(--spacing-md)) / 4);
   min-width: 0;
   background-color: var(--color-bg-primary);
   border-radius: var(--radius-lg);
@@ -16,12 +74,12 @@
   transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
 
-.express-lane-stat-card:hover {
+.live-section-stat-card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
-.express-lane-stat-card-content {
+.live-section-stat-card-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,7 +89,7 @@
   min-height: 100px;
 }
 
-.express-lane-stat-label {
+.live-section-stat-label {
   color: var(--color-text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
@@ -40,31 +98,33 @@
   margin-bottom: var(--spacing-sm);
 }
 
-.express-lane-stat-value {
+.live-section-stat-value {
   font-weight: 700;
   color: var(--color-text-primary);
   font-family: var(--font-family-mono);
   font-size: 1.5rem !important;
 }
 
-.express-lane-stat-subtitle {
+.live-section-stat-subtitle {
   color: var(--color-text-secondary);
   font-size: 0.7rem;
   margin-top: var(--spacing-xs);
 }
 
 /* Main Content Layout */
-.express-lane-main-content {
+.live-section-main-content {
   display: flex;
-  gap: var(--spacing-lg);
+  flex-direction: column;
+  gap: var(--spacing-sm);
   max-width: var(--max-width-content);
   margin: 0 auto;
 }
 
 /* Chart Card */
-.express-lane-chart-card {
-  flex: 2;
-  min-width: 400px;
+.live-section-chart-card {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
   min-height: 420px;
   background-color: var(--color-bg-primary);
   border-radius: var(--radius-lg);
@@ -72,28 +132,34 @@
   transition: box-shadow var(--transition-base);
 }
 
-.express-lane-chart-card:hover {
+.live-section-chart-card:hover {
   box-shadow: var(--shadow-lg);
 }
 
-.express-lane-chart-card-content {
+.live-section-chart-card-content {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: var(--spacing-lg) !important;
 }
 
-.express-lane-chart-container {
+.live-section-chart-container {
   flex: 1;
   min-height: 300px;
   width: 100%;
 }
 
+.live-section-chart {
+  width: 100%;
+  height: 100%;
+}
+
 /* Transactions Card */
-.express-lane-transactions-card {
-  flex: 1;
-  min-width: 300px;
-  max-width: 400px;
+.live-section-transactions-card {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 420px;
   background-color: var(--color-bg-primary);
   border-radius: var(--radius-lg);
@@ -103,11 +169,11 @@
   flex-direction: column;
 }
 
-.express-lane-transactions-card:hover {
+.live-section-transactions-card:hover {
   box-shadow: var(--shadow-lg);
 }
 
-.express-lane-transactions-card-content {
+.live-section-transactions-card-content {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -115,29 +181,23 @@
   overflow: hidden;
 }
 
-/* Shared Card Title */
-.express-lane-card-title {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-md) !important;
-  font-size: 1.1rem !important;
-  position: relative;
-  padding-bottom: var(--spacing-sm);
+/* Card Title Container */
+.live-section-card-title-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
-.express-lane-card-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 40px;
-  height: 3px;
-  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
-  border-radius: 2px;
+/* Shared Card Title */
+.live-section-card-title {
+  color: var(--color-text-primary);
 }
 
 /* Transactions Table */
-.express-lane-table-container {
+.live-section-table-container {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -146,33 +206,33 @@
   background-color: transparent !important;
 }
 
-.express-lane-table-container table {
+.live-section-table-container table {
   table-layout: fixed;
   width: 100%;
 }
 
-.express-lane-table-container th:nth-child(1),
-.express-lane-table-container td:nth-child(1) {
+.live-section-table-container th:nth-child(1),
+.live-section-table-container td:nth-child(1) {
   width: 45%;
 }
 
-.express-lane-table-container th:nth-child(2),
-.express-lane-table-container td:nth-child(2) {
+.live-section-table-container th:nth-child(2),
+.live-section-table-container td:nth-child(2) {
   width: 30%;
 }
 
-.express-lane-table-container th:nth-child(3),
-.express-lane-table-container td:nth-child(3) {
+.live-section-table-container th:nth-child(3),
+.live-section-table-container td:nth-child(3) {
   width: 25%;
 }
 
-.express-lane-table-container .MuiTableHead-root {
+.live-section-table-container .MuiTableHead-root {
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-.express-lane-table-container .MuiTableCell-head {
+.live-section-table-container .MuiTableCell-head {
   background-color: var(--color-bg-tertiary);
   font-weight: 600;
   font-size: 0.75rem;
@@ -183,58 +243,64 @@
   border-bottom: 2px solid var(--color-border-primary);
 }
 
-.express-lane-tx-row {
+.live-section-tx-row {
   transition: background-color var(--transition-fast);
 }
 
-.express-lane-tx-row:hover {
+.live-section-tx-row:hover {
   background-color: var(--color-bg-quaternary);
 }
 
-.express-lane-tx-row .MuiTableCell-root {
+.live-section-tx-row .MuiTableCell-root {
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--color-border-primary);
 }
 
-.express-lane-tx-hash {
+.live-section-tx-hash {
   font-size: 0.8rem;
   color: var(--color-text-primary);
 }
 
-.express-lane-tx-profit {
+.live-section-tx-profit {
   font-weight: 600;
   color: #10b981;
   font-family: var(--font-family-mono);
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .live-section-stat-card {
+    flex: 0 1 calc((100% - 2 * var(--spacing-md)) / 3);
+  }
+}
+
 @media (max-width: 900px) {
-  .express-lane-main-content {
+  .live-section-main-content {
     flex-direction: column;
   }
 
-  .express-lane-chart-card,
-  .express-lane-transactions-card {
+  .live-section-chart-card,
+  .live-section-transactions-card {
     min-width: 100%;
     max-width: 100%;
   }
 
-  .express-lane-stats-row {
+  .live-section-stats-row {
     flex-wrap: wrap;
   }
 
-  .express-lane-stat-card {
-    flex: 1 1 calc(33.333% - var(--spacing-lg));
+  .live-section-stat-card {
+    flex: 0 1 calc((100% - var(--spacing-md)) / 2);
     min-width: 180px;
   }
 }
 
 @media (max-width: 600px) {
-  .express-lane-stats-row {
+  .live-section-stats-row {
     flex-direction: column;
   }
 
-  .express-lane-stat-card {
+  .live-section-stat-card {
     flex: 1 1 100%;
   }
 }

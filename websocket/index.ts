@@ -5,8 +5,7 @@ import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneTransactions } from './services/expressLaneService';
 import { config } from '@mevscan/shared/config';
 
-let lastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
-
+let channelLastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
 interface InitResult {
     clickhouseClient: ClickHouseClient;
     ably: Ably.Realtime;
@@ -33,7 +32,7 @@ async function init(): Promise<InitResult> {
     const { clickhouseClient, ably } = await init();
 
     while (true) {
-        await publishExpressLaneTransactions(ably, clickhouseClient, lastStoredBlockNumberTxIndex);
+        await publishExpressLaneTransactions(ably, clickhouseClient, channelLastStoredBlockNumberTxIndex);
         await new Promise(resolve => setTimeout(resolve, config.ably.refreshIntervalMs));
     }
 })();
