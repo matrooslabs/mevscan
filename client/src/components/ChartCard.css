@@ -43,7 +43,7 @@
   min-height: 200px;
 }
 
-.chard-card-title {
+.chart-card-title {
   margin-bottom: 20px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -57,14 +57,7 @@
   padding-bottom: 8px;
 }
 
-.chard-card-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 50px;
-  height: 3px;
-  background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
-  border-radius: 2px;
+.chart-container {
+  flex: 1;
+  width: 100%;
 }
-

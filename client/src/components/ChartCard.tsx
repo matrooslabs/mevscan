@@ -27,7 +27,7 @@ function ChartCard({
   return (
     <Card className={cardClassName}>
       <CardContent className={mergedContentClassName}>
-        <Typography variant="h5" component="h2" className="chard-card-title">
+        <Typography variant="h5" component="h2" className="chart-card-title">
           {title}
         </Typography>
         {isLoading ? (
