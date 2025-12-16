@@ -1,12 +1,10 @@
 import { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
+import { AppBar, Toolbar, Button, Box } from '@mui/material'
 import logoImage from '../assets/logo-timeboost.png'
 import './Navbar.css'
 
 function Navbar() {
-  const navigate = useNavigate()
-
   const scrollToSection = useCallback((targetId: string) => {
     if (typeof window === 'undefined') return
 
@@ -25,29 +23,38 @@ function Navbar() {
   }, [])
 
   const handleLogoClick = useCallback(() => {
-    navigate('/')
+    if (typeof window === 'undefined') return
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [navigate])
+  }, [])
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <button
+    <AppBar position="sticky" elevation={0} className="navbar" color="transparent">
+      <Toolbar className="navbar-container" disableGutters>
+        <Button
+          component={RouterLink}
+          to="/"
           type="button"
           className="navbar-logo"
           onClick={handleLogoClick}
+          disableRipple
         >
           <img src={logoImage} alt="Timeboost Logo" className="navbar-logo-img" />
           <span className="navbar-logo-text">timeboost.art</span>
-        </button>
-        <div className="navbar-menu" role="navigation" aria-label="Section navigation">
+        </Button>
+        <Box
+          className="navbar-menu"
+          component="nav"
+          role="navigation"
+          aria-label="Section navigation"
+        >
           <Button
             type="button"
             className="navbar-menu-item"
             variant="text"
             onClick={() => scrollToSection('live-section')}
           >
-            Express Lane Live
+            Live
           </Button>
           <Button
             type="button"
@@ -73,9 +80,9 @@ function Navbar() {
           >
             Timeboost
           </Button>
-        </div>
-      </div>
-    </nav>
+        </Box>
+      </Toolbar>
+    </AppBar>
   )
 }
 
