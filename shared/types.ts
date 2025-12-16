@@ -464,17 +464,8 @@ export interface LiquidationResponse {
 }
 
 /**
- * Express Lane Profit data point
+ * Express Lane Transaction
  */
-export interface ExpressLaneProfitData {
-  time: number;
-  profitUsd: number;
-  expressLanePrice: BigInt;
-  expressLanePriceUsd: number;
-  currentRound: number;
-  expressLaneController: string | null;
-}
-
 export interface ExpressLaneTransaction {
   blockTimestamp: number;
   blockNumber: number;

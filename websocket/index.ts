@@ -3,10 +3,9 @@ import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneTransactions } from './services/expressLaneService';
+import { config } from '@mevscan/shared/config';
 
 let channelLastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
-let refreshInterval = 20 * 1000; // 20 seconds
-
 interface InitResult {
     clickhouseClient: ClickHouseClient;
     ably: Ably.Realtime;
@@ -41,6 +40,6 @@ async function init(): Promise<InitResult> {
 
     while (true) {
         await publishExpressLaneTransactions(ably, clickhouseClient, channelLastStoredBlockNumberTxIndex);
-        await new Promise(resolve => setTimeout(resolve, refreshInterval));
+        await new Promise(resolve => setTimeout(resolve, config.ably.refreshIntervalMs));
     }
 })();

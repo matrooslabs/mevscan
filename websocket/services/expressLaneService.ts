@@ -8,7 +8,7 @@ import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
 import { ABLY_CHANNELS } from "@mevscan/shared/ablyConstants";
 import { config, NodeEnv } from "@mevscan/shared/config";
-import { ExpressLaneProfitData, ExpressLaneTransaction } from "@mevscan/shared/types";
+import { ExpressLaneTransaction } from "@mevscan/shared/types";
 
 async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, blockNumber: number, txIndex: number): Promise<ExpressLaneTransaction[]> {
     const query = ` SELECT
@@ -24,10 +24,10 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
         ON eth.block_number = bh.block_number
     WHERE bh.timeboosted = true
         AND (
-            bh.block_number > {block_number:UInt64}
-            OR (bh.block_number = {block_number:UInt64} AND bh.tx_index > {tx_index:UInt32})
+            bh.block_number > {blockNumber:UInt64}
+            OR (bh.block_number = {blockNumber:UInt64} AND bh.tx_index > {txIndex:UInt32})
         )
-    ORDER BY bh.block_number DESC, bh.tx_index ASC
+    ORDER BY bh.block_number ASC, bh.tx_index ASC
     `;
 
     const result = await clickhouseClient.query({
@@ -40,6 +40,22 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
     return data;
 }
 
+async function getLastStoredBlockNumberTxIndex(clickhouseClient: ClickHouseClient): Promise<number> {
+    const query = `
+        SELECT MAX(block_number) as blockNumber
+        FROM mev.bundle_header
+        WHERE timeboosted = true
+    `;
+
+    const result = await clickhouseClient.query({
+        query,
+        format: 'JSONEachRow',
+    });
+
+    const data = await result.json<Array<{ blockNumber: number }>>();
+    return data[0]?.blockNumber ?? 0;
+}
+
 export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickhouseClient: ClickHouseClient, lastStoredBlockNumberTxIndex: Record<string, [number, number]>) {
     let ablyChannel = ably.channels.get(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS);
     let [lastStoredBlockNumber, lastStoredTxIndex] = lastStoredBlockNumberTxIndex[ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS] || [null, null];
@@ -48,7 +64,7 @@ export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickh
         const history = await ablyChannel.history({ limit: 1 });
         const message = history.items.map((message) => message.data);
         if (!message || message.length === 0) {
-            lastStoredBlockNumber = 0;
+            lastStoredBlockNumber = await getLastStoredBlockNumberTxIndex(clickhouseClient);
             lastStoredTxIndex = 0;
         } else {
             const expressLaneTransactionData = message[0] as unknown as ExpressLaneTransaction[];
