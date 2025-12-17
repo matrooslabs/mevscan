@@ -14,6 +14,8 @@ import {
   Chip,
   Paper,
 } from "@mui/material";
+import { Link } from "react-router-dom";
+
 import { ChannelProvider } from "ably/react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
@@ -369,7 +371,14 @@ function LiveSectionContent({ id }: { id?: string }) {
                       transactions.map((tx, index) => (
                         <TableRow key={index} className="live-section-tx-row">
                           <TableCell className="live-section-tx-hash monospace">
-                            {formatTxHash(tx.txHash)}
+                            <Link
+                              to={`https://arbiscan.io/tx/${tx.txHash}`}
+                              className="hash-link"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {formatTxHash(tx.txHash)}
+                            </Link>
                           </TableCell>
                           <TableCell>
                             <Chip

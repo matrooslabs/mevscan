@@ -30,7 +30,6 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
             bh.block_number > {blockNumber:UInt64}
             OR (bh.block_number = {blockNumber:UInt64} AND bh.tx_index > {txIndex:UInt32})
         ) 
-        AND bh.mev_type != 'SearcherTx'
     ORDER BY bh.block_number ASC, bh.tx_index ASC
     `;
 

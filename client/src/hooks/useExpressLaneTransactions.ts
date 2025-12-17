@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useChannel } from 'ably/react';
-import { ABLY_CHANNELS } from '../constants/ably';
-import type { ExpressLaneTransaction } from '@mevscan/shared';
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useChannel } from "ably/react";
+import { ABLY_CHANNELS } from "../constants/ably";
+import type { ExpressLaneTransaction } from "@mevscan/shared";
 
 export interface RoundInfo {
   currentRound: number;
@@ -27,48 +27,102 @@ export interface UseExpressLaneTransactionsResult {
   isConnected: boolean;
 }
 
-const MAX_TRANSACTIONS = 100; // Keep last 100 transactions
-
 export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
-  const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>([]);
+  const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>(
+    []
+  );
   const [isConnected, setIsConnected] = useState(false);
 
   // Handle incoming messages from Ably
   const handleMessage = useCallback((message: { data?: unknown }) => {
-    const newTransactions = message.data as ExpressLaneTransaction[] | undefined;
+    const newTransactions = message.data as
+      | ExpressLaneTransaction[]
+      | undefined;
 
-    console.log('New transactions received from Ably:', newTransactions);
-    
-    if (!newTransactions || !Array.isArray(newTransactions) || newTransactions.length === 0) {
-      console.error('Invalid transactions data received from Ably');
+    console.log("New transactions received from Ably:", newTransactions);
+
+    if (
+      !newTransactions ||
+      !Array.isArray(newTransactions) ||
+      newTransactions.length === 0
+    ) {
+      console.error("Invalid transactions data received from Ably");
       console.error(JSON.stringify(message.data, null, 2));
       return;
     }
 
-    setTransactions(prev => {
+    setTransactions((prev) => {
       // Append new transactions (they come in ASC order and are always newer)
+      // Find the maximum value of express_lane_round from all transactions
+      const maxExpressLaneRound: number = newTransactions.reduce(
+        (max, tx) => (tx.expressLaneRound > max ? tx.expressLaneRound : max),
+        0
+      );
       const combined = [...prev, ...newTransactions];
-      // If over limit, remove oldest entries from the front
-      if (combined.length > MAX_TRANSACTIONS) {
-        return combined.slice(combined.length - MAX_TRANSACTIONS);
-      }
-      return combined;
+      const filtered = combined.filter(
+        (tx) => tx.expressLaneRound === maxExpressLaneRound
+      );
+      return filtered;
     });
   }, []);
 
   // Subscribe to the express lane transactions channel
-  useChannel(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, (message) => {
-    setIsConnected(true);
-    handleMessage(message);
-  });
+  const { channel } = useChannel(
+    ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS,
+    (message) => {
+      setIsConnected(true);
+      handleMessage(message);
+    }
+  );
+
+  // Fetch a snapshot of the most recent 60 messages on cold start
+  useEffect(() => {
+    if (!channel) return;
+
+    let isCancelled = false;
+
+    const loadHistory = async () => {
+      try {
+        const history = await channel.history({
+          limit: 30,
+          direction: "forwards",
+        });
+        if (isCancelled) return;
+
+        const items = history?.items ?? [];
+        if (items.length === 0) {
+          return;
+        }
+        const transactions: ExpressLaneTransaction[] = items.flatMap(
+          (item) => item.data as ExpressLaneTransaction[]
+        );
+        const maxExpressLaneRound: number = transactions.reduce(
+          (max, tx) => (tx.expressLaneRound > max ? tx.expressLaneRound : max),
+          0
+        );
+        const filteredTransactions = transactions.filter(
+          (tx) => tx.expressLaneRound === maxExpressLaneRound
+        );
+        setTransactions(filteredTransactions);
+      } catch (error) {
+        console.error("Failed to load express lane transaction history", error);
+      }
+    };
+
+    loadHistory();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [channel]);
 
   // Compute round info from latest transaction
   const roundInfo = useMemo<RoundInfo>(() => {
     if (transactions.length === 0) {
       return {
         currentRound: 0,
-        currentOwner: '0x0000000000000000000000000000000000000000',
-        expressLanePriceEth: '0',
+        currentOwner: "0x0000000000000000000000000000000000000000",
+        expressLanePriceEth: "0",
         expressLanePriceUsd: 0,
         currentBlockNumber: 0,
         gasUsed: 0,
@@ -76,11 +130,13 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
     }
 
     const latestTx = transactions[transactions.length - 1]; // Stored in ASC order, newest is last
-    
+
     return {
       currentRound: latestTx.expressLaneRound ?? 0,
-      currentOwner: latestTx.expressLaneController ?? '0x0000000000000000000000000000000000000000',
-      expressLanePriceEth: latestTx.expressLanePrice ?? '0',
+      currentOwner:
+        latestTx.expressLaneController ??
+        "0x0000000000000000000000000000000000000000",
+      expressLanePriceEth: latestTx.expressLanePrice ?? "0",
       expressLanePriceUsd: latestTx.expressLanePriceUsd ?? 0,
       currentBlockNumber: latestTx.blockNumber,
       gasUsed: 0, // Would need gas data from the transaction
@@ -92,9 +148,12 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
     if (transactions.length === 0) return [];
 
     // Group transactions by time buckets (5-second intervals)
-    const buckets = new Map<number, { Atomic: number; CexDex: number; Liquidation: number }>();
-    
-    transactions.forEach(tx => {
+    const buckets = new Map<
+      number,
+      { Atomic: number; CexDex: number; Liquidation: number }
+    >();
+
+    transactions.forEach((tx) => {
       // Round to 5-second intervals (in seconds)
       const bucketTimestamp = Math.floor(tx.blockTimestamp / 5) * 5;
 
@@ -103,13 +162,13 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       }
 
       const bucket = buckets.get(bucketTimestamp)!;
-      
+
       // Map mevType to chart categories
-      if (tx.mevType === 'atomic' || tx.mevType === 'Atomic') {
+      if (tx.mevType === "AtomicArb") {
         bucket.Atomic += tx.profitUsd;
-      } else if (tx.mevType === 'cex_dex' || tx.mevType === 'CexDex') {
+      } else if (tx.mevType === "CexDexQuotes") {
         bucket.CexDex += tx.profitUsd;
-      } else if (tx.mevType === 'liquidation' || tx.mevType === 'Liquidation') {
+      } else if (tx.mevType === "Liquidation") {
         bucket.Liquidation += tx.profitUsd;
       }
     });
