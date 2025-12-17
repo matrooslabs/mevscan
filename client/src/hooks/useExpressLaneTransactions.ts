@@ -39,15 +39,11 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       | ExpressLaneTransaction[]
       | undefined;
 
-    console.log("New transactions received from Ably:", newTransactions);
-
     if (
       !newTransactions ||
       !Array.isArray(newTransactions) ||
       newTransactions.length === 0
     ) {
-      console.error("Invalid transactions data received from Ably");
-      console.error(JSON.stringify(message.data, null, 2));
       return;
     }
 
