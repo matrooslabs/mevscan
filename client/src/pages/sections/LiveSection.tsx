@@ -368,7 +368,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      transactions.map((tx, index) => (
+                      transactions.reverse().map((tx, index) => (
                         <TableRow key={index} className="live-section-tx-row">
                           <TableCell className="live-section-tx-hash monospace">
                             <Link

@@ -100,8 +100,10 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
           (tx) => tx.expressLaneRound === maxExpressLaneRound
         );
         setTransactions(filteredTransactions);
+        setIsConnected(true);
       } catch (error) {
         console.error("Failed to load express lane transaction history", error);
+        setIsConnected(false);
       }
     };
 
@@ -109,7 +111,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
     return () => {
       isCancelled = true;
-    };
+    }; 
   }, [channel]);
 
   // Compute round info from latest transaction
@@ -178,14 +180,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const cumulativeProfit = useMemo(() => {
     return transactions.reduce((sum, tx) => sum + tx.profitUsd, 0);
   }, [transactions]);
-
-  // Reverse transactions for display (newest first)
-  const displayTransactions = useMemo(() => {
-    return transactions.reverse();
-  }, [transactions]);
-
   return {
-    transactions: displayTransactions,
+    transactions,
     roundInfo,
     profitByType,
     cumulativeProfit,
