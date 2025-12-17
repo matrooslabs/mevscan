@@ -5,13 +5,20 @@
   "main": "types.ts",
   "types": "types.ts",
   "exports": {
-    ".": "./types.ts"
+    ".": "./types.ts",
+    "./clickhouse": "./clickhouse.ts",
+    "./config": "./config.ts",
+    "./ably": "./ably.ts",
+    "./ablyConstants": "./ablyConstants.ts"
   },
   "scripts": {
     "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^0.2.7",
+    "ably": "^2.15.0"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
   }
 }
-

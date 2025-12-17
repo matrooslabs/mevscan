@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS mev.bundle_header
     `express_lane_round` Nullable(UInt64)
 ) 
 ENGINE = MergeTree()
-PRIMARY KEY (`block_number`, `tx_hash`)
-ORDER BY (`block_number`, `tx_hash`)
+PRIMARY KEY (`timeboosted`, `block_number`, `tx_hash`)
+ORDER BY (`timeboosted`, `block_number`, `tx_hash`)
