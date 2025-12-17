@@ -17,7 +17,10 @@ RUN npm ci
 COPY shared/ ./shared/
 COPY server/ ./server/
 
-# Build TypeScript
+# Build TypeScript for all required workspaces
+WORKDIR /app/shared
+RUN npm run build
+
 WORKDIR /app/server
 RUN npm run build
 
@@ -39,8 +42,9 @@ RUN npm ci --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/server/dist ./server/dist
-# Copy shared source files (needed for runtime resolution)
-COPY --from=builder /app/shared ./shared
+# Copy shared built files (needed for runtime resolution)
+COPY --from=builder /app/shared/dist ./shared/dist
+COPY --from=builder /app/shared/package.json ./shared/package.json
 
 WORKDIR /app/server
 

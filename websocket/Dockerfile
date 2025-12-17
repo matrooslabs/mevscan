@@ -48,7 +48,8 @@ RUN npm ci --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/websocket/dist ./websocket/dist
-COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/shared/dist ./shared/dist
+COPY --from=builder /app/shared/package.json ./shared/package.json
 COPY --from=builder /app/server/dist ./server/dist
 
 WORKDIR /app/websocket
