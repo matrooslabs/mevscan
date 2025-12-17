@@ -6,7 +6,7 @@
   "workspaces": [
     "shared",
     "server",
-    "client", 
+    "client",
     "websocket"
   ],
   "scripts": {
