@@ -352,6 +352,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                   <TableHead>
                     <TableRow>
                       <TableCell>Tx Hash</TableCell>
+                      <TableCell>Block Number</TableCell>
                       <TableCell>Type</TableCell>
                       <TableCell align="right">Profit</TableCell>
                     </TableRow>
@@ -359,7 +360,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                   <TableBody>
                     {transactions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={3} align="center">
+                        <TableCell colSpan={4} align="center">
                           <Typography variant="body2" color="text.secondary">
                             {isConnected
                               ? "Waiting for transactions..."
@@ -368,7 +369,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      transactions.reverse().map((tx, index) => (
+                      transactions.slice().reverse().map((tx, index) => (
                         <TableRow key={index} className="live-section-tx-row">
                           <TableCell className="live-section-tx-hash monospace">
                             <Link
@@ -379,6 +380,9 @@ function LiveSectionContent({ id }: { id?: string }) {
                             >
                               {formatTxHash(tx.txHash)}
                             </Link>
+                          </TableCell>
+                          <TableCell className="monospace">
+                            {tx.blockNumber}
                           </TableCell>
                           <TableCell>
                             <Chip
