@@ -143,34 +143,33 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const profitByType = useMemo<ProfitByTypeDataPoint[]>(() => {
     if (transactions.length === 0) return [];
 
-    // Group transactions by time buckets (5-second intervals)
-    const buckets = new Map<
+    // Group transactions by distinct timestamp
+    const timestampMap = new Map<
       number,
       { Atomic: number; CexDex: number; Liquidation: number }
     >();
 
     transactions.forEach((tx) => {
-      // Round to 5-second intervals (in seconds)
-      const bucketTimestamp = Math.floor(tx.blockTimestamp / 5) * 5;
+      const timestamp = tx.blockTimestamp;
 
-      if (!buckets.has(bucketTimestamp)) {
-        buckets.set(bucketTimestamp, { Atomic: 0, CexDex: 0, Liquidation: 0 });
+      if (!timestampMap.has(timestamp)) {
+        timestampMap.set(timestamp, { Atomic: 0, CexDex: 0, Liquidation: 0 });
       }
 
-      const bucket = buckets.get(bucketTimestamp)!;
+      const entry = timestampMap.get(timestamp)!;
 
       // Map mevType to chart categories
       if (tx.mevType === "AtomicArb") {
-        bucket.Atomic += tx.profitUsd;
+        entry.Atomic += tx.profitUsd;
       } else if (tx.mevType === "CexDexQuotes") {
-        bucket.CexDex += tx.profitUsd;
+        entry.CexDex += tx.profitUsd;
       } else if (tx.mevType === "Liquidation") {
-        bucket.Liquidation += tx.profitUsd;
+        entry.Liquidation += tx.profitUsd;
       }
     });
 
     // Convert to array and sort by timestamp
-    return Array.from(buckets.entries())
+    return Array.from(timestampMap.entries())
       .map(([timestamp, data]) => ({ timestamp, ...data }))
       .sort((a, b) => a.timestamp - b.timestamp);
   }, [transactions]);
