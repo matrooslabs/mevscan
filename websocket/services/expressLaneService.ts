@@ -18,7 +18,10 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
         bh.tx_hash as txHash,
         bh.profit_usd as profitUsd,
         bh.express_lane_price as expressLanePrice,
-        bh.express_lane_round as expressLaneRound
+        bh.express_lane_price_usd as expressLanePriceUsd,
+        bh.express_lane_round as expressLaneRound,
+        bh.express_lane_controller as expressLaneController,
+        bh.mev_type as mevType
     FROM mev.bundle_header bh
     INNER JOIN ethereum.blocks eth
         ON eth.block_number = bh.block_number
@@ -26,7 +29,7 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
         AND (
             bh.block_number > {blockNumber:UInt64}
             OR (bh.block_number = {blockNumber:UInt64} AND bh.tx_index > {txIndex:UInt32})
-        )
+        ) 
     ORDER BY bh.block_number ASC, bh.tx_index ASC
     `;
 
