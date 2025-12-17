@@ -17,9 +17,12 @@
     "@mui/material": "^7.3.4",
     "@number-flow/react": "^0.5.10",
     "@tanstack/react-query": "^5.90.6",
+    "ably": "^2.15.0",
     "axios": "^1.13.1",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
+    "pubnub": "^7.6.3",
+    "pubnub-react": "^3.0.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5"

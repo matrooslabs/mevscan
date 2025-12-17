@@ -28,13 +28,6 @@ async function init(): Promise<InitResult> {
     }
 }
 
-// check last saved from local cache or from pubnub history
-// query for this round from this timestamp (including)
-// publish query result to pubnub
-// (there may be duplicated messages for a specific timestamp, deduplicate by selecting the later messages(published later))
-// (because there may be edge cases where the timestamp has not fully been processed yet)
-
-
 (async () => {
     const { clickhouseClient, ably } = await init();
 
