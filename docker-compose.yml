@@ -33,16 +33,14 @@ services:
     build:
       context: .  # Root context allows access to all workspaces
       dockerfile: client/Dockerfile
+      args:
+        - VITE_ABLY_SUBSCRIBE_KEY=${VITE_ABLY_SUBSCRIBE_KEY}
     container_name: mevscan-web
     ports:
       - "8080:80" 
     depends_on:
       - api
       - websocket
-    environment:
-      - VITE_ABLY_SUBSCRIBE_KEY=${VITE_ABLY_SUBSCRIBE_KEY}
-    env_file:
-      - .env
     restart: unless-stopped
 
   websocket:

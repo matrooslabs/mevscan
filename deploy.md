@@ -35,9 +35,14 @@ CLICKHOUSE_USERNAME=your_username
 CLICKHOUSE_PASSWORD=your_password
 CLICKHOUSE_DATABASE=your_database_name
 
-# Ably Configuration (for WebSocket service)
+# Ably Configuration (for WebSocket service and client)
 ABLY_API_KEY=your_ably_api_key
+VITE_ABLY_SUBSCRIBE_KEY=your_ably_subscribe_key
 ```
+
+**Note about Ably keys:**
+- `ABLY_API_KEY`: Full API key with publish permissions (used by websocket service)
+- `VITE_ABLY_SUBSCRIBE_KEY`: Subscribe-only key (used by client - passed at build time)
 
 **Note**: The `.env` file is automatically loaded by Docker Compose and should not be committed to version control.
 

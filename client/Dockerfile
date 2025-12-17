@@ -19,9 +19,11 @@ COPY client/ ./client/
 
 # Build argument for API base URL (empty string = relative URLs)
 ARG VITE_API_BASE_URL=
+ARG VITE_ABLY_SUBSCRIBE_KEY=
 
 # Set environment variable for build
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_ABLY_SUBSCRIBE_KEY=${VITE_ABLY_SUBSCRIBE_KEY}
 
 # Build the app
 WORKDIR /app/client
