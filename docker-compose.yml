@@ -1,10 +1,11 @@
 version: '3.8'
 
 # Docker Compose configuration for MEVScan workspace
-# Both services use root context (.) to access all workspace directories:
+# All services use root context (.) to access all workspace directories:
 # - shared/ (@mevscan/shared)
 # - server/ (@mevscan/server) 
 # - client/ (@mevscan/client)
+# - websocket/ (@mevscan/websocket)
 
 services:
   api:
@@ -37,5 +38,24 @@ services:
       - "8080:80" 
     depends_on:
       - api
+      - websocket
+    environment:
+      - VITE_ABLY_SUBSCRIBE_KEY=${VITE_ABLY_SUBSCRIBE_KEY}
+    env_file:
+      - .env
     restart: unless-stopped
 
+  websocket:
+    build:
+      context: .  # Root context allows access to all workspaces
+      dockerfile: websocket/Dockerfile
+    container_name: mevscan-websocket
+    environment:
+      - CLICKHOUSE_URL=${CLICKHOUSE_URL}
+      - CLICKHOUSE_USERNAME=${CLICKHOUSE_USERNAME}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
+      - ABLY_API_KEY=${ABLY_API_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
