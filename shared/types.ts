@@ -472,6 +472,9 @@ export interface ExpressLaneTransaction {
   txIndex: number;
   txHash: string;
   profitUsd: number;
-  expressLanePrice: BigInt;
+  expressLanePrice: string | null;
+  expressLanePriceUsd: number | null;
   expressLaneRound: number;
+  expressLaneController: string | null;
+  mevType: string;
 }

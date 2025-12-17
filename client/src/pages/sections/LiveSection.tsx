@@ -14,134 +14,29 @@ import {
   Chip,
   Paper,
 } from "@mui/material";
+import { ChannelProvider } from "ably/react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
 import NumberFlow from "@number-flow/react";
 import { chartColorPalette } from "../../theme";
+import { useExpressLaneTransactions } from "../../hooks/useExpressLaneTransactions";
+import { ABLY_CHANNELS } from "../../constants/ably";
 import "./SectionCommon.css";
 import "./LiveSection.css";
 
-// Mock data for step 1 - will be replaced with real data via hooks
-const MOCK_ROUND_INFO = {
-  currentRound: 1203,
-  currentOwner: "0x96a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f803",
-  expressLanePrice: 0.05, // in ETH
-  currentBlockNumber: 24567890,
-  gasUsed: 125000000, // in gas units
-  expressLaneWinRate: 0.752, // 75.2%
-  expressLaneTotalWins: 904,
+// Helper to normalize MEV type for display
+const normalizeMevType = (mevType: string): string => {
+  const normalized = mevType.toLowerCase();
+  if (normalized === "atomic" || normalized === "atomic_arb") return "Atomic";
+  if (normalized === "cex_dex" || normalized === "cexdex") return "CexDex";
+  if (normalized === "liquidation") return "Liquidation";
+  return mevType;
 };
-
-interface Transaction {
-  txHash: string;
-  mevType: "Atomic" | "CexDex" | "Liquidation";
-  profit: number; // in USD
-  timestamp: number;
-}
-
-const MOCK_TRANSACTIONS: Transaction[] = [
-  {
-    txHash: "0x1234...abcd",
-    mevType: "Atomic",
-    profit: 38.5,
-    timestamp: Date.now() - 1000,
-  },
-  {
-    txHash: "0x5678...efgh",
-    mevType: "CexDex",
-    profit: 125.2,
-    timestamp: Date.now() - 5000,
-  },
-  {
-    txHash: "0x9abc...ijkl",
-    mevType: "Atomic",
-    profit: 15.75,
-    timestamp: Date.now() - 10000,
-  },
-  {
-    txHash: "0xdef0...mnop",
-    mevType: "Liquidation",
-    profit: 85.0,
-    timestamp: Date.now() - 15000,
-  },
-  {
-    txHash: "0x1122...qrst",
-    mevType: "Atomic",
-    profit: 42.3,
-    timestamp: Date.now() - 20000,
-  },
-  {
-    txHash: "0xi9j0...k1l2",
-    mevType: "CexDex",
-    profit: 156.7,
-    timestamp: Date.now() - 35000,
-  },
-  {
-    txHash: "0xm3n4...o5p6",
-    mevType: "Atomic",
-    profit: 28.9,
-    timestamp: Date.now() - 40000,
-  },
-  {
-    txHash: "0xq7r8...s9t0",
-    mevType: "Liquidation",
-    profit: 203.5,
-    timestamp: Date.now() - 45000,
-  },
-  {
-    txHash: "0xc9d0...e1f2",
-    mevType: "Atomic",
-    profit: 134.6,
-    timestamp: Date.now() - 60000,
-  },
-  {
-    txHash: "0xg3h4...i5j6",
-    mevType: "CexDex",
-    profit: 89.1,
-    timestamp: Date.now() - 65000,
-  },
-  {
-    txHash: "0xk7l8...m9n0",
-    mevType: "Liquidation",
-    profit: 112.4,
-    timestamp: Date.now() - 70000,
-  },
-];
-
-// Mock profit breakdown by MEV type at each time point (incremental profit per 5-second interval)
-// Time span: 12:00:00 to 12:01:00 with 5-second intervals
-const MOCK_PROFIT_BY_TYPE = [
-  { time: "12:00:00", Atomic: 0, CexDex: 0, Liquidation: 0 },
-  { time: "12:00:05", Atomic: 1.92, CexDex: 1.28, Liquidation: 0 },
-  { time: "12:00:10", Atomic: 3.06, CexDex: 2.04, Liquidation: 0 },
-  { time: "12:00:15", Atomic: 4.14, CexDex: 2.76, Liquidation: 0 },
-  { time: "12:00:20", Atomic: 4.5, CexDex: 3.0, Liquidation: 0 },
-  { time: "12:00:25", Atomic: 5.58, CexDex: 3.72, Liquidation: 0 },
-  { time: "12:00:30", Atomic: 6.18, CexDex: 4.12, Liquidation: 0 },
-  { time: "12:00:35", Atomic: 2.7, CexDex: 1.8, Liquidation: 0 },
-  { time: "12:00:40", Atomic: 1.62, CexDex: 1.08, Liquidation: 0 },
-  { time: "12:00:45", Atomic: 1.56, CexDex: 1.04, Liquidation: 0 },
-  { time: "12:00:50", Atomic: 1.26, CexDex: 0.84, Liquidation: 0 },
-  { time: "12:00:55", Atomic: 0.96, CexDex: 0.64, Liquidation: 0 },
-  { time: "12:01:00", Atomic: 0.75, CexDex: 0.5, Liquidation: 0 },
-];
-
-// Calculate cumulative profit from MOCK_PROFIT_BY_TYPE
-const MOCK_PROFIT_DATA = MOCK_PROFIT_BY_TYPE.map((entry, index) => {
-  // Sum all MEV type profits up to and including this time point
-  const cumulativeProfit = MOCK_PROFIT_BY_TYPE.slice(0, index + 1).reduce(
-    (sum, item) => sum + item.Atomic + item.CexDex + item.Liquidation,
-    0
-  );
-  return {
-    time: entry.time,
-    profit: cumulativeProfit,
-  };
-});
 
 // Helper to get chip color based on MEV type (using chartColorPalette)
 const getMevTypeColor = (mevType: string): string => {
-  switch (mevType) {
+  const normalized = normalizeMevType(mevType);
+  switch (normalized) {
     case "Atomic":
       return chartColorPalette[0]; // '#8884d8'
     case "CexDex":
@@ -159,6 +54,12 @@ const hexToRgba = (hex: string, opacity: number): string => {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+// Helper to format tx hash for display
+const formatTxHash = (hash: string): string => {
+  if (hash.length <= 13) return hash;
+  return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
 };
 
 // Stat Card Component
@@ -188,14 +89,51 @@ function StatCard({ title, value, prefix, suffix }: StatCardProps) {
   );
 }
 
-function LiveSection({ id }: { id?: string }) {
-  // Convert ETH price to USD for BEP line (assuming ~$3500/ETH for mock)
-  const bepPriceUSD = 30;
+function LiveSectionContent({ id }: { id?: string }) {
+  const {
+    transactions,
+    roundInfo,
+    profitByType,
+    cumulativeProfit,
+    isConnected,
+  } = useExpressLaneTransactions();
+
+  // Express lane price for the BEP line
+  const bepPriceUSD = roundInfo.expressLanePriceUsd || 30;
+
+  // Helper to format timestamp for display
+  const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
+  // Compute cumulative profit data for the chart
+  const profitData = useMemo(() => {
+    if (profitByType.length === 0) return [];
+
+    return profitByType.map((entry, index) => {
+      const cumulative = profitByType
+        .slice(0, index + 1)
+        .reduce(
+          (sum, item) => sum + item.Atomic + item.CexDex + item.Liquidation,
+          0
+        );
+      return {
+        time: formatTimestamp(entry.timestamp),
+        profit: cumulative,
+      };
+    });
+  }, [profitByType]);
 
   // Chart options for Profit vs Time with BEP line and stacked bars
   const chartOptions = useMemo<EChartsOption>(() => {
-    const times = MOCK_PROFIT_DATA.map((d) => d.time);
-    const profits = MOCK_PROFIT_DATA.map((d) => d.profit);
+    const times = profitData.map((d) => d.time);
+    const profits = profitData.map((d) => d.profit);
 
     // Extract profit data by MEV type for stacked bars
     const mevTypes: Array<"Atomic" | "CexDex" | "Liquidation"> = [
@@ -212,7 +150,7 @@ function LiveSection({ id }: { id?: string }) {
     // Transform bar data to be cumulative for each type
     const barDataByType = mevTypes.map((type) => {
       let cumulative = 0;
-      const cumulativeData = MOCK_PROFIT_BY_TYPE.map((d) => {
+      const cumulativeData = profitByType.map((d) => {
         cumulative += d[type];
         return cumulative;
       });
@@ -260,7 +198,7 @@ function LiveSection({ id }: { id?: string }) {
       xAxis: {
         type: "category",
         data: times,
-        boundaryGap: true, // Changed to true to show bars properly
+        boundaryGap: true,
         name: "Time",
         nameLocation: "middle",
         nameGap: 20,
@@ -285,12 +223,12 @@ function LiveSection({ id }: { id?: string }) {
           type: "bar" as const,
           stack: "profit",
           data: typeData.data,
-          barWidth: "20%", // Make bars wider (60% of category width)
-          barCategoryGap: "20%", // Reduce gap between time points
+          barWidth: "20%",
+          barCategoryGap: "20%",
           itemStyle: {
             color: typeData.color,
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.3)", // Subtle white border for separation
+            borderColor: "rgba(255, 255, 255, 0.3)",
           },
           emphasis: {
             focus: "series" as const,
@@ -299,7 +237,7 @@ function LiveSection({ id }: { id?: string }) {
               borderColor: "rgba(255, 255, 255, 0.6)",
             },
           },
-          z: 5, // Ensure bars are above background elements
+          z: 5,
         })),
         // Line series for cumulative profit
         {
@@ -318,7 +256,7 @@ function LiveSection({ id }: { id?: string }) {
             opacity: 0.15,
             color: "#3b82f6",
           },
-          z: 10, // Ensure line is on top
+          z: 10,
         },
         // Line series for express lane price
         {
@@ -332,38 +270,27 @@ function LiveSection({ id }: { id?: string }) {
             type: "dashed",
           },
           itemStyle: { color: "#ef4444" },
-          z: 0, // Ensure line is on top
+          z: 0,
         },
       ],
     };
-  }, [bepPriceUSD]);
-
-  // Get latest cumulative profit from chart data
-  const latestProfit =
-    MOCK_PROFIT_DATA[MOCK_PROFIT_DATA.length - 1]?.profit || 0;
+  }, [profitData, profitByType, bepPriceUSD]);
 
   return (
     <Box id={id} className="section-container">
       <Box className="live-section-main-content">
         <Stack direction="row" spacing={1} justifyContent="space-between">
-          <StatCard title="Profit" value={latestProfit} suffix="$" />
-          <StatCard
-            title="Current Round"
-            value={MOCK_ROUND_INFO.currentRound}
-          />
+          <StatCard title="Profit" value={cumulativeProfit} prefix="$" />
+          <StatCard title="Current Round" value={roundInfo.currentRound} />
           <StatCard
             title="Current Block Number"
-            value={MOCK_ROUND_INFO.currentBlockNumber}
+            value={roundInfo.currentBlockNumber}
           />
           <StatCard
             title="Number of Transactions"
-            value={MOCK_TRANSACTIONS.length}
+            value={transactions.length}
           />
-          <StatCard
-            title="Gas Used"
-            value={MOCK_ROUND_INFO.gasUsed}
-            suffix="wei"
-          />
+          <StatCard title="Gas Used" value={roundInfo.gasUsed} suffix=" wei" />
         </Stack>
         <Stack direction="column" spacing={1}>
           <Card className="live-section-chart-card">
@@ -377,14 +304,20 @@ function LiveSection({ id }: { id?: string }) {
                   Express Lane MEV Profit
                 </Typography>
                 <Box className="live-section-live-indicator">
-                  <Box className="live-section-live-dot" />
+                  <Box
+                    className="live-section-live-dot"
+                    sx={{
+                      backgroundColor: isConnected ? "#22c55e" : "#ef4444",
+                    }}
+                  />
                   <Typography
                     variant="caption"
                     className="live-section-live-text"
                   >
-                    LIVE - Round {MOCK_ROUND_INFO.currentRound} -{" "}
-                    {MOCK_ROUND_INFO.currentOwner.slice(0, 6)}...
-                    {MOCK_ROUND_INFO.currentOwner.slice(-4)}
+                    {isConnected ? "LIVE" : "CONNECTING"} - Round{" "}
+                    {roundInfo.currentRound} -{" "}
+                    {roundInfo.currentOwner.slice(0, 6)}...
+                    {roundInfo.currentOwner.slice(-4)}
                   </Typography>
                 </Box>
               </Box>
@@ -422,40 +355,52 @@ function LiveSection({ id }: { id?: string }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {MOCK_TRANSACTIONS.map((tx, index) => (
-                      <TableRow key={index} className="live-section-tx-row">
-                        <TableCell className="live-section-tx-hash monospace">
-                          {tx.txHash}
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={tx.mevType}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              borderColor: getMevTypeColor(tx.mevType),
-                              color: getMevTypeColor(tx.mevType),
-                              backgroundColor: hexToRgba(
-                                getMevTypeColor(tx.mevType),
-                                0.08
-                              ),
-                              "&:hover": {
-                                backgroundColor: hexToRgba(
-                                  getMevTypeColor(tx.mevType),
-                                  0.15
-                                ),
-                              },
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="live-section-tx-profit"
-                        >
-                          ${tx.profit.toFixed(2)}
+                    {transactions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          <Typography variant="body2" color="text.secondary">
+                            {isConnected
+                              ? "Waiting for transactions..."
+                              : "Connecting to live feed..."}
+                          </Typography>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      transactions.map((tx, index) => (
+                        <TableRow key={index} className="live-section-tx-row">
+                          <TableCell className="live-section-tx-hash monospace">
+                            {formatTxHash(tx.txHash)}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={normalizeMevType(tx.mevType)}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                borderColor: getMevTypeColor(tx.mevType),
+                                color: getMevTypeColor(tx.mevType),
+                                backgroundColor: hexToRgba(
+                                  getMevTypeColor(tx.mevType),
+                                  0.08
+                                ),
+                                "&:hover": {
+                                  backgroundColor: hexToRgba(
+                                    getMevTypeColor(tx.mevType),
+                                    0.15
+                                  ),
+                                },
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            className="live-section-tx-profit"
+                          >
+                            ${tx.profitUsd.toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -464,6 +409,14 @@ function LiveSection({ id }: { id?: string }) {
         </Stack>
       </Box>
     </Box>
+  );
+}
+
+function LiveSection({ id }: { id?: string }) {
+  return (
+    <ChannelProvider channelName={ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS}>
+      <LiveSectionContent id={id} />
+    </ChannelProvider>
   );
 }
 
