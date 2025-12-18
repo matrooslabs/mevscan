@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useChannel } from "ably/react";
+import { useAbly, useChannel, useConnectionStateListener } from "ably/react";
 import { ABLY_CHANNELS } from "../constants/ably";
 import type { ExpressLaneTransaction } from "@mevscan/shared";
 
@@ -31,7 +31,12 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>(
     []
   );
-  const [isConnected, setIsConnected] = useState(false);
+  const ably = useAbly();
+  const [connectionState, setConnectionState] = useState(ably.connection.state);
+
+  useConnectionStateListener((stateChange) => {
+    setConnectionState(stateChange.current);
+  });
 
   // Handle incoming messages from Ably
   const handleMessage = useCallback((message: { data?: unknown }) => {
@@ -66,7 +71,6 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const { channel } = useChannel(
     ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS,
     (message) => {
-      setIsConnected(true);
       handleMessage(message);
     }
   );
@@ -100,10 +104,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
           (tx) => tx.expressLaneRound === maxExpressLaneRound
         );
         setTransactions(filteredTransactions);
-        setIsConnected(true);
       } catch (error) {
         console.error("Failed to load express lane transaction history", error);
-        setIsConnected(false);
       }
     };
 
@@ -143,7 +145,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
   // Compute profit by MEV type for chart
   const profitByType = useMemo<ProfitByTypeDataPoint[]>(() => {
-    if (transactions.length === 0) return [];
+    const timeboostedTransactions = transactions.filter((tx) => tx.timeboosted);
+    if (timeboostedTransactions.length === 0) return [];
 
     // Group transactions by distinct timestamp
     const timestampMap = new Map<
@@ -151,7 +154,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       { Atomic: number; CexDex: number; Liquidation: number }
     >();
 
-    transactions.forEach((tx) => {
+    timeboostedTransactions.forEach((tx) => {
       const timestamp = tx.blockTimestamp;
 
       if (!timestampMap.has(timestamp)) {
@@ -178,13 +181,14 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
   // Calculate cumulative profit
   const cumulativeProfit = useMemo(() => {
-    return transactions.reduce((sum, tx) => sum + tx.profitUsd, 0);
+    return transactions.filter((tx) => tx.timeboosted).reduce((sum, tx) => sum + tx.profitUsd, 0);
   }, [transactions]);
+
   return {
     transactions,
     roundInfo,
     profitByType,
     cumulativeProfit,
-    isConnected,
+    isConnected: connectionState === "connected",
   };
 }
