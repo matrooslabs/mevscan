@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useChannel } from "ably/react";
+import { useAbly, useChannel, useConnectionStateListener } from "ably/react";
 import { ABLY_CHANNELS } from "../constants/ably";
 import type { ExpressLaneTransaction } from "@mevscan/shared";
 
@@ -31,7 +31,12 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>(
     []
   );
-  const [isConnected, setIsConnected] = useState(false);
+  const ably = useAbly();
+  const [connectionState, setConnectionState] = useState(ably.connection.state);
+
+  useConnectionStateListener((stateChange) => {
+    setConnectionState(stateChange.current);
+  });
 
   // Handle incoming messages from Ably
   const handleMessage = useCallback((message: { data?: unknown }) => {
@@ -56,7 +61,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       );
       const combined = [...prev, ...newTransactions];
       const filtered = combined.filter(
-        (tx) => tx.expressLaneRound === maxExpressLaneRound
+        (tx) => tx.expressLaneRound === maxExpressLaneRound && tx.timeboosted
       );
       return filtered;
     });
@@ -66,7 +71,6 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const { channel } = useChannel(
     ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS,
     (message) => {
-      setIsConnected(true);
       handleMessage(message);
     }
   );
@@ -100,10 +104,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
           (tx) => tx.expressLaneRound === maxExpressLaneRound
         );
         setTransactions(filteredTransactions);
-        setIsConnected(true);
       } catch (error) {
         console.error("Failed to load express lane transaction history", error);
-        setIsConnected(false);
       }
     };
 
@@ -180,11 +182,12 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
   const cumulativeProfit = useMemo(() => {
     return transactions.reduce((sum, tx) => sum + tx.profitUsd, 0);
   }, [transactions]);
+
   return {
     transactions,
     roundInfo,
     profitByType,
     cumulativeProfit,
-    isConnected,
+    isConnected: connectionState === "connected",
   };
 }
