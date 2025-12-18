@@ -1,0 +1,100 @@
+/* Transactions Card */
+.mev-tx-table-card {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 420px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.mev-tx-table-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.mev-tx-table-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg) !important;
+  overflow: hidden;
+}
+
+/* Card Title Container */
+.mev-tx-table-title-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Card Title */
+.mev-tx-table-title {
+  color: var(--color-text-primary);
+}
+
+/* Transactions Table */
+.mev-tx-table-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 320px;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.mev-tx-table-container table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Table Header */
+.mev-tx-table-container .MuiTableHead-root {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.mev-tx-table-container .MuiTableCell-head {
+  background-color: var(--color-bg-tertiary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+/* Table Rows */
+.mev-tx-table-row {
+  transition: background-color var(--transition-fast);
+}
+
+.mev-tx-table-row:hover {
+  background-color: var(--color-bg-quaternary);
+}
+
+.mev-tx-table-row .MuiTableCell-root {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* Table Cells */
+.mev-tx-table-hash {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+}
+
+.mev-tx-table-profit {
+  font-weight: 600;
+  color: #10b981;
+  font-family: var(--font-family-mono);
+}
