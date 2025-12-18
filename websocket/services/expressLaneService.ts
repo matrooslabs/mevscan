@@ -59,9 +59,9 @@ async function getLastStoredBlockNumberTxIndex(clickhouseClient: ClickHouseClien
     return data[0]?.blockNumber ?? 0;
 }
 
-export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickhouseClient: ClickHouseClient, lastStoredBlockNumberTxIndex: Record<string, [number, number]>) {
+export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickhouseClient: ClickHouseClient, state: { expressLane: [number, number] | null }) {
     let ablyChannel = ably.channels.get(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS);
-    let [lastStoredBlockNumber, lastStoredTxIndex] = lastStoredBlockNumberTxIndex[ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS] || [null, null];
+    let [lastStoredBlockNumber, lastStoredTxIndex] = state.expressLane || [null, null];
 
     if (lastStoredBlockNumber === null || lastStoredTxIndex === null) {
         const history = await ablyChannel.history({ limit: 1 });
@@ -86,5 +86,5 @@ export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickh
     } else {
         await ablyChannel.publish(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, transactions);
     }
-    lastStoredBlockNumberTxIndex[ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS] = [transactions[transactions.length - 1]!.blockNumber, transactions[transactions.length - 1]!.txIndex];
+    state.expressLane = [transactions[transactions.length - 1]!.blockNumber, transactions[transactions.length - 1]!.txIndex];
 }

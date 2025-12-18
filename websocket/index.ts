@@ -4,8 +4,18 @@ import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneTransactions } from './services/expressLaneService';
 import { config } from '@mevscan/shared/config';
+import { publishAuctionRoundNumber } from './services/auctionRoundNumberService';
 
-let channelLastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
+interface ChannelState {
+    expressLane: [number, number] | null;
+    auctionRoundNumber: number | null;
+}
+
+const channelState: ChannelState = {
+    expressLane: null,
+    auctionRoundNumber: null,
+};
+
 interface InitResult {
     clickhouseClient: ClickHouseClient;
     ably: Ably.Realtime;
@@ -39,7 +49,10 @@ async function init(): Promise<InitResult> {
     const { clickhouseClient, ably } = await init();
 
     while (true) {
-        await publishExpressLaneTransactions(ably, clickhouseClient, channelLastStoredBlockNumberTxIndex);
+        await Promise.all([
+            publishExpressLaneTransactions(ably, clickhouseClient, channelState),
+            publishAuctionRoundNumber(ably, clickhouseClient, channelState)
+        ]);
         await new Promise(resolve => setTimeout(resolve, config.ably.refreshIntervalMs));
     }
 })();
