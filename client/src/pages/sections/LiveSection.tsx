@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   Stack,
+  Grid,
 } from "@mui/material";
 
 import { ChannelProvider } from "ably/react";
@@ -291,53 +292,59 @@ function LiveSectionContent({ id }: { id?: string }) {
             </CardContent>
           </Card>
 
-          {/* Lane Comparison Charts Row */}
-          <Stack direction="row" spacing={1}>
-            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
-              <CardContent className="live-section-chart-card-content">
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  className="live-section-card-title"
-                >
-                  Gas Usage
-                </Typography>
-                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
-                  <GasUsageChart />
-                </Box>
-              </CardContent>
-            </Card>
+          {/* Lane Comparison Charts Grid */}
+          <Grid container spacing={1}>
+            <Grid size={4}>
+              <Card className="live-section-chart-card" sx={{ height: 280 }}>
+                <CardContent className="live-section-chart-card-content">
+                  <Typography
+                    variant="h6"
+                    component="h3"
+                    className="live-section-card-title"
+                  >
+                    Gas Usage
+                  </Typography>
+                  <Box sx={{ height: 200, width: "100%" }}>
+                    <GasUsageChart />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
-              <CardContent className="live-section-chart-card-content">
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  className="live-section-card-title"
-                >
-                  Transaction Count
-                </Typography>
-                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
-                  <TransactionCountChart />
-                </Box>
-              </CardContent>
-            </Card>
+            <Grid size={4}>
+              <Card className="live-section-chart-card" sx={{ height: 280 }}>
+                <CardContent className="live-section-chart-card-content">
+                  <Typography
+                    variant="h6"
+                    component="h3"
+                    className="live-section-card-title"
+                  >
+                    Transaction Count
+                  </Typography>
+                  <Box sx={{ height: 200, width: "100%" }}>
+                    <TransactionCountChart />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
-              <CardContent className="live-section-chart-card-content">
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  className="live-section-card-title"
-                >
-                  Trade Volume
-                </Typography>
-                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
-                  <TradeVolumeChart />
-                </Box>
-              </CardContent>
-            </Card>
-          </Stack>
+            <Grid size={4}>
+              <Card className="live-section-chart-card" sx={{ height: "100%" }}>
+                <CardContent className="live-section-chart-card-content">
+                  <Typography
+                    variant="h6"
+                    component="h3"
+                    className="live-section-card-title"
+                  >
+                    Trade Volume
+                  </Typography>
+                  <Box sx={{ height: 200, width: "100%" }}>
+                    <TradeVolumeChart />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
           <MEVTransactionTable
             transactions={transactions}
