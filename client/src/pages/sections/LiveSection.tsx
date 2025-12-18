@@ -15,6 +15,9 @@ import { chartColorPalette } from "../../theme";
 import { useExpressLaneTransactions } from "../../hooks/useExpressLaneTransactions";
 import { ABLY_CHANNELS } from "../../constants/ably";
 import MEVTransactionTable from "../../components/MEVTransactionTable";
+import GasUsageChart from "../../components/GasUsageChart";
+import TransactionCountChart from "../../components/TransactionCountChart";
+import TradeVolumeChart from "../../components/TradeVolumeChart";
 import "./SectionCommon.css";
 import "./LiveSection.css";
 
@@ -287,6 +290,55 @@ function LiveSectionContent({ id }: { id?: string }) {
               </Box>
             </CardContent>
           </Card>
+
+          {/* Lane Comparison Charts Row */}
+          <Stack direction="row" spacing={1}>
+            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
+              <CardContent className="live-section-chart-card-content">
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  className="live-section-card-title"
+                >
+                  Gas Usage
+                </Typography>
+                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
+                  <GasUsageChart />
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
+              <CardContent className="live-section-chart-card-content">
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  className="live-section-card-title"
+                >
+                  Transaction Count
+                </Typography>
+                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
+                  <TransactionCountChart />
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card className="live-section-chart-card" sx={{ flex: 1, minHeight: 210 }}>
+              <CardContent className="live-section-chart-card-content">
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  className="live-section-card-title"
+                >
+                  Trade Volume
+                </Typography>
+                <Box className="live-section-chart-container" sx={{ minHeight: 150 }}>
+                  <TradeVolumeChart />
+                </Box>
+              </CardContent>
+            </Card>
+          </Stack>
+
           <MEVTransactionTable
             transactions={transactions}
             isConnected={isConnected}
