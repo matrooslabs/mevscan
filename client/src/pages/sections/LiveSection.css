@@ -154,33 +154,6 @@
   height: 100%;
 }
 
-/* Transactions Card */
-.live-section-transactions-card {
-  flex: 0 0 auto;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  min-height: 420px;
-  background-color: var(--color-bg-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: box-shadow var(--transition-base);
-  display: flex;
-  flex-direction: column;
-}
-
-.live-section-transactions-card:hover {
-  box-shadow: var(--shadow-lg);
-}
-
-.live-section-transactions-card-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: var(--spacing-lg) !important;
-  overflow: hidden;
-}
-
 /* Card Title Container */
 .live-section-card-title-container {
   display: flex;
@@ -196,65 +169,6 @@
   color: var(--color-text-primary);
 }
 
-/* Transactions Table */
-.live-section-table-container {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 320px;
-  box-shadow: none !important;
-  background-color: transparent !important;
-}
-
-.live-section-table-container table {
-  table-layout: fixed;
-  width: 100%;
-}
-
-/* Table Header */
-.live-section-table-container .MuiTableHead-root {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.live-section-table-container .MuiTableCell-head {
-  background-color: var(--color-bg-tertiary);
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 2px solid var(--color-border-primary);
-}
-
-/* Table Rows */
-.live-section-tx-row {
-  transition: background-color var(--transition-fast);
-}
-
-.live-section-tx-row:hover {
-  background-color: var(--color-bg-quaternary);
-}
-
-.live-section-tx-row .MuiTableCell-root {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--color-border-primary);
-}
-
-/* Table Cells */
-.live-section-tx-hash {
-  font-size: 0.8rem;
-  color: var(--color-text-primary);
-}
-
-.live-section-tx-profit {
-  font-weight: 600;
-  color: #10b981;
-  font-family: var(--font-family-mono);
-}
-
 /* Responsive */
 @media (max-width: 1200px) {
   .live-section-stat-card {
@@ -267,8 +181,7 @@
     flex-direction: column;
   }
 
-  .live-section-chart-card,
-  .live-section-transactions-card {
+  .live-section-chart-card {
     min-width: 100%;
     max-width: 100%;
   }
