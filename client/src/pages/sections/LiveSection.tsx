@@ -58,8 +58,12 @@ function LiveSectionContent({ id }: { id?: string }) {
     isConnected,
   } = useExpressLaneTransactions();
 
+  const timeboostedTransactions = useMemo(() => {
+    return transactions.filter((tx) => tx.timeboosted);
+  }, [transactions]);
+
   // Express lane price for the BEP line
-  const bepPriceUSD = roundInfo.expressLanePriceUsd || 30;
+  const bepPriceUSD = roundInfo.expressLanePriceUsd || 0;
 
   // Helper to format timestamp for display
   const formatTimestamp = (timestamp: number): string => {
@@ -248,7 +252,7 @@ function LiveSectionContent({ id }: { id?: string }) {
           />
           <StatCard
             title="Number of Transactions"
-            value={transactions.length}
+            value={timeboostedTransactions.length}
           />
           <StatCard title="Gas Used" value={roundInfo.gasUsed} suffix=" wei" />
         </Stack>
@@ -302,7 +306,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                     component="h3"
                     className="live-section-card-title"
                   >
-                    Gas Usage
+                    MEV Gas Usage
                   </Typography>
                   <Box sx={{ height: 200, width: "100%" }}>
                     <GasUsageChart />
@@ -319,7 +323,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                     component="h3"
                     className="live-section-card-title"
                   >
-                    Transaction Count
+                    MEV Transaction Count
                   </Typography>
                   <Box sx={{ height: 200, width: "100%" }}>
                     <TransactionCountChart />
@@ -336,7 +340,7 @@ function LiveSectionContent({ id }: { id?: string }) {
                     component="h3"
                     className="live-section-card-title"
                   >
-                    Trade Volume
+                    MEV Trade Volume
                   </Typography>
                   <Box sx={{ height: 200, width: "100%" }}>
                     <TradeVolumeChart />

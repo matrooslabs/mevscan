@@ -477,5 +477,6 @@ export interface ExpressLaneTransaction {
   expressLaneRound: number;
   expressLaneController: string | null;
   mevType: string;
+  gasUsed: number;
   timeboosted: boolean;
 }

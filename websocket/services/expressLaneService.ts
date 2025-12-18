@@ -26,13 +26,16 @@ async function getExpressLaneTransactions(
         bh.express_lane_round as expressLaneRound,
         bh.express_lane_controller as expressLaneController,
         bh.mev_type as mevType,
+        t.gas_details.gas_used as gasUsed,
         bh.timeboosted as timeboosted
     FROM mev.bundle_header bh
     INNER JOIN ethereum.blocks eth
         ON eth.block_number = bh.block_number
+    INNER JOIN brontes.tree t
+        ON bh.tx_hash = t.tx_hash
     WHERE 
         bh.mev_type != 'SearcherTx' AND
-        (bh.block_number > {blockNumber:UInt64} AND bh.timeboosted = true
+        (bh.block_number > {blockNumber:UInt64}
             OR (bh.block_number = {blockNumber:UInt64} AND bh.tx_index > {txIndex:UInt32}))
     ORDER BY bh.block_number ASC, bh.tx_index ASC
     `;

@@ -12,9 +12,11 @@ import {
   Chip,
   Paper,
 } from "@mui/material";
+import { CheckCircle } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { chartColorPalette } from "../theme";
 import "./MEVTransactionTable.css";
+import { ExpressLaneTransaction } from "@mevscan/shared";
 
 // Helper to normalize MEV type for display
 const normalizeMevType = (mevType: string): string => {
@@ -62,7 +64,7 @@ export interface MEVTransaction {
 }
 
 interface MEVTransactionTableProps {
-  transactions: MEVTransaction[];
+  transactions: ExpressLaneTransaction[];
   isConnected: boolean;
 }
 
@@ -92,6 +94,7 @@ export default function MEVTransactionTable({
                 <TableCell>Tx Hash</TableCell>
                 <TableCell>Block Number</TableCell>
                 <TableCell>Type</TableCell>
+                <TableCell>Timeboosted</TableCell>
                 <TableCell align="right">Profit</TableCell>
               </TableRow>
             </TableHead>
@@ -142,6 +145,13 @@ export default function MEVTransactionTable({
                           },
                         }}
                       />
+                    </TableCell>
+                    <TableCell align="center">
+                      {tx.timeboosted ? (
+                        <CheckCircle sx={{ color: "#22c55e" }} aria-label="Yes" titleAccess="Yes" />
+                      ) : (
+                        ""
+                      )}
                     </TableCell>
                     <TableCell
                       align="right"

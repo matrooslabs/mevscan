@@ -61,7 +61,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       );
       const combined = [...prev, ...newTransactions];
       const filtered = combined.filter(
-        (tx) => tx.expressLaneRound === maxExpressLaneRound && tx.timeboosted
+        (tx) => tx.expressLaneRound === maxExpressLaneRound
       );
       return filtered;
     });
@@ -145,7 +145,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
   // Compute profit by MEV type for chart
   const profitByType = useMemo<ProfitByTypeDataPoint[]>(() => {
-    if (transactions.length === 0) return [];
+    const timeboostedTransactions = transactions.filter((tx) => tx.timeboosted);
+    if (timeboostedTransactions.length === 0) return [];
 
     // Group transactions by distinct timestamp
     const timestampMap = new Map<
@@ -153,7 +154,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       { Atomic: number; CexDex: number; Liquidation: number }
     >();
 
-    transactions.forEach((tx) => {
+    timeboostedTransactions.forEach((tx) => {
       const timestamp = tx.blockTimestamp;
 
       if (!timestampMap.has(timestamp)) {
@@ -180,7 +181,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
   // Calculate cumulative profit
   const cumulativeProfit = useMemo(() => {
-    return transactions.reduce((sum, tx) => sum + tx.profitUsd, 0);
+    return transactions.filter((tx) => tx.timeboosted).reduce((sum, tx) => sum + tx.profitUsd, 0);
   }, [transactions]);
 
   return {
