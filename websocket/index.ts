@@ -3,7 +3,7 @@ import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
 import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneTransactions } from './services/expressLaneService';
-import { config } from '@mevscan/shared/config';
+import { config } from './config';
 
 let channelLastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
 interface InitResult {
@@ -13,8 +13,8 @@ interface InitResult {
 
 async function init(): Promise<InitResult> {
     try {
-        const ably = getAbly();
-        const clickhouseClient = initClickHouseClient();
+        const ably = getAbly({ apiKey: config.ably.apiKey });
+        const clickhouseClient = initClickHouseClient(config.clickhouse);
         const pingResult = await clickhouseClient.ping();
         if (!pingResult.success) {
             console.error('ERROR: Failed to ping ClickHouse client');
