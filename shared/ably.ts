@@ -1,8 +1,12 @@
 import Ably from 'ably';
-import { config } from './config';
-export function getAbly(): Ably.Realtime {
+
+interface AblyConfig {
+  apiKey: string;
+}
+
+export function getAbly(config: AblyConfig): Ably.Realtime {
     return new Ably.Realtime({
-        key: config.ably.apiKey,
+        key: config.apiKey,
     });
 }
 

@@ -7,7 +7,7 @@
 import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
 import { ABLY_CHANNELS } from "@mevscan/shared/ablyConstants";
-import { config, NodeEnv } from "@mevscan/shared/config";
+import { config, NodeEnv } from "../config";
 import { ExpressLaneTransaction } from "@mevscan/shared/types";
 
 async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, blockNumber: number, txIndex: number): Promise<ExpressLaneTransaction[]> {
