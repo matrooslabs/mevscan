@@ -1,11 +1,20 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
-// Load environment variables from the root directory
-// Both development and production resolve to the project root
-const envPath = path.resolve(__dirname, '../.env');
+// Load environment variables from the repo root `.env`.
+//
+// Important: when this file is compiled to `shared/dist/config.js`,
+// `__dirname` becomes `.../shared/dist`, so `../.env` points to `shared/.env`.
+// We therefore try multiple candidate locations.
+const envCandidates = [
+  path.resolve(__dirname, '../.env'), // works for TS source (`.../shared/config.ts`)
+  path.resolve(__dirname, '../../.env'), // works for compiled JS (`.../shared/dist/config.js`)
+  path.resolve(process.cwd(), '.env'), // fallback when running from repo root
+];
 
-dotenv.config({ path: envPath });
+const envPath = envCandidates.find((p) => fs.existsSync(p));
+dotenv.config(envPath ? { path: envPath } : undefined);
 
 export enum NodeEnv {
   DEVELOPMENT = 'development',

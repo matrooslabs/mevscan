@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { Typography, Box, Stack } from '@mui/material'
-import { chartColorPalette } from '../../theme'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
+import { getStableColorForLabel } from '../../utils/stableColor'
 import {
   useAuctionWinCount,
   useBidsPerAddress,
@@ -48,11 +48,11 @@ function TimeboostSection({ id }: { id?: string }) {
     const topAddresses = bidsData
       .sort((a, b) => (b.bid_count || 0) - (a.bid_count || 0))
       .slice(0, 10)
-    
-    return topAddresses.map((item, index: number) => ({
+
+    return topAddresses.map((item) => ({
       name: item.bidder || 'Unknown',
       value: item.bid_count || 0,
-      color: chartColorPalette[index % chartColorPalette.length],
+      color: getStableColorForLabel(item.bidder),
     }))
   }, [bidsPerAddress.data])
 
@@ -62,10 +62,10 @@ function TimeboostSection({ id }: { id?: string }) {
     if (!auctionData || auctionData.length === 0) {
       return []
     }
-    return auctionData.map((item, index: number) => ({
+    return auctionData.map((item) => ({
       name: item.address || 'Unknown',
       value: item.wins || 0,
-      color: chartColorPalette[index % chartColorPalette.length],
+      color: getStableColorForLabel(item.address),
     }))
   }, [auctionWinCount.data])
 

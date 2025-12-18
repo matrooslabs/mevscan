@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.7",
-    "ably": "^2.15.0"
+    "ably": "^2.15.0",
+    "dotenv": "^16.6.1"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
