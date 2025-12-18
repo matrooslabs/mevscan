@@ -101,7 +101,7 @@ export default function MEVTransactionTable({
             <TableBody>
               {transactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={5} align="center">
                     <Typography variant="body2" color="text.secondary">
                       {isConnected
                         ? "Waiting for transactions..."
