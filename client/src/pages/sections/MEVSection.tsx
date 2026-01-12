@@ -1,8 +1,7 @@
 import { useCallback } from "react";
 import { Typography, Box } from "@mui/material";
 import { chartColorPalette, chartColors } from "../../theme";
-import type { LineConfig } from "../../components/TimeSeriesChart";
-import TimeSeriesChartWithControls from "../../components/TimeSeriesChartWithControls";
+import TimeSeriesChart, { type LineConfig } from "../../components/TimeSeriesChart";
 import { apiClient } from "../../hooks/useApi";
 import "./SectionCommon.css";
 
@@ -109,7 +108,8 @@ function MEVSection({ id }: { id?: string }) {
       <Box className="section-content">
         {/* Overview Row - Full width hero chart */}
         <Box className="chart-grid" sx={{ marginBottom: '16px' }}>
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Gross MEV Overview"
             queryKey="gross-mev"
             fetchData={fetchGrossMEV}
@@ -124,7 +124,8 @@ function MEVSection({ id }: { id?: string }) {
 
         {/* Gross MEV Category Breakdown - 3 compact charts per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Gross Atomic Arb"
             queryKey="gross-atomic-arb"
             fetchData={fetchGrossAtomicArb}
@@ -136,7 +137,8 @@ function MEVSection({ id }: { id?: string }) {
             accentColor={chartColors.atomic}
           />
 
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Gross CexDex"
             queryKey="gross-cex-dex"
             fetchData={fetchGrossCexDex}
@@ -148,7 +150,8 @@ function MEVSection({ id }: { id?: string }) {
             accentColor={chartColors.cexdex}
           />
 
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Gross Liquidation"
             queryKey="gross-liquidation"
             fetchData={fetchGrossLiquidation}
@@ -163,7 +166,8 @@ function MEVSection({ id }: { id?: string }) {
 
         {/* Protocol Breakdown - Atomic Arb - 2 per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Atomic Arb by Protocol"
             queryKey="atomic-mev"
             fetchData={fetchAtomicMEV}
@@ -176,7 +180,8 @@ function MEVSection({ id }: { id?: string }) {
             accentColor={chartColors.atomic}
           />
 
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Atomic Arb Timeboosted"
             queryKey="atomic-mev-timeboosted"
             fetchData={fetchAtomicMEVTimeboosted}
@@ -192,7 +197,8 @@ function MEVSection({ id }: { id?: string }) {
 
         {/* Protocol Breakdown - CexDex - 2 per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="CexDex by Protocol"
             queryKey="cexdex"
             fetchData={fetchCexDex}
@@ -205,7 +211,8 @@ function MEVSection({ id }: { id?: string }) {
             accentColor={chartColors.cexdex}
           />
 
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="CexDex Timeboosted"
             queryKey="cexdex-timeboosted"
             fetchData={fetchCexDexTimeboosted}
@@ -221,7 +228,8 @@ function MEVSection({ id }: { id?: string }) {
 
         {/* Protocol Breakdown - Liquidation - 2 per row */}
         <Box className="chart-grid chart-grid-dense">
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Liquidation by Protocol"
             queryKey="liquidation"
             fetchData={fetchLiquidation}
@@ -234,7 +242,8 @@ function MEVSection({ id }: { id?: string }) {
             accentColor={chartColors.liquidation}
           />
 
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="Liquidation Timeboosted"
             queryKey="liquidation-timeboosted"
             fetchData={fetchLiquidationTimeboosted}

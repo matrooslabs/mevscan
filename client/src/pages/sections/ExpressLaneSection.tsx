@@ -1,7 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { Typography, Box } from "@mui/material";
 import TimeSeriesChart from "../../components/TimeSeriesChart";
-import TimeSeriesChartWithControls from "../../components/TimeSeriesChartWithControls";
 import BarChart from "../../components/BarChart";
 import {
   apiClient,
@@ -107,7 +106,8 @@ function ExpressLaneSection({ id }: { id?: string }) {
       <Box className="section-content">
         {/* Top Row - 2 charts */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <TimeSeriesChartWithControls
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="MEV Percentage"
             queryKey="express-lane-mev-percentage-per-minute"
             fetchData={fetchMEVPercentage}
