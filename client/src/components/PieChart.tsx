@@ -5,6 +5,7 @@ import { PieChart as EPieChart } from 'echarts/charts'
 import { LegendComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption, SeriesOption } from 'echarts'
+import { chartTheme } from '../theme'
 
 echarts.use([EPieChart, LegendComponent, TooltipComponent, CanvasRenderer])
 
@@ -47,6 +48,8 @@ function PieChart({
             const pct = typeof percent === 'number' ? percent : 0;
             return `${name}: ${pct.toFixed(1)}%`;
           },
+          color: chartTheme.text.legend,
+          fontSize: chartTheme.fontSize.legend,
         },
         animationDuration: 300,
         animationEasing: 'quadraticOut',
@@ -59,7 +62,15 @@ function PieChart({
     () => ({
       animation: true,
       tooltip: showTooltip ? { trigger: 'item', confine: true } : undefined,
-      legend: showLegend ? { bottom: 0 } : { show: false },
+      legend: showLegend
+        ? {
+            bottom: 0,
+            textStyle: {
+              color: chartTheme.text.legend,
+              fontSize: chartTheme.fontSize.legend,
+            },
+          }
+        : { show: false },
       series,
     }),
     [series, showLegend, showTooltip]

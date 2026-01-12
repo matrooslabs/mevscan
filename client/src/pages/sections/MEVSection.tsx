@@ -141,17 +141,20 @@ function MEVSection({ id }: { id?: string }) {
     <Box id={id} className="section-container">
       <Box className="section-header">
         <Typography variant="h4" component="h2" className="section-title">
-          MEV
+          MEV Analytics
         </Typography>
       </Box>
       <Box className="section-content">
-        <Stack direction="column" spacing={2}>
-          {/* Gross MEV */}
+        {/* Overview Row - Full width hero chart */}
+        <Box className="chart-grid" sx={{ marginBottom: '16px' }}>
           <ChartCard
-            title="Gross MEV"
+            title="Gross MEV Overview"
             isLoading={grossMEV.isLoading}
             isError={grossMEV.isError}
             errorMessage={grossMEV.error?.message}
+            className="chart-card-full"
+            variant="default"
+            accentColor={chartColors.total}
           >
             <TimeSeriesChart
               data={transformTimeSeriesData(grossMEV.data || [])}
@@ -178,13 +181,18 @@ function MEVSection({ id }: { id?: string }) {
               ]}
             />
           </ChartCard>
+        </Box>
 
-          {/* Gross Atomic Arb */}
+        {/* Gross MEV Category Breakdown - 3 compact charts per row */}
+        <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
           <ChartCard
             title="Gross Atomic Arb"
             isLoading={grossAtomicArb.isLoading}
             isError={grossAtomicArb.isError}
             errorMessage={grossAtomicArb.error?.message}
+            className="chart-card-third"
+            variant="compact"
+            accentColor={chartColors.atomic}
           >
             <TimeSeriesChart
               data={transformTimeSeriesData(grossAtomicArb.data || [])}
@@ -196,7 +204,7 @@ function MEVSection({ id }: { id?: string }) {
                 {
                   dataKey: "total",
                   name: "Total",
-                  strokeColor: chartColors.total,
+                  strokeColor: chartColors.atomic,
                 },
                 {
                   dataKey: "normal",
@@ -212,12 +220,14 @@ function MEVSection({ id }: { id?: string }) {
             />
           </ChartCard>
 
-          {/* Gross CexDex */}
           <ChartCard
             title="Gross CexDex"
             isLoading={grossCexDexQuotes.isLoading}
             isError={grossCexDexQuotes.isError}
             errorMessage={grossCexDexQuotes.error?.message}
+            className="chart-card-third"
+            variant="compact"
+            accentColor={chartColors.cexdex}
           >
             <TimeSeriesChart
               data={transformTimeSeriesData(grossCexDexQuotes.data || [])}
@@ -229,7 +239,7 @@ function MEVSection({ id }: { id?: string }) {
                 {
                   dataKey: "total",
                   name: "Total",
-                  strokeColor: chartColors.total,
+                  strokeColor: chartColors.cexdex,
                 },
                 {
                   dataKey: "normal",
@@ -245,12 +255,14 @@ function MEVSection({ id }: { id?: string }) {
             />
           </ChartCard>
 
-          {/* Gross Liquidation */}
           <ChartCard
             title="Gross Liquidation"
             isLoading={grossLiquidation.isLoading}
             isError={grossLiquidation.isError}
             errorMessage={grossLiquidation.error?.message}
+            className="chart-card-third"
+            variant="compact"
+            accentColor={chartColors.liquidation}
           >
             <TimeSeriesChart
               data={transformTimeSeriesData(grossLiquidation.data || [])}
@@ -262,7 +274,7 @@ function MEVSection({ id }: { id?: string }) {
                 {
                   dataKey: "total",
                   name: "Total",
-                  strokeColor: chartColors.total,
+                  strokeColor: chartColors.liquidation,
                 },
                 {
                   dataKey: "normal",
@@ -277,12 +289,18 @@ function MEVSection({ id }: { id?: string }) {
               ]}
             />
           </ChartCard>
-          {/* Atomic Arb MEV */}
+        </Box>
+
+        {/* Protocol Breakdown - Atomic Arb - 2 per row */}
+        <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
           <ChartCard
-            title="Atomic Arb MEV"
+            title="Atomic Arb by Protocol"
             isLoading={atomicMEV.isLoading}
             isError={atomicMEV.isError}
             errorMessage={atomicMEV.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.atomic}
           >
             <TimeSeriesChart
               data={atomicMEVTransformed.transformedData}
@@ -294,12 +312,14 @@ function MEVSection({ id }: { id?: string }) {
             />
           </ChartCard>
 
-          {/* Atomic MEV Timeboosted */}
           <ChartCard
-            title="Atomic MEV Timeboosted"
+            title="Atomic Arb Timeboosted"
             isLoading={atomicMEVTimeboosted.isLoading}
             isError={atomicMEVTimeboosted.isError}
             errorMessage={atomicMEVTimeboosted.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.timeboost}
           >
             <TimeSeriesChart
               data={atomicMEVTimeboostedTransformed.transformedData}
@@ -310,13 +330,18 @@ function MEVSection({ id }: { id?: string }) {
               lines={atomicMEVTimeboostedTransformed.lineConfigs}
             />
           </ChartCard>
+        </Box>
 
-          {/* CexDex Arb */}
+        {/* Protocol Breakdown - CexDex - 2 per row */}
+        <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
           <ChartCard
-            title="CexDex Arb"
+            title="CexDex by Protocol"
             isLoading={cexDex.isLoading}
             isError={cexDex.isError}
             errorMessage={cexDex.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.cexdex}
           >
             <TimeSeriesChart
               data={cexDexTransformed.transformedData}
@@ -328,12 +353,14 @@ function MEVSection({ id }: { id?: string }) {
             />
           </ChartCard>
 
-          {/* CexDex MEV Timeboosted */}
           <ChartCard
-            title="CexDex MEV Timeboosted"
+            title="CexDex Timeboosted"
             isLoading={cexDexTimeboosted.isLoading}
             isError={cexDexTimeboosted.isError}
             errorMessage={cexDexTimeboosted.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.timeboost}
           >
             <TimeSeriesChart
               data={cexDexTimeboostedTransformed.transformedData}
@@ -344,13 +371,18 @@ function MEVSection({ id }: { id?: string }) {
               lines={cexDexTimeboostedTransformed.lineConfigs}
             />
           </ChartCard>
+        </Box>
 
-          {/* Liquidation */}
+        {/* Protocol Breakdown - Liquidation - 2 per row */}
+        <Box className="chart-grid chart-grid-dense">
           <ChartCard
-            title="Liquidation"
+            title="Liquidation by Protocol"
             isLoading={liquidation.isLoading}
             isError={liquidation.isError}
             errorMessage={liquidation.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.liquidation}
           >
             <TimeSeriesChart
               data={liquidationTransformed.transformedData}
@@ -362,12 +394,14 @@ function MEVSection({ id }: { id?: string }) {
             />
           </ChartCard>
 
-          {/* Liquidation Timeboosted */}
           <ChartCard
             title="Liquidation Timeboosted"
             isLoading={liquidationTimeboosted.isLoading}
             isError={liquidationTimeboosted.isError}
             errorMessage={liquidationTimeboosted.error?.message}
+            className="chart-card-half"
+            variant="medium"
+            accentColor={chartColors.timeboost}
           >
             <TimeSeriesChart
               data={liquidationTimeboostedTransformed.transformedData}
@@ -378,7 +412,7 @@ function MEVSection({ id }: { id?: string }) {
               lines={liquidationTimeboostedTransformed.lineConfigs}
             />
           </ChartCard>
-        </Stack>
+        </Box>
       </Box>
     </Box>
   );

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Typography, Box, Stack } from '@mui/material'
+import { Typography, Box } from '@mui/material'
 import TimeSeriesChart, { type TimeSeriesData } from '../../components/TimeSeriesChart'
 import PieChart, { type PieChartData } from '../../components/PieChart'
 import BarChart from '../../components/BarChart'
@@ -12,6 +12,7 @@ import {
   usePeriodicApiRefreshByKeys,
 } from '../../hooks/useApi'
 import ChartCard from '../../components/ChartCard'
+import { chartColors } from '../../theme'
 import './SectionCommon.css'
 import type {
   AuctionWinCountEntry,
@@ -100,94 +101,99 @@ function TimeboostSection({ id }: { id?: string }) {
       <Box id={id} className="section-container">
         <Box className="section-header">
           <Typography variant="h4" component="h2" className="section-title">
-            Timeboost Bids
+            Timeboost Auctions
           </Typography>
         </Box>
         <Box className="section-content">
-          <Stack direction="column" spacing={2}>
-          <ChartCard
-            title="Number of Bids per Address"
-            isLoading={bidsPerAddress.isLoading}
-            isError={bidsPerAddress.isError}
-            errorMessage={bidsPerAddress.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
-          >
-            <Box className="chart-card-inner">
-              <Box className="chart-card-pie">
-                <PieChart 
-                  data={transformBidsPerAddressData}
-                  innerRadius={40}
-                  outerRadius={80}
-                  showLegend={true}
-                />
+          {/* Top Row - 2 pie charts */}
+          <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
+            <ChartCard
+              title="Bids per Address"
+              isLoading={bidsPerAddress.isLoading}
+              isError={bidsPerAddress.isError}
+              errorMessage={bidsPerAddress.error?.message}
+              className="chart-card-half"
+              variant="compact"
+              accentColor={chartColors.atomic}
+            >
+              <Box className="chart-card-inner">
+                <Box className="chart-card-pie">
+                  <PieChart
+                    data={transformBidsPerAddressData}
+                    innerRadius={40}
+                    outerRadius={70}
+                    showLegend={true}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </ChartCard>
+            </ChartCard>
 
-          {/* Auction Win Count */}
-          <ChartCard
-            title="Auction Win Count"
-            isLoading={auctionWinCount.isLoading}
-            isError={auctionWinCount.isError}
-            errorMessage={auctionWinCount.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
-          >
-            <Box className="chart-card-inner">
-              <Box className="chart-card-pie">
-                <PieChart 
-                  data={transformAuctionWinCountData}
-                  innerRadius={40}
-                  outerRadius={80}
-                  showLegend={true}
-                />
+            <ChartCard
+              title="Auction Win Count"
+              isLoading={auctionWinCount.isLoading}
+              isError={auctionWinCount.isError}
+              errorMessage={auctionWinCount.error?.message}
+              className="chart-card-half"
+              variant="compact"
+              accentColor={chartColors.cexdex}
+            >
+              <Box className="chart-card-inner">
+                <Box className="chart-card-pie">
+                  <PieChart
+                    data={transformAuctionWinCountData}
+                    innerRadius={40}
+                    outerRadius={70}
+                    showLegend={true}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </ChartCard>
+            </ChartCard>
+          </Box>
 
-          {/* Bids per Round */}
-          <ChartCard
-            title="Number of Bids per Round"
-            isLoading={bidsPerRound.isLoading}
-            isError={bidsPerRound.isError}
-            errorMessage={bidsPerRound.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
-          >
-            <BarChart 
-              data={transformBidsPerRoundData}
-              xAxisKey="name"
-              yAxisLabel="Bid Count"
-              showGrid={true}
-              showLegend={false}
-              showTooltip={true}
-              barColor="#8884d8"
-            />
-          </ChartCard>
+          {/* Bottom Row - 2 charts */}
+          <Box className="chart-grid chart-grid-dense">
+            <ChartCard
+              title="Bids per Round"
+              isLoading={bidsPerRound.isLoading}
+              isError={bidsPerRound.isError}
+              errorMessage={bidsPerRound.error?.message}
+              className="chart-card-half"
+              variant="compact"
+              accentColor={chartColors.liquidation}
+            >
+              <BarChart
+                data={transformBidsPerRoundData}
+                xAxisKey="name"
+                yAxisLabel="Bid Count"
+                showGrid={true}
+                showLegend={false}
+                showTooltip={true}
+                barColor={chartColors.liquidation}
+              />
+            </ChartCard>
 
-          {/* Express Lane Price */}
-          <ChartCard
-            title="Express Lane Price (ETH)"
-            isLoading={expressLanePrice.isLoading}
-            isError={expressLanePrice.isError}
-            errorMessage={expressLanePrice.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
-          >
-            <TimeSeriesChart 
-              data={transformExpressLanePriceData}
-              xAxisKey="time"
-              yAxisLabel="Price (ETH)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                { dataKey: 'total', name: 'First Price', strokeColor: '#8884d8' },
-                { dataKey: 'normal', name: 'Second Price', strokeColor: '#ffc658' },
-              ]}
-            />
-          </ChartCard>
-          </Stack>
+            <ChartCard
+              title="Express Lane Price (ETH)"
+              isLoading={expressLanePrice.isLoading}
+              isError={expressLanePrice.isError}
+              errorMessage={expressLanePrice.error?.message}
+              className="chart-card-half"
+              variant="compact"
+              accentColor={chartColors.timeboost}
+            >
+              <TimeSeriesChart
+                data={transformExpressLanePriceData}
+                xAxisKey="time"
+                yAxisLabel="Price (ETH)"
+                showArea={true}
+                hideZeroValues={true}
+                lines={[
+                  { dataKey: 'total', name: 'First Price', strokeColor: chartColors.timeboost },
+                  { dataKey: 'normal', name: 'Second Price', strokeColor: chartColors.normal },
+                ]}
+              />
+            </ChartCard>
+          </Box>
         </Box>
       </Box>
   );

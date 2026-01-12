@@ -10,6 +10,8 @@ export interface ChartCardProps {
   children: ReactNode
   className?: string
   contentClassName?: string
+  variant?: 'default' | 'medium' | 'compact' | 'mini'
+  accentColor?: string
 }
 
 function ChartCard({
@@ -20,22 +22,45 @@ function ChartCard({
   children,
   className = 'chart-card-full',
   contentClassName,
+  variant = 'default',
+  accentColor,
 }: ChartCardProps) {
-  const cardClassName = ['chart-card', className].filter(Boolean).join(' ')
+  const variantClass = `chart-card-${variant}`
+  const cardClassName = ['chart-card', variantClass, className].filter(Boolean).join(' ')
   const mergedContentClassName = ['chart-card-content', contentClassName].filter(Boolean).join(' ')
 
+  const titleVariant = variant === 'mini' ? 'subtitle2' : (variant === 'compact' || variant === 'medium') ? 'h6' : 'h5'
+
   return (
-    <Card className={cardClassName}>
+    <Card
+      className={cardClassName}
+      sx={accentColor ? {
+        borderLeft: `4px solid ${accentColor}`,
+        '&:hover': {
+          borderLeftColor: accentColor,
+        }
+      } : undefined}
+    >
       <CardContent className={mergedContentClassName}>
-        <Typography variant="h5" component="h2" className="chart-card-title">
+        <Typography
+          variant={titleVariant}
+          component="h2"
+          className="chart-card-title"
+          sx={accentColor ? {
+            color: accentColor,
+            textShadow: `0 0 20px ${accentColor}40`
+          } : undefined}
+        >
           {title}
         </Typography>
         {isLoading ? (
           <Box className="loading-container">
-            <CircularProgress />
+            <CircularProgress size={variant === 'mini' ? 24 : (variant === 'compact' || variant === 'medium') ? 32 : 40} />
           </Box>
         ) : isError ? (
-          <Alert severity="error">{errorMessage || 'Failed to load data'}</Alert>
+          <Alert severity="error" sx={{ fontSize: variant === 'mini' ? '0.75rem' : '0.875rem' }}>
+            {errorMessage || 'Failed to load data'}
+          </Alert>
         ) : (
           children
         )}

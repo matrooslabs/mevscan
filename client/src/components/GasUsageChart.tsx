@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
-import { chartColors } from "../theme";
+import { chartColors, chartTheme } from "../theme";
 
 /**
  * Data point for lane comparison time series
@@ -72,6 +72,10 @@ function GasUsageChart({ data }: GasUsageChartProps) {
         show: true,
         bottom: 0,
         data: ["Normal Lane", "Express Lane"],
+        textStyle: {
+          color: chartTheme.text.legend,
+          fontSize: chartTheme.fontSize.legend,
+        },
       },
       grid: {
         top: 24,
@@ -84,19 +88,42 @@ function GasUsageChart({ data }: GasUsageChartProps) {
         type: "category",
         data: times,
         boundaryGap: false,
-        axisLabel: { fontSize: 11 },
+        axisLabel: {
+          fontSize: chartTheme.fontSize.axisLabel,
+          color: chartTheme.text.axisLabel,
+        },
         axisTick: { alignWithLabel: true },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       yAxis: {
         type: "value",
         name: "Gas Used",
         nameLocation: "middle",
         nameGap: 45,
+        nameTextStyle: {
+          color: chartTheme.text.axisName,
+        },
         axisLabel: {
-          fontSize: 11,
+          fontSize: chartTheme.fontSize.axisLabel,
+          color: chartTheme.text.axisLabel,
           formatter: (value: number) => `${(value / 1000).toFixed(0)}k`,
         },
-        splitLine: { show: true, lineStyle: { type: "dashed", opacity: 0.3 } },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: "dashed",
+            color: chartTheme.line.grid,
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       series: [
         {

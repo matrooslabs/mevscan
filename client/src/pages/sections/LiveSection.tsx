@@ -12,7 +12,7 @@ import { ChannelProvider } from "ably/react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
 import NumberFlow from "@number-flow/react";
-import { chartColorPalette } from "../../theme";
+import { chartColorPalette, chartTheme } from "../../theme";
 import { useExpressLaneTransactions } from "../../hooks/useExpressLaneTransactions";
 import { ABLY_CHANNELS } from "../../constants/ably";
 import MEVTransactionTable from "../../components/MEVTransactionTable";
@@ -147,6 +147,10 @@ function LiveSectionContent({ id }: { id?: string }) {
         show: true,
         bottom: 0,
         data: [...mevTypes, "Cumulative Profit", "Express Lane Price"],
+        textStyle: {
+          color: chartTheme.text.legend,
+          fontSize: chartTheme.fontSize.legend,
+        },
       },
       grid: {
         top: 24,
@@ -162,19 +166,45 @@ function LiveSectionContent({ id }: { id?: string }) {
         name: "Time",
         nameLocation: "middle",
         nameGap: 20,
-        axisLabel: { fontSize: 11 },
+        nameTextStyle: {
+          color: chartTheme.text.axisName,
+        },
+        axisLabel: {
+          fontSize: chartTheme.fontSize.axisLabel,
+          color: chartTheme.text.axisLabel,
+        },
         axisTick: { alignWithLabel: true },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       yAxis: {
         type: "value",
         name: "Profit (USD)",
         nameLocation: "middle",
         nameGap: 40,
+        nameTextStyle: {
+          color: chartTheme.text.axisName,
+        },
         axisLabel: {
-          fontSize: 11,
+          fontSize: chartTheme.fontSize.axisLabel,
+          color: chartTheme.text.axisLabel,
           formatter: (value: number) => `$${value.toFixed(0)}`,
         },
-        splitLine: { show: true, lineStyle: { type: "dashed", opacity: 0.3 } },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: "dashed",
+            color: chartTheme.line.grid,
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       series: [
         // Stacked bar series for MEV type breakdown
@@ -188,13 +218,13 @@ function LiveSectionContent({ id }: { id?: string }) {
           itemStyle: {
             color: typeData.color,
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.3)",
+            borderColor: chartTheme.line.border,
           },
           emphasis: {
             focus: "series" as const,
             itemStyle: {
               borderWidth: 2,
-              borderColor: "rgba(255, 255, 255, 0.6)",
+              borderColor: chartTheme.line.borderEmphasis,
             },
           },
           z: 5,
