@@ -10,6 +10,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption, SeriesOption } from 'echarts'
 import { chartTheme } from '../theme'
+import type { TimeRange } from '../hooks/useTimeRange'
 
 echarts.use([
   LineChart,
@@ -21,9 +22,10 @@ echarts.use([
 
 /**
  * Time series data point for chart visualization
+ * time is now a Unix timestamp (number) - will be formatted based on timeRange
  */
 export interface TimeSeriesDataPoint {
-  time: string;
+  time: number;
   total: number;
   normal: number;
   timeboost: number;
@@ -58,6 +60,38 @@ export interface TimeSeriesChartProps {
   showArea?: boolean;
   fillOpacity?: number;
   hideZeroValues?: boolean;
+  /** Time range for formatting x-axis labels */
+  timeRange?: TimeRange;
+}
+
+/**
+ * Format a Unix timestamp based on the selected time range.
+ * - 1d, 7d: "HH:mm" format (e.g., "14:30")
+ * - 30d, 90d: "MMM DD" format (e.g., "Jan 10")
+ */
+function formatTimestamp(timestamp: number | string, timeRange?: TimeRange): string {
+  // Handle legacy string format (for backwards compatibility)
+  if (typeof timestamp === 'string') {
+    return timestamp
+  }
+
+  const date = new Date(timestamp * 1000)
+
+  if (isNaN(date.getTime())) {
+    return ''
+  }
+
+  if (!timeRange || timeRange === '1d' || timeRange === '7d') {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const mins = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${mins}`
+  }
+
+  // 30d, 90d - show date
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const month = months[date.getMonth()]
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${month} ${day}`
 }
 
 const DEFAULT_STROKE_COLOR = '#8884d8';
@@ -119,6 +153,7 @@ function TimeSeriesChart({
   showArea = true,
   fillOpacity = DEFAULT_FILL_OPACITY,
   hideZeroValues = false,
+  timeRange,
 }: TimeSeriesChartProps) {
   const lineConfigs = useMemo(
     () =>
@@ -137,9 +172,14 @@ function TimeSeriesChart({
     () =>
       data.map((point) => {
         const value = (point as Record<string, unknown>)[xAxisKey];
-        return value !== undefined && value !== null ? String(value) : '';
+        if (value === undefined || value === null) return '';
+        // Format timestamp if it's a number (Unix timestamp)
+        if (typeof value === 'number') {
+          return formatTimestamp(value, timeRange);
+        }
+        return String(value);
       }),
-    [data, xAxisKey]
+    [data, xAxisKey, timeRange]
   );
 
   const series = useMemo<SeriesOption[]>(

@@ -11,6 +11,7 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
+  getTimeGrouping,
 } from './types';
 import { transformProtocolTimeSeriesData, RawProtocolTimeSeriesRow } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
@@ -24,19 +25,20 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   SELECT
-    toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+    toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
     proto,
     sum(a.profit_usd / length(a.protocols)) AS profit_usd
   FROM mev.bundle_header AS b
   JOIN mev.atomic_arbs AS a ON a.tx_hash = b.tx_hash AND a.block_number = b.block_number
   JOIN ethereum.blocks AS e ON e.block_number = b.block_number
   ARRAY JOIN a.protocols AS proto
-  WHERE 
+  WHERE
     b.mev_type = 'AtomicArb'
     AND b.timeboosted = true
     AND a.arb_type = 'Triangular Arbitrage\n'
@@ -70,9 +72,10 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   WITH
       proto_list AS (
@@ -83,16 +86,16 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
           JOIN   mev.atomic_arbs    AS a  ON a.tx_hash     = b.tx_hash
           JOIN   ethereum.blocks    AS e  ON e.block_number = b.block_number
           ARRAY  JOIN a.protocols   AS proto
-          WHERE 
+          WHERE
             b.mev_type = 'AtomicArb'
-            AND  replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage' 
+            AND  replaceAll(a.arb_type, '\\n', '') = 'Triangular Arbitrage'
             AND  ${timeFilter}
           GROUP BY
               time,
@@ -137,9 +140,10 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   WITH
       proto_list AS (
@@ -150,14 +154,14 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
           JOIN   mev.cex_dex_quotes    AS a  ON a.tx_hash     = b.tx_hash
           JOIN   ethereum.blocks    AS e  ON e.block_number = b.block_number
           ARRAY  JOIN a.protocols   AS proto
-          WHERE 
+          WHERE
             b.mev_type = 'CexDexQuotes'
             AND  ${timeFilter}
           GROUP BY
@@ -203,9 +207,10 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   WITH
       proto_list AS (
@@ -216,16 +221,16 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
           JOIN   mev.cex_dex_quotes    AS a  ON a.tx_hash     = b.tx_hash
           JOIN   ethereum.blocks    AS e  ON e.block_number = b.block_number
           ARRAY  JOIN a.protocols   AS proto
-          WHERE 
+          WHERE
             b.mev_type = 'CexDexQuotes'
-            AND b.timeboosted = true 
+            AND b.timeboosted = true
             AND  ${timeFilter}
           GROUP BY
               time,
@@ -270,9 +275,10 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   WITH
       proto_list AS (
@@ -283,14 +289,14 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
           JOIN   mev.liquidations    AS a  ON a.liquidation_tx_hash     = b.tx_hash
           JOIN   ethereum.blocks    AS e  ON e.block_number = b.block_number
           ARRAY  JOIN a.protocols   AS proto
-          WHERE 
+          WHERE
             b.mev_type = 'Liquidation'
             AND  ${timeFilter}
           GROUP BY
@@ -336,9 +342,10 @@ export function registerProtocolsRoutes(app: Express) {
     res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
   WITH
       proto_list AS (
@@ -349,14 +356,14 @@ export function registerProtocolsRoutes(app: Express) {
       ),
       real AS (
           SELECT
-              toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+              toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
               proto,
               sum(a.profit_usd / length(a.protocols))        AS profit_usd
           FROM   mev.bundle_header  AS b
           JOIN   mev.liquidations    AS a  ON a.liquidation_tx_hash     = b.tx_hash
           JOIN   ethereum.blocks    AS e  ON e.block_number = b.block_number
           ARRAY  JOIN a.protocols   AS proto
-          WHERE 
+          WHERE
             b.mev_type = 'Liquidation'
             AND  ${timeFilter}
             AND b.timeboosted = true

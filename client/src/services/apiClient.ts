@@ -111,11 +111,14 @@ class ApiClient {
 
   /**
    * Get Gross MEV time series data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data
    */
-  async getGrossMEV(): Promise<TimeSeriesResponse> {
+  async getGrossMEV(timeRange: string = '1d'): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-mev');
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-mev', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -124,11 +127,14 @@ class ApiClient {
 
   /**
    * Get Gross Atomic Arb time series data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data
    */
-  async getGrossAtomicArb(): Promise<TimeSeriesResponse> {
+  async getGrossAtomicArb(timeRange: string = '1d'): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-atomic-arb');
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-atomic-arb', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -137,11 +143,14 @@ class ApiClient {
 
   /**
    * Get Gross CexDexQuotes time series data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data
    */
-  async getGrossCexDexQuotes(): Promise<TimeSeriesResponse> {
+  async getGrossCexDexQuotes(timeRange: string = '1d'): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-cex-dex-quotes');
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-cex-dex-quotes', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -150,11 +159,14 @@ class ApiClient {
 
   /**
    * Get Gross Liquidation time series data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data
    */
-  async getGrossLiquidation(): Promise<TimeSeriesResponse> {
+  async getGrossLiquidation(timeRange: string = '1d'): Promise<TimeSeriesResponse> {
     try {
-      const response = await this.client.get<TimeSeriesResponse>('/api/gross-liquidation');
+      const response = await this.client.get<TimeSeriesResponse>('/api/gross-liquidation', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -163,11 +175,14 @@ class ApiClient {
 
   /**
    * Get Atomic MEV Timeboosted time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getAtomicMEVTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
+  async getAtomicMEVTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -176,11 +191,14 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to pie chart data
    */
-  async getExpressLaneMEVPercentage(): Promise<PieChartResponse> {
+  async getExpressLaneMEVPercentage(timeRange: string = '1d'): Promise<PieChartResponse> {
     try {
-      const response = await this.client.get<PieChartResponse>('/api/express-lane/mev-percentage');
+      const response = await this.client.get<PieChartResponse>('/api/express-lane/mev-percentage', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -189,11 +207,14 @@ class ApiClient {
 
   /**
    * Get Express Lane MEV Percentage per minute time series
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series percentage data
    */
-  async getExpressLaneMEVPercentagePerMinute(): Promise<TimeSeriesPercentageResponse> {
+  async getExpressLaneMEVPercentagePerMinute(timeRange: string = '1d'): Promise<TimeSeriesPercentageResponse> {
     try {
-      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute');
+      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -202,11 +223,14 @@ class ApiClient {
 
   /**
    * Get Atomic Arb MEV time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getAtomicMEV(): Promise<TimeSeriesByProtocolResponse> {
+  async getAtomicMEV(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -215,11 +239,14 @@ class ApiClient {
 
   /**
    * Get CexDex Arb time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getCexDex(): Promise<TimeSeriesByProtocolResponse> {
+  async getCexDex(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -228,11 +255,14 @@ class ApiClient {
 
   /**
    * Get CexDex MEV Timeboosted time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getCexDexTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
+  async getCexDexTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -241,11 +271,14 @@ class ApiClient {
 
   /**
    * Get Liquidation time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getLiquidation(): Promise<TimeSeriesByProtocolResponse> {
+  async getLiquidation(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -254,11 +287,14 @@ class ApiClient {
 
   /**
    * Get Liquidation Timeboosted time series data by protocol
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series data by protocol
    */
-  async getLiquidationTimeboosted(): Promise<TimeSeriesByProtocolResponse> {
+  async getLiquidationTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted');
+      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -267,11 +303,14 @@ class ApiClient {
 
   /**
    * Get Express Lane Net Profit data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Express Lane Net Profit data
    */
-  async getExpressLaneNetProfit(): Promise<ExpressLaneNetProfitResponse> {
+  async getExpressLaneNetProfit(timeRange: string = '1d'): Promise<ExpressLaneNetProfitResponse> {
     try {
-      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit');
+      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -280,11 +319,14 @@ class ApiClient {
 
   /**
    * Get Express Lane Profit by Controller data
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Express Lane Profit by Controller data
    */
-  async getExpressLaneProfitByController(): Promise<ExpressLaneProfitByControllerResponse> {
+  async getExpressLaneProfitByController(timeRange: string = '1d'): Promise<ExpressLaneProfitByControllerResponse> {
     try {
-      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller');
+      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -306,11 +348,14 @@ class ApiClient {
 
   /**
    * Get Timeboost Revenue (time-ranged)
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Timeboost Revenue data
    */
-  async getTimeboostRevenue(): Promise<TimeboostRevenueResponse> {
+  async getTimeboostRevenue(timeRange: string = '1d'): Promise<TimeboostRevenueResponse> {
     try {
-      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue');
+      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/revenue', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -319,11 +364,14 @@ class ApiClient {
 
   /**
    * Get Bids per Address
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Bids per Address data
    */
-  async getBidsPerAddress(): Promise<BidsPerAddressResponse> {
+  async getBidsPerAddress(timeRange: string = '1d'): Promise<BidsPerAddressResponse> {
     try {
-      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address');
+      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -332,11 +380,14 @@ class ApiClient {
 
   /**
    * Get Auction Win Count
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Auction Win Count data
    */
-  async getAuctionWinCount(): Promise<AuctionWinCountResponse> {
+  async getAuctionWinCount(timeRange: string = '1d'): Promise<AuctionWinCountResponse> {
     try {
-      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count');
+      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -358,11 +409,14 @@ class ApiClient {
 
   /**
    * Get Express Lane Price
+   * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Express Lane Price data
    */
-  async getExpressLanePrice(): Promise<ExpressLanePriceResponse> {
+  async getExpressLanePrice(timeRange: string = '1d'): Promise<ExpressLanePriceResponse> {
     try {
-      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price');
+      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price', {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);

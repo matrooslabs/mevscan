@@ -14,6 +14,7 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
+  getTimeGrouping,
 } from './types';
 import { transformTimeSeriesPercentageData, RawTimeSeriesPercentageRow } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
@@ -27,7 +28,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<PieChartResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -87,12 +88,13 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<TimeSeriesPercentageResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd)                              AS total,
           sumIf(m.profit_usd, m.timeboosted = 1)         AS timeboost,
           timeboost / total * 100                        AS percentage
@@ -137,7 +139,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneNetProfitResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `
@@ -198,7 +200,7 @@ export function registerExpressLaneRoutes(app: Express) {
     res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
     
       const query = `

@@ -11,6 +11,7 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
+  getTimeGrouping,
 } from './types';
 import { transformTimeSeriesData, RawTimeSeriesRow } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
@@ -24,12 +25,13 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
+          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(m.profit_usd, m.timeboosted = true) as timeboost
@@ -76,12 +78,13 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
+          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(m.profit_usd, m.timeboosted = true) as timeboost
@@ -129,17 +132,18 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(
             m.profit_usd,
-            m.timeboosted = true            
+            m.timeboosted = true
           ) AS timeboost
         FROM
           mev.bundle_header AS m
@@ -147,7 +151,7 @@ export function registerMevRoutes(app: Express) {
           ON m.block_number = e.block_number
         WHERE
           m.mev_type = 'CexDexQuotes'
-          AND 
+          AND
           ${timeFilter}
         GROUP BY
           time
@@ -181,20 +185,21 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
+      const timeRange = (req.query.timeRange as string) || '1d';
       const timeFilter = getTimeRangeFilter(timeRange);
-    
+      const timeGrouping = getTimeGrouping(timeRange);
+
       const query = `
         SELECT
-          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
           sumIf(
             m.profit_usd,
-            m.timeboosted = false            
+            m.timeboosted = false
           ) AS normal,
           sumIf(
             m.profit_usd,
-            m.timeboosted = true            
+            m.timeboosted = true
           ) AS timeboost
         FROM
           mev.bundle_header AS m
@@ -202,7 +207,7 @@ export function registerMevRoutes(app: Express) {
           ON m.block_number = e.block_number
         WHERE
           m.mev_type = 'Liquidation'
-          AND 
+          AND
           ${timeFilter}
         GROUP BY
           time

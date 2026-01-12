@@ -176,13 +176,14 @@ export function useAddress(address: string, page: number = 1, pageSize: number =
 /**
  * Query hook for fetching Gross MEV time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossMEV(): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossMEV(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
-    ['gross-mev'],
+    ['gross-mev', timeRange],
     async () => {
-      const data = await apiClient.getGrossMEV()
+      const data = await apiClient.getGrossMEV(timeRange)
       return data
     },
     QueryPriority.CRITICAL,
@@ -193,13 +194,14 @@ export function useGrossMEV(): UseQueryResult<TimeSeriesResponse, Error> {
 /**
  * Query hook for fetching Gross Atomic Arb time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossAtomicArb(): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossAtomicArb(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
-    ['gross-atomic-arb'],
+    ['gross-atomic-arb', timeRange],
     async () => {
-      const data = await apiClient.getGrossAtomicArb()
+      const data = await apiClient.getGrossAtomicArb(timeRange)
       return data
     },
     QueryPriority.CRITICAL,
@@ -210,13 +212,14 @@ export function useGrossAtomicArb(): UseQueryResult<TimeSeriesResponse, Error> {
 /**
  * Query hook for fetching Gross CexDexQuotes time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossCexDexQuotes(): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossCexDexQuotes(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
-    ['gross-cex-dex-quotes'],
+    ['gross-cex-dex-quotes', timeRange],
     async () => {
-      const data = await apiClient.getGrossCexDexQuotes()
+      const data = await apiClient.getGrossCexDexQuotes(timeRange)
       return data
     },
     QueryPriority.CRITICAL,
@@ -227,13 +230,14 @@ export function useGrossCexDexQuotes(): UseQueryResult<TimeSeriesResponse, Error
 /**
  * Query hook for fetching Gross Liquidation time series
  * Priority: CRITICAL - Loads immediately (main overview metric)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossLiquidation(): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossLiquidation(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
-    ['gross-liquidation'],
+    ['gross-liquidation', timeRange],
     async () => {
-      const data = await apiClient.getGrossLiquidation()
+      const data = await apiClient.getGrossLiquidation(timeRange)
       return data
     },
     QueryPriority.CRITICAL,
@@ -244,13 +248,14 @@ export function useGrossLiquidation(): UseQueryResult<TimeSeriesResponse, Error>
 /**
  * Query hook for fetching Atomic MEV Timeboosted time series
  * Priority: HIGH - Loads after 100ms (important protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useAtomicMEVTimeboosted(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useAtomicMEVTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['atomic-mev-timeboosted'],
+    ['atomic-mev-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getAtomicMEVTimeboosted()
+      const data = await apiClient.getAtomicMEVTimeboosted(timeRange)
       return data
     },
     QueryPriority.HIGH,
@@ -261,13 +266,14 @@ export function useAtomicMEVTimeboosted(): UseQueryResult<TimeSeriesByProtocolRe
 /**
  * Query hook for fetching Express Lane MEV Percentage
  * Priority: HIGH - Loads after 100ms (important summary metric)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with pie chart data
  */
-export function useExpressLaneMEVPercentage(): UseQueryResult<PieChartResponse, Error> {
+export function useExpressLaneMEVPercentage(timeRange: string = '1d'): UseQueryResult<PieChartResponse, Error> {
   return useStaggeredQuery<PieChartResponse>(
-    ['express-lane-mev-percentage'],
+    ['express-lane-mev-percentage', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneMEVPercentage()
+      const data = await apiClient.getExpressLaneMEVPercentage(timeRange)
       return data
     },
     QueryPriority.HIGH,
@@ -278,13 +284,14 @@ export function useExpressLaneMEVPercentage(): UseQueryResult<PieChartResponse, 
 /**
  * Query hook for fetching Express Lane MEV Percentage per minute time series
  * Priority: MEDIUM - Loads after 300ms (detailed time series)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series percentage data
  */
-export function useExpressLaneMEVPercentagePerMinute(): UseQueryResult<TimeSeriesPercentageResponse, Error> {
+export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '1d'): UseQueryResult<TimeSeriesPercentageResponse, Error> {
   return useStaggeredQuery<TimeSeriesPercentageResponse>(
-    ['express-lane-mev-percentage-per-minute'],
+    ['express-lane-mev-percentage-per-minute', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneMEVPercentagePerMinute()
+      const data = await apiClient.getExpressLaneMEVPercentagePerMinute(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -295,13 +302,14 @@ export function useExpressLaneMEVPercentagePerMinute(): UseQueryResult<TimeSerie
 /**
  * Query hook for fetching Atomic Arb MEV time series by protocol
  * Priority: HIGH - Loads after 100ms (important protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useAtomicMEV(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useAtomicMEV(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['atomic-mev'],
+    ['atomic-mev', timeRange],
     async () => {
-      const data = await apiClient.getAtomicMEV()
+      const data = await apiClient.getAtomicMEV(timeRange)
       return data
     },
     QueryPriority.HIGH,
@@ -312,13 +320,14 @@ export function useAtomicMEV(): UseQueryResult<TimeSeriesByProtocolResponse, Err
 /**
  * Query hook for fetching CexDex Arb time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useCexDex(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useCexDex(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['cexdex'],
+    ['cexdex', timeRange],
     async () => {
-      const data = await apiClient.getCexDex()
+      const data = await apiClient.getCexDex(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -329,13 +338,14 @@ export function useCexDex(): UseQueryResult<TimeSeriesByProtocolResponse, Error>
 /**
  * Query hook for fetching CexDex MEV Timeboosted time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useCexDexTimeboosted(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useCexDexTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['cexdex-timeboosted'],
+    ['cexdex-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getCexDexTimeboosted()
+      const data = await apiClient.getCexDexTimeboosted(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -346,13 +356,14 @@ export function useCexDexTimeboosted(): UseQueryResult<TimeSeriesByProtocolRespo
 /**
  * Query hook for fetching Liquidation time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useLiquidation(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useLiquidation(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['liquidation'],
+    ['liquidation', timeRange],
     async () => {
-      const data = await apiClient.getLiquidation()
+      const data = await apiClient.getLiquidation(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -363,13 +374,14 @@ export function useLiquidation(): UseQueryResult<TimeSeriesByProtocolResponse, E
 /**
  * Query hook for fetching Liquidation Timeboosted time series by protocol
  * Priority: MEDIUM - Loads after 300ms (protocol breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useLiquidationTimeboosted(): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useLiquidationTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
-    ['liquidation-timeboosted'],
+    ['liquidation-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getLiquidationTimeboosted()
+      const data = await apiClient.getLiquidationTimeboosted(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -380,13 +392,14 @@ export function useLiquidationTimeboosted(): UseQueryResult<TimeSeriesByProtocol
 /**
  * Query hook for fetching Express Lane Net Profit
  * Priority: LOW - Loads after 600ms (detailed breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Net Profit data
  */
-export function useExpressLaneNetProfit(): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
+export function useExpressLaneNetProfit(timeRange: string = '1d'): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
   return useStaggeredQuery<ExpressLaneNetProfitResponse>(
-    ['express-lane-net-profit'],
+    ['express-lane-net-profit', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneNetProfit()
+      const data = await apiClient.getExpressLaneNetProfit(timeRange)
       return data
     },
     QueryPriority.LOW,
@@ -397,13 +410,14 @@ export function useExpressLaneNetProfit(): UseQueryResult<ExpressLaneNetProfitRe
 /**
  * Query hook for fetching Express Lane Profit by Controller
  * Priority: LOW - Loads after 600ms (detailed breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Profit by Controller data
  */
-export function useExpressLaneProfitByController(): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
+export function useExpressLaneProfitByController(timeRange: string = '1d'): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
   return useStaggeredQuery<ExpressLaneProfitByControllerResponse>(
-    ['express-lane-profit-by-controller'],
+    ['express-lane-profit-by-controller', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneProfitByController()
+      const data = await apiClient.getExpressLaneProfitByController(timeRange)
       return data
     },
     QueryPriority.LOW,
@@ -431,13 +445,14 @@ export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueRespo
 /**
  * Query hook for fetching Timeboost Revenue (time-ranged)
  * Priority: LOW - Loads after 600ms (detailed breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Timeboost Revenue data
  */
-export function useTimeboostRevenue(): UseQueryResult<TimeboostRevenueResponse, Error> {
+export function useTimeboostRevenue(timeRange: string = '1d'): UseQueryResult<TimeboostRevenueResponse, Error> {
   return useStaggeredQuery<TimeboostRevenueResponse>(
-    ['timeboost-revenue'],
+    ['timeboost-revenue', timeRange],
     async () => {
-      const data = await apiClient.getTimeboostRevenue()
+      const data = await apiClient.getTimeboostRevenue(timeRange)
       return data
     },
     QueryPriority.LOW,
@@ -448,13 +463,14 @@ export function useTimeboostRevenue(): UseQueryResult<TimeboostRevenueResponse, 
 /**
  * Query hook for fetching Bids per Address
  * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Bids per Address data
  */
-export function useBidsPerAddress(): UseQueryResult<BidsPerAddressResponse, Error> {
+export function useBidsPerAddress(timeRange: string = '1d'): UseQueryResult<BidsPerAddressResponse, Error> {
   return useStaggeredQuery<BidsPerAddressResponse>(
-    ['bids-per-address'],
+    ['bids-per-address', timeRange],
     async () => {
-      const data = await apiClient.getBidsPerAddress()
+      const data = await apiClient.getBidsPerAddress(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -465,13 +481,14 @@ export function useBidsPerAddress(): UseQueryResult<BidsPerAddressResponse, Erro
 /**
  * Query hook for fetching Auction Win Count
  * Priority: MEDIUM - Loads after 300ms (detailed breakdown)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Auction Win Count data
  */
-export function useAuctionWinCount(): UseQueryResult<AuctionWinCountResponse, Error> {
+export function useAuctionWinCount(timeRange: string = '1d'): UseQueryResult<AuctionWinCountResponse, Error> {
   return useStaggeredQuery<AuctionWinCountResponse>(
-    ['auction-win-count'],
+    ['auction-win-count', timeRange],
     async () => {
-      const data = await apiClient.getAuctionWinCount()
+      const data = await apiClient.getAuctionWinCount(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
@@ -499,13 +516,14 @@ export function useBidsPerRound(): UseQueryResult<BidsPerRoundResponse, Error> {
 /**
  * Query hook for fetching Express Lane Price
  * Priority: MEDIUM - Loads after 300ms (time series data)
+ * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Price data
  */
-export function useExpressLanePrice(): UseQueryResult<ExpressLanePriceResponse, Error> {
+export function useExpressLanePrice(timeRange: string = '1d'): UseQueryResult<ExpressLanePriceResponse, Error> {
   return useStaggeredQuery<ExpressLanePriceResponse>(
-    ['express-lane-price'],
+    ['express-lane-price', timeRange],
     async () => {
-      const data = await apiClient.getExpressLanePrice()
+      const data = await apiClient.getExpressLanePrice(timeRange)
       return data
     },
     QueryPriority.MEDIUM,
