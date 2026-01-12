@@ -28,8 +28,8 @@ export function formatEthValue(wei: string | number): string {
 export function getTimeGrouping(timeRange: string): string {
   switch (timeRange) {
     case '1d':
-    case '7d':
       return 'toStartOfHour';
+    case '7d':
     case '30d':
     case '90d':
       return 'toStartOfDay';

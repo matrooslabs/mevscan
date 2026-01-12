@@ -81,17 +81,30 @@ function formatTimestamp(timestamp: number | string, timeRange?: TimeRange): str
     return ''
   }
 
-  if (!timeRange || timeRange === '1d' || timeRange === '7d') {
+  if (!timeRange || timeRange === '1d') {
     const hours = date.getHours().toString().padStart(2, '0')
     const mins = date.getMinutes().toString().padStart(2, '0')
     return `${hours}:${mins}`
   }
 
-  // 30d, 90d - show date
+  // 7d, 30d, 90d - show date
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const month = months[date.getMonth()]
-  const day = date.getDate().toString().padStart(2, '0')
+  const day = date.getDate()
   return `${month} ${day}`
+}
+
+/**
+ * Calculate the label interval to show approximately 6-8 labels on the x-axis
+ */
+function calculateLabelInterval(dataLength: number, timeRange?: TimeRange): number | 'auto' {
+  if (dataLength <= 8) return 0 // Show all labels if few data points
+
+  // Target around 6-8 labels
+  const targetLabels = 7
+  const interval = Math.ceil(dataLength / targetLabels) - 1
+
+  return Math.max(0, interval)
 }
 
 const DEFAULT_STROKE_COLOR = '#8884d8';
@@ -240,6 +253,9 @@ function TimeSeriesChart({
       ? (numLegendItems > 5 ? 90 : numLegendItems > 3 ? 70 : 48)
       : 24;
 
+    // Calculate label interval for x-axis
+    const labelInterval = calculateLabelInterval(labels.length, timeRange);
+
     return {
       animation: true,
       tooltip: { trigger: 'axis', confine: true },
@@ -270,8 +286,13 @@ function TimeSeriesChart({
         axisLabel: {
           fontSize: chartTheme.fontSize.axisLabelMedium,
           color: chartTheme.text.axisLabel,
+          interval: labelInterval,
+          rotate: 0,
         },
-        axisTick: { alignWithLabel: true },
+        axisTick: {
+          alignWithLabel: true,
+          interval: labelInterval,
+        },
         axisLine: {
           lineStyle: {
             color: chartTheme.line.axis,
