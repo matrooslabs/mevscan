@@ -5,6 +5,7 @@ import { BarChart as EBarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption, SeriesOption } from 'echarts'
+import { chartTheme } from '../theme'
 
 echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 
@@ -60,20 +61,52 @@ function BarChart({
     () => ({
       animation: true,
       tooltip: showTooltip ? { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true } : undefined,
-      legend: showLegend ? { bottom: 0 } : { show: false },
+      legend: showLegend
+        ? {
+            bottom: 0,
+            textStyle: {
+              color: chartTheme.text.legend,
+              fontSize: chartTheme.fontSize.legend,
+            },
+          }
+        : { show: false },
       grid: { top: 16, left: 48, right: 16, bottom: showLegend ? 48 : 24, containLabel: true },
       xAxis: {
         type: 'category',
         data: labels,
-        axisLabel: { fontSize: FONT_SIZE_MEDIUM },
+        axisLabel: {
+          fontSize: FONT_SIZE_MEDIUM,
+          color: chartTheme.text.axisLabel,
+        },
         axisTick: { alignWithLabel: true },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       yAxis: {
         type: 'value',
         name: yAxisLabel,
         nameGap: 30,
-        axisLabel: { fontSize: FONT_SIZE_MEDIUM },
-        splitLine: { show: showGrid },
+        nameTextStyle: {
+          color: chartTheme.text.axisName,
+        },
+        axisLabel: {
+          fontSize: FONT_SIZE_MEDIUM,
+          color: chartTheme.text.axisLabel,
+        },
+        splitLine: {
+          show: showGrid,
+          lineStyle: {
+            color: chartTheme.line.grid,
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       series,
     }),

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Typography, Box, Stack } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import TimeSeriesChart, {
   type TimeSeriesData,
 } from "../../components/TimeSeriesChart";
@@ -11,6 +11,7 @@ import {
   usePeriodicApiRefreshByKeys,
 } from "../../hooks/useApi";
 import ChartCard from "../../components/ChartCard";
+import { chartColors } from "../../theme";
 import "./SectionCommon.css";
 import type {
   ExpressLaneMEVPercentagePerMinute,
@@ -100,15 +101,16 @@ function ExpressLaneSection({ id }: { id?: string }) {
         </Typography>
       </Box>
       <Box className="section-content">
-        <Stack direction="column" spacing={2}>
-          {/* Express Lane MEV Percentage Time Series */}
+        {/* Top Row - 2 charts */}
+        <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
           <ChartCard
-            title="Express Lane MEV Percentage"
+            title="MEV Percentage"
             isLoading={expressLaneMEVPercentagePerMinute.isLoading}
             isError={expressLaneMEVPercentagePerMinute.isError}
             errorMessage={expressLaneMEVPercentagePerMinute.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
+            className="chart-card-half"
+            variant="compact"
+            accentColor={chartColors.timeboost}
           >
             <TimeSeriesChart
               data={transformPercentageTimeSeriesData}
@@ -120,19 +122,20 @@ function ExpressLaneSection({ id }: { id?: string }) {
                 {
                   dataKey: "total",
                   name: "Percentage",
-                  strokeColor: "#82ca9d",
+                  strokeColor: chartColors.timeboost,
                 },
               ]}
             />
           </ChartCard>
-          {/* Express Lane Net Profit */}
+
           <ChartCard
-            title="Express Lane Net Profit"
+            title="Net Profit by Round"
             isLoading={expressLaneNetProfit.isLoading}
             isError={expressLaneNetProfit.isError}
             errorMessage={expressLaneNetProfit.error?.message}
-            className="chart-card-full"
-            contentClassName="chart-card-flex"
+            className="chart-card-half"
+            variant="compact"
+            accentColor={chartColors.atomic}
           >
             <TimeSeriesChart
               data={transformExpressLaneNetProfitData.map((item) => ({
@@ -149,20 +152,23 @@ function ExpressLaneSection({ id }: { id?: string }) {
                 {
                   dataKey: "total",
                   name: "Net Profit",
-                  strokeColor: "#82ca9d",
+                  strokeColor: chartColors.atomic,
                 },
               ]}
             />
           </ChartCard>
+        </Box>
 
-          {/* Express Lane Profit by Controller */}
+        {/* Bottom Row - Full width */}
+        <Box className="chart-grid">
           <ChartCard
-            title="Express Lane Profit by Controller"
+            title="Profit by Controller"
             isLoading={expressLaneProfitByController.isLoading}
             isError={expressLaneProfitByController.isError}
             errorMessage={expressLaneProfitByController.error?.message}
             className="chart-card-full"
-            contentClassName="chart-card-flex"
+            variant="compact"
+            accentColor={chartColors.cexdex}
           >
             <BarChart
               data={transformExpressLaneProfitByControllerData}
@@ -171,10 +177,10 @@ function ExpressLaneSection({ id }: { id?: string }) {
               showGrid={true}
               showLegend={false}
               showTooltip={true}
-              barColor="#82ca9d"
+              barColor={chartColors.cexdex}
             />
           </ChartCard>
-        </Stack>
+        </Box>
       </Box>
     </Box>
   );

@@ -9,6 +9,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption, SeriesOption } from 'echarts'
+import { chartTheme } from '../theme'
 
 echarts.use([
   LineChart,
@@ -191,16 +192,32 @@ function TimeSeriesChart({
     ]
   );
 
-  const options = useMemo<EChartsOption>(
-    () => ({
+  const options = useMemo<EChartsOption>(() => {
+    // Calculate bottom spacing based on number of legend items
+    // More items = more likely to wrap = need more space
+    const numLegendItems = lineConfigs.length;
+    const legendBottomSpace = showLegend
+      ? (numLegendItems > 5 ? 90 : numLegendItems > 3 ? 70 : 48)
+      : 24;
+
+    return {
       animation: true,
       tooltip: { trigger: 'axis', confine: true },
-      legend: { show: showLegend, bottom: 0 },
+      legend: {
+        show: showLegend,
+        bottom: 0,
+        type: 'plain',
+        orient: 'horizontal',
+        textStyle: {
+          color: chartTheme.text.legend,
+          fontSize: chartTheme.fontSize.legend,
+        },
+      },
       grid: {
         top: 16,
         left: 48,
         right: 16,
-        bottom: showLegend ? 48 : 24,
+        bottom: legendBottomSpace,
         containLabel: true,
       },
       xAxis: {
@@ -210,20 +227,43 @@ function TimeSeriesChart({
         name: xAxisLabel,
         nameLocation: 'end',
         nameGap: 20,
-        axisLabel: { fontSize: 12 },
+        axisLabel: {
+          fontSize: chartTheme.fontSize.axisLabelMedium,
+          color: chartTheme.text.axisLabel,
+        },
         axisTick: { alignWithLabel: true },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       yAxis: {
         type: 'value',
         name: yAxisLabel,
         nameGap: 30,
-        axisLabel: { fontSize: 12 },
-        splitLine: { show: showGrid },
+        nameTextStyle: {
+          color: chartTheme.text.axisName,
+        },
+        axisLabel: {
+          fontSize: chartTheme.fontSize.axisLabelMedium,
+          color: chartTheme.text.axisLabel,
+        },
+        splitLine: {
+          show: showGrid,
+          lineStyle: {
+            color: chartTheme.line.grid,
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: chartTheme.line.axis,
+          },
+        },
       },
       series,
-    }),
-    [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid]
-  );
+    };
+  }, [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid, lineConfigs.length]);
 
   return (
     <div className="chart-container">
