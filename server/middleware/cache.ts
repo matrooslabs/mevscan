@@ -13,9 +13,6 @@ interface CacheStore {
   [key: string]: CacheEntry;
 }
 
-// Track keys currently being refreshed to avoid duplicate refreshes
-const refreshingKeys = new Set<string>();
-
 // In-memory cache store
 const cacheStore: CacheStore = {};
 
@@ -79,86 +76,12 @@ function isStale(entry: CacheEntry): boolean {
 }
 
 /**
- * Type for fetch function used in background refresh
- */
-type FetchFunction = () => Promise<unknown>;
-
-/**
- * Store of fetch functions for background refresh
- * Maps cache key to the function that fetches fresh data
- */
-const fetchFunctions: Map<string, FetchFunction> = new Map();
-
-/**
- * Register a fetch function for a cache key
- * This allows background refresh to know how to fetch fresh data
- */
-export function registerFetchFunction(key: string, fetchFn: FetchFunction): void {
-  fetchFunctions.set(key, fetchFn);
-}
-
-/**
- * Non-blocking background refresh for stale cache entries
- * Returns immediately and refreshes cache in background
- */
-function triggerBackgroundRefresh(key: string, fetchFn?: FetchFunction): void {
-  // Skip if already refreshing this key
-  if (refreshingKeys.has(key)) {
-    return;
-  }
-
-  const fn = fetchFn || fetchFunctions.get(key);
-  if (!fn) {
-    console.log(`[CACHE REFRESH SKIP] No fetch function for ${key}`);
-    return;
-  }
-
-  refreshingKeys.add(key);
-
-  // Use setImmediate for non-blocking execution
-  setImmediate(async () => {
-    try {
-      console.log(`[CACHE REFRESH START] ${key}`);
-      const freshData = await fn();
-      const ttl = getTTLForKey(key);
-
-      cacheStore[key] = {
-        data: freshData,
-        createdAt: Date.now(),
-        ttl,
-      };
-
-      console.log(`[CACHE REFRESH DONE] ${key} (TTL: ${Math.round(ttl / 1000)}s)`);
-    } catch (error) {
-      console.error(`[CACHE REFRESH ERROR] ${key}`, error);
-    } finally {
-      refreshingKeys.delete(key);
-    }
-  });
-}
-
-/**
- * Manually set a cache entry (useful for pre-warming)
- */
-export function setCacheEntry(key: string, data: unknown, ttl?: number): void {
-  const entryTtl = ttl ?? getTTLForKey(key);
-  cacheStore[key] = {
-    data,
-    createdAt: Date.now(),
-    ttl: entryTtl,
-  };
-  console.log(`[CACHE SET] ${key} (TTL: ${Math.round(entryTtl / 1000)}s)`);
-}
-
-/**
- * Get a cache entry if it exists
- */
-export function getCacheEntry(key: string): CacheEntry | undefined {
-  return cacheStore[key];
-}
-
-/**
  * Factory to create a caching middleware with stale-while-revalidate support
+ *
+ * Behavior:
+ * - Fresh cache: Returns cached data immediately
+ * - Stale cache: Returns stale data immediately (next request will refresh)
+ * - No cache: Fetches from database, caches result
  */
 export function createCacheMiddleware() {
   return function cacheMiddleware(
@@ -181,13 +104,9 @@ export function createCacheMiddleware() {
         res.json(cachedEntry.data);
         return;
       } else if (isStale(cachedEntry)) {
-        // Case 2: Stale cache - return stale data immediately, trigger background refresh
-        console.log(`[CACHE STALE] ${cacheKey} - returning stale data, refreshing in background`);
-
-        // We'll register the fetch function when the response comes through
-        // For now, trigger refresh if we have a registered fetch function
-        triggerBackgroundRefresh(cacheKey);
-
+        // Case 2: Stale cache - return stale data immediately
+        // The cache will be refreshed on a subsequent request that misses
+        console.log(`[CACHE STALE] ${cacheKey} - returning stale data`);
         res.json(cachedEntry.data);
         return;
       }
@@ -292,4 +211,4 @@ export function getCacheKeys(): string[] {
 }
 
 // Export for testing
-export { cacheStore, refreshingKeys };
+export { cacheStore };

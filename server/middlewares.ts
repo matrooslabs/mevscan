@@ -9,11 +9,6 @@ import {
   getCacheStats,
   clearCache,
 } from './middleware/cache';
-import {
-  prewarmCache,
-  setupScheduledCacheRefresh,
-  initializeCacheWarming,
-} from './middleware/cacheWarming';
 import type { ErrorResponse } from '@mevscan/shared';
 export {
   formatRelativeTime,
@@ -117,7 +112,7 @@ export function cacheMiddleware() {
 }
 
 // Re-export cache utilities
-export { getCacheStats, clearCache, initializeCacheWarming, prewarmCache, setupScheduledCacheRefresh };
+export { getCacheStats, clearCache };
 
 /**
  * Setup periodic cache cleanup (every 5 minutes)
