@@ -1,30 +1,14 @@
-import { useMemo } from "react";
-import { Typography, Box, Stack } from "@mui/material";
+import { useCallback } from "react";
+import { Typography, Box } from "@mui/material";
 import { chartColorPalette, chartColors } from "../../theme";
-import TimeSeriesChart, {
-  type TimeSeriesData,
-  type LineConfig,
-} from "../../components/TimeSeriesChart";
-import ChartCard from "../../components/ChartCard";
-import type { ProtocolProfitPoint, TimeSeriesPoint } from "../../types/api";
-import {
-  useAtomicMEV,
-  useAtomicMEVTimeboosted,
-  useCexDex,
-  useCexDexTimeboosted,
-  useGrossAtomicArb,
-  useGrossCexDexQuotes,
-  useGrossLiquidation,
-  useGrossMEV,
-  useLiquidation,
-  useLiquidationTimeboosted,
-  usePeriodicApiRefreshByKeys,
-} from "../../hooks/useApi";
+import type { LineConfig } from "../../components/TimeSeriesChart";
+import TimeSeriesChartWithControls from "../../components/TimeSeriesChartWithControls";
+import { apiClient } from "../../hooks/useApi";
 import "./SectionCommon.css";
 
-const transformTimeSeriesData = (data?: TimeSeriesPoint[]): TimeSeriesData => {
-  if (!data) return [];
-  return data.map((item) => ({
+// Transform standard time series data
+const transformTimeSeriesData = (data: unknown[]) => {
+  return (data as { time: number; total: number; normal: number; timeboost: number }[]).map((item) => ({
     time: item.time,
     total: item.total,
     normal: item.normal,
@@ -32,36 +16,27 @@ const transformTimeSeriesData = (data?: TimeSeriesPoint[]): TimeSeriesData => {
   }));
 };
 
-const transformProtocolData = (
-  data?: ProtocolProfitPoint[]
-): {
-  transformedData: Record<string, string | number>[];
-  lineConfigs: LineConfig[];
-} => {
-  if (!data || data.length === 0) {
-    return { transformedData: [], lineConfigs: [] };
+// Transform protocol data for multi-line charts
+const transformProtocolData = (data: unknown[]) => {
+  const typedData = data as { time: number; proto: string; profit_usd: number }[];
+  if (!typedData || typedData.length === 0) {
+    return [];
   }
 
-  const protocols = Array.from(
-    new Set(data.map((item) => String(item.proto)))
-  ).sort();
-  const times = Array.from(
-    new Set(data.map((item) => String(item.time)))
-  ).sort();
+  const protocols = Array.from(new Set(typedData.map((item) => String(item.proto)))).sort();
+  const times = Array.from(new Set(typedData.map((item) => item.time))).sort((a, b) => a - b);
 
-  const dataMap = new Map<string, Map<string, number>>();
-  data.forEach((item) => {
-    const time = String(item.time);
-    const proto = String(item.proto);
-    if (!dataMap.has(time)) {
-      dataMap.set(time, new Map());
+  const dataMap = new Map<number, Map<string, number>>();
+  typedData.forEach((item) => {
+    if (!dataMap.has(item.time)) {
+      dataMap.set(item.time, new Map());
     }
-    dataMap.get(time)!.set(proto, Number(item.profit_usd) || 0);
+    dataMap.get(item.time)!.set(String(item.proto), Number(item.profit_usd) || 0);
   });
 
-  const transformedData = times.map((time) => {
+  return times.map((time) => {
     const protoMap = dataMap.get(time) || new Map();
-    const dataPoint: Record<string, string | number> = { time };
+    const dataPoint: Record<string, number> = { time };
 
     protocols.forEach((proto) => {
       const safeProtoName = proto.replace(/[^a-zA-Z0-9]/g, "_");
@@ -70,72 +45,59 @@ const transformProtocolData = (
 
     return dataPoint;
   });
+};
 
-  const lineConfigs: LineConfig[] = protocols.map((proto, index) => ({
+// Generate line configs for protocol data
+const generateProtocolLineConfigs = (data: unknown[]): LineConfig[] => {
+  const typedData = data as { proto: string }[];
+  if (!typedData || typedData.length === 0) {
+    return [];
+  }
+
+  const protocols = Array.from(new Set(typedData.map((item) => String(item.proto)))).sort();
+  return protocols.map((proto, index) => ({
     dataKey: proto.replace(/[^a-zA-Z0-9]/g, "_"),
     name: proto,
     strokeColor: chartColorPalette[index % chartColorPalette.length],
   }));
-
-  return {
-    transformedData,
-    lineConfigs,
-  };
 };
 
-function MEVSection({ id }: { id?: string }) {
-  const grossMEV = useGrossMEV();
-  const grossAtomicArb = useGrossAtomicArb();
-  const grossCexDexQuotes = useGrossCexDexQuotes();
-  const grossLiquidation = useGrossLiquidation();
-  const atomicMEVTimeboosted = useAtomicMEVTimeboosted();
-  const atomicMEV = useAtomicMEV();
-  const cexDex = useCexDex();
-  const cexDexTimeboosted = useCexDexTimeboosted();
-  const liquidation = useLiquidation();
-  const liquidationTimeboosted = useLiquidationTimeboosted();
+const grossMevLines: LineConfig[] = [
+  { dataKey: "total", name: "Total", strokeColor: chartColors.total },
+  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
+  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+];
 
-  usePeriodicApiRefreshByKeys(
-    [
-      ["gross-mev"],
-      ["gross-atomic-arb"],
-      ["gross-cex-dex-quotes"],
-      ["gross-liquidation"],
-      ["atomic-mev-timeboosted"],
-      ["atomic-mev"],
-      ["cexdex"],
-      ["cexdex-timeboosted"],
-      ["liquidation"],
-      ["liquidation-timeboosted"],
-    ],
-    60000,
-    true,
-    200
-  );
-  const atomicMEVTimeboostedTransformed = useMemo(
-    () => transformProtocolData(atomicMEVTimeboosted.data),
-    [atomicMEVTimeboosted.data]
-  );
-  const atomicMEVTransformed = useMemo(
-    () => transformProtocolData(atomicMEV.data),
-    [atomicMEV.data]
-  );
-  const cexDexTransformed = useMemo(
-    () => transformProtocolData(cexDex.data),
-    [cexDex.data]
-  );
-  const cexDexTimeboostedTransformed = useMemo(
-    () => transformProtocolData(cexDexTimeboosted.data),
-    [cexDexTimeboosted.data]
-  );
-  const liquidationTransformed = useMemo(
-    () => transformProtocolData(liquidation.data),
-    [liquidation.data]
-  );
-  const liquidationTimeboostedTransformed = useMemo(
-    () => transformProtocolData(liquidationTimeboosted.data),
-    [liquidationTimeboosted.data]
-  );
+const atomicArbLines: LineConfig[] = [
+  { dataKey: "total", name: "Total", strokeColor: chartColors.atomic },
+  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
+  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+];
+
+const cexDexLines: LineConfig[] = [
+  { dataKey: "total", name: "Total", strokeColor: chartColors.cexdex },
+  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
+  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+];
+
+const liquidationLines: LineConfig[] = [
+  { dataKey: "total", name: "Total", strokeColor: chartColors.liquidation },
+  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
+  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+];
+
+function MEVSection({ id }: { id?: string }) {
+  // Fetch functions for each chart
+  const fetchGrossMEV = useCallback((timeRange: string) => apiClient.getGrossMEV(timeRange), []);
+  const fetchGrossAtomicArb = useCallback((timeRange: string) => apiClient.getGrossAtomicArb(timeRange), []);
+  const fetchGrossCexDex = useCallback((timeRange: string) => apiClient.getGrossCexDexQuotes(timeRange), []);
+  const fetchGrossLiquidation = useCallback((timeRange: string) => apiClient.getGrossLiquidation(timeRange), []);
+  const fetchAtomicMEV = useCallback((timeRange: string) => apiClient.getAtomicMEV(timeRange), []);
+  const fetchAtomicMEVTimeboosted = useCallback((timeRange: string) => apiClient.getAtomicMEVTimeboosted(timeRange), []);
+  const fetchCexDex = useCallback((timeRange: string) => apiClient.getCexDex(timeRange), []);
+  const fetchCexDexTimeboosted = useCallback((timeRange: string) => apiClient.getCexDexTimeboosted(timeRange), []);
+  const fetchLiquidation = useCallback((timeRange: string) => apiClient.getLiquidation(timeRange), []);
+  const fetchLiquidationTimeboosted = useCallback((timeRange: string) => apiClient.getLiquidationTimeboosted(timeRange), []);
 
   return (
     <Box id={id} className="section-container">
@@ -147,271 +109,143 @@ function MEVSection({ id }: { id?: string }) {
       <Box className="section-content">
         {/* Overview Row - Full width hero chart */}
         <Box className="chart-grid" sx={{ marginBottom: '16px' }}>
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Gross MEV Overview"
-            isLoading={grossMEV.isLoading}
-            isError={grossMEV.isError}
-            errorMessage={grossMEV.error?.message}
+            queryKey="gross-mev"
+            fetchData={fetchGrossMEV}
+            transformData={transformTimeSeriesData}
+            lines={grossMevLines}
+            yAxisLabel="Profit (USD)"
             className="chart-card-full"
             variant="default"
             accentColor={chartColors.total}
-          >
-            <TimeSeriesChart
-              data={transformTimeSeriesData(grossMEV.data || [])}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                {
-                  dataKey: "total",
-                  name: "Total",
-                  strokeColor: chartColors.total,
-                },
-                {
-                  dataKey: "normal",
-                  name: "Normal",
-                  strokeColor: chartColors.normal,
-                },
-                {
-                  dataKey: "timeboost",
-                  name: "Timeboost",
-                  strokeColor: chartColors.timeboost,
-                },
-              ]}
-            />
-          </ChartCard>
+          />
         </Box>
 
         {/* Gross MEV Category Breakdown - 3 compact charts per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Gross Atomic Arb"
-            isLoading={grossAtomicArb.isLoading}
-            isError={grossAtomicArb.isError}
-            errorMessage={grossAtomicArb.error?.message}
+            queryKey="gross-atomic-arb"
+            fetchData={fetchGrossAtomicArb}
+            transformData={transformTimeSeriesData}
+            lines={atomicArbLines}
+            yAxisLabel="Profit (USD)"
             className="chart-card-third"
             variant="compact"
             accentColor={chartColors.atomic}
-          >
-            <TimeSeriesChart
-              data={transformTimeSeriesData(grossAtomicArb.data || [])}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                {
-                  dataKey: "total",
-                  name: "Total",
-                  strokeColor: chartColors.atomic,
-                },
-                {
-                  dataKey: "normal",
-                  name: "Normal",
-                  strokeColor: chartColors.normal,
-                },
-                {
-                  dataKey: "timeboost",
-                  name: "Timeboost",
-                  strokeColor: chartColors.timeboost,
-                },
-              ]}
-            />
-          </ChartCard>
+          />
 
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Gross CexDex"
-            isLoading={grossCexDexQuotes.isLoading}
-            isError={grossCexDexQuotes.isError}
-            errorMessage={grossCexDexQuotes.error?.message}
+            queryKey="gross-cex-dex"
+            fetchData={fetchGrossCexDex}
+            transformData={transformTimeSeriesData}
+            lines={cexDexLines}
+            yAxisLabel="Profit (USD)"
             className="chart-card-third"
             variant="compact"
             accentColor={chartColors.cexdex}
-          >
-            <TimeSeriesChart
-              data={transformTimeSeriesData(grossCexDexQuotes.data || [])}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                {
-                  dataKey: "total",
-                  name: "Total",
-                  strokeColor: chartColors.cexdex,
-                },
-                {
-                  dataKey: "normal",
-                  name: "Normal",
-                  strokeColor: chartColors.normal,
-                },
-                {
-                  dataKey: "timeboost",
-                  name: "Timeboost",
-                  strokeColor: chartColors.timeboost,
-                },
-              ]}
-            />
-          </ChartCard>
+          />
 
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Gross Liquidation"
-            isLoading={grossLiquidation.isLoading}
-            isError={grossLiquidation.isError}
-            errorMessage={grossLiquidation.error?.message}
+            queryKey="gross-liquidation"
+            fetchData={fetchGrossLiquidation}
+            transformData={transformTimeSeriesData}
+            lines={liquidationLines}
+            yAxisLabel="Profit (USD)"
             className="chart-card-third"
             variant="compact"
             accentColor={chartColors.liquidation}
-          >
-            <TimeSeriesChart
-              data={transformTimeSeriesData(grossLiquidation.data || [])}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                {
-                  dataKey: "total",
-                  name: "Total",
-                  strokeColor: chartColors.liquidation,
-                },
-                {
-                  dataKey: "normal",
-                  name: "Normal",
-                  strokeColor: chartColors.normal,
-                },
-                {
-                  dataKey: "timeboost",
-                  name: "Timeboost",
-                  strokeColor: chartColors.timeboost,
-                },
-              ]}
-            />
-          </ChartCard>
+          />
         </Box>
 
         {/* Protocol Breakdown - Atomic Arb - 2 per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Atomic Arb by Protocol"
-            isLoading={atomicMEV.isLoading}
-            isError={atomicMEV.isError}
-            errorMessage={atomicMEV.error?.message}
+            queryKey="atomic-mev"
+            fetchData={fetchAtomicMEV}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.atomic}
-          >
-            <TimeSeriesChart
-              data={atomicMEVTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={atomicMEVTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
 
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Atomic Arb Timeboosted"
-            isLoading={atomicMEVTimeboosted.isLoading}
-            isError={atomicMEVTimeboosted.isError}
-            errorMessage={atomicMEVTimeboosted.error?.message}
+            queryKey="atomic-mev-timeboosted"
+            fetchData={fetchAtomicMEVTimeboosted}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.timeboost}
-          >
-            <TimeSeriesChart
-              data={atomicMEVTimeboostedTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={atomicMEVTimeboostedTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
         </Box>
 
         {/* Protocol Breakdown - CexDex - 2 per row */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="CexDex by Protocol"
-            isLoading={cexDex.isLoading}
-            isError={cexDex.isError}
-            errorMessage={cexDex.error?.message}
+            queryKey="cexdex"
+            fetchData={fetchCexDex}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.cexdex}
-          >
-            <TimeSeriesChart
-              data={cexDexTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={cexDexTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
 
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="CexDex Timeboosted"
-            isLoading={cexDexTimeboosted.isLoading}
-            isError={cexDexTimeboosted.isError}
-            errorMessage={cexDexTimeboosted.error?.message}
+            queryKey="cexdex-timeboosted"
+            fetchData={fetchCexDexTimeboosted}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.timeboost}
-          >
-            <TimeSeriesChart
-              data={cexDexTimeboostedTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={cexDexTimeboostedTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
         </Box>
 
         {/* Protocol Breakdown - Liquidation - 2 per row */}
         <Box className="chart-grid chart-grid-dense">
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Liquidation by Protocol"
-            isLoading={liquidation.isLoading}
-            isError={liquidation.isError}
-            errorMessage={liquidation.error?.message}
+            queryKey="liquidation"
+            fetchData={fetchLiquidation}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.liquidation}
-          >
-            <TimeSeriesChart
-              data={liquidationTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={liquidationTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
 
-          <ChartCard
+          <TimeSeriesChartWithControls
             title="Liquidation Timeboosted"
-            isLoading={liquidationTimeboosted.isLoading}
-            isError={liquidationTimeboosted.isError}
-            errorMessage={liquidationTimeboosted.error?.message}
+            queryKey="liquidation-timeboosted"
+            fetchData={fetchLiquidationTimeboosted}
+            transformData={transformProtocolData}
+            lines={[]}
+            dynamicLines={generateProtocolLineConfigs}
+            yAxisLabel="Profit (USD)"
             className="chart-card-half"
             variant="medium"
             accentColor={chartColors.timeboost}
-          >
-            <TimeSeriesChart
-              data={liquidationTimeboostedTransformed.transformedData}
-              xAxisKey="time"
-              yAxisLabel="Profit (USD)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={liquidationTimeboostedTransformed.lineConfigs}
-            />
-          </ChartCard>
+          />
         </Box>
       </Box>
     </Box>
