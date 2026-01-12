@@ -4,26 +4,28 @@ import './ChartCard.css'
 
 export interface ChartCardProps {
   title: string
-  isLoading: boolean
-  isError: boolean
+  isLoading?: boolean
+  isError?: boolean
   errorMessage?: string
   children: ReactNode
   className?: string
   contentClassName?: string
   variant?: 'default' | 'medium' | 'compact' | 'mini'
   accentColor?: string
+  headerAction?: ReactNode
 }
 
 function ChartCard({
   title,
-  isLoading,
-  isError,
+  isLoading = false,
+  isError = false,
   errorMessage,
   children,
   className = 'chart-card-full',
   contentClassName,
   variant = 'default',
   accentColor,
+  headerAction,
 }: ChartCardProps) {
   const variantClass = `chart-card-${variant}`
   const cardClassName = ['chart-card', variantClass, className].filter(Boolean).join(' ')
@@ -42,17 +44,26 @@ function ChartCard({
       } : undefined}
     >
       <CardContent className={mergedContentClassName}>
-        <Typography
-          variant={titleVariant}
-          component="h2"
-          className="chart-card-title"
-          sx={accentColor ? {
-            color: accentColor,
-            textShadow: `0 0 20px ${accentColor}40`
-          } : undefined}
-        >
-          {title}
-        </Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: headerAction ? 1 : 0,
+        }}>
+          <Typography
+            variant={titleVariant}
+            component="h2"
+            className="chart-card-title"
+            sx={accentColor ? {
+              color: accentColor,
+              textShadow: `0 0 20px ${accentColor}40`,
+              marginBottom: 0,
+            } : { marginBottom: 0 }}
+          >
+            {title}
+          </Typography>
+          {headerAction}
+        </Box>
         {isLoading ? (
           <Box className="loading-container">
             <CircularProgress size={variant === 'mini' ? 24 : (variant === 'compact' || variant === 'medium') ? 32 : 40} />

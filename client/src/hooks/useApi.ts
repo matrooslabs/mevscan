@@ -26,6 +26,9 @@ import type {
 // Initialize API client - you may want to configure this based on your environment
 const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || '')
 
+// Export the apiClient instance for use in components
+export { apiClient }
+
 /**
  * Query priority levels for staggered loading
  */
