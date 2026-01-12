@@ -1,7 +1,7 @@
-import { 
-  TimeSeriesDataPoint, 
+import {
+  TimeSeriesDataPoint,
   TimeSeriesByProtocolDataPoint,
-  TimeSeriesPercentageDataPoint 
+  TimeSeriesPercentageDataPoint
 } from '../routes/types';
 
 export interface RawTimeSeriesRow {
@@ -24,61 +24,46 @@ export interface RawTimeSeriesPercentageRow {
   percentage: number;
 }
 
+/**
+ * Transform raw time series data.
+ * Returns Unix timestamps (seconds) - frontend handles formatting based on time range.
+ */
 export function transformTimeSeriesData(data: RawTimeSeriesRow[]): TimeSeriesDataPoint[] {
   return data
     .filter((row) => row.time != null && !isNaN(row.time))
-    .map((row) => {
-      const date = new Date(row.time * 1000);
-      if (isNaN(date.getTime())) {
-        return null;
-      }
-      const hours = date.getHours().toString().padStart(2, '0');
-      const mins = date.getMinutes().toString().padStart(2, '0');
-      return {
-        time: `${hours}:${mins}`,
-        total: row.total || 0,
-        normal: row.normal || 0,
-        timeboost: row.timeboost || 0,
-      };
-    })
-    .filter((item): item is TimeSeriesDataPoint => item !== null);
+    .map((row) => ({
+      time: row.time,
+      total: row.total || 0,
+      normal: row.normal || 0,
+      timeboost: row.timeboost || 0,
+    }));
 }
 
+/**
+ * Transform protocol time series data.
+ * Returns Unix timestamps (seconds) - frontend handles formatting based on time range.
+ */
 export function transformProtocolTimeSeriesData(data: RawProtocolTimeSeriesRow[]): TimeSeriesByProtocolDataPoint[] {
   return data
     .filter((row) => row.time != null && !isNaN(row.time))
-    .map((row) => {
-      const date = new Date(row.time * 1000);
-      if (isNaN(date.getTime())) {
-        return null;
-      }
-      const hours = date.getHours().toString().padStart(2, '0');
-      const mins = date.getMinutes().toString().padStart(2, '0');
-      return {
-        time: `${hours}:${mins}`,
-        proto: row.proto || '',
-        profit_usd: row.profit_usd || 0,
-      };
-    })
-    .filter((item): item is TimeSeriesByProtocolDataPoint => item !== null);
+    .map((row) => ({
+      time: row.time,
+      proto: row.proto || '',
+      profit_usd: row.profit_usd || 0,
+    }));
 }
 
+/**
+ * Transform percentage time series data.
+ * Returns Unix timestamps (seconds) - frontend handles formatting based on time range.
+ */
 export function transformTimeSeriesPercentageData(data: RawTimeSeriesPercentageRow[]): TimeSeriesPercentageDataPoint[] {
   return data
     .filter((row) => row.time != null && !isNaN(row.time))
-    .map((row) => {
-      const date = new Date(row.time * 1000);
-      if (isNaN(date.getTime())) {
-        return null;
-      }
-      const hours = date.getHours().toString().padStart(2, '0');
-      const mins = date.getMinutes().toString().padStart(2, '0');
-      return {
-        time: `${hours}:${mins}`,
-        total: row.total || 0,
-        timeboost: row.timeboost || 0,
-        percentage: row.percentage || 0,
-      };
-    })
-    .filter((item): item is TimeSeriesPercentageDataPoint => item !== null);
+    .map((row) => ({
+      time: row.time,
+      total: row.total || 0,
+      timeboost: row.timeboost || 0,
+      percentage: row.percentage || 0,
+    }));
 }

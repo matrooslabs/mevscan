@@ -1,11 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { Typography, Box } from "@mui/material";
-import TimeSeriesChart, {
-  type TimeSeriesData,
-} from "../../components/TimeSeriesChart";
+import TimeSeriesChart from "../../components/TimeSeriesChart";
 import BarChart from "../../components/BarChart";
 import {
-  useExpressLaneMEVPercentagePerMinute,
+  apiClient,
   useExpressLaneNetProfit,
   useExpressLaneProfitByController,
   usePeriodicApiRefreshByKeys,
@@ -19,16 +17,29 @@ import type {
   ExpressLaneProfitByControllerEntry,
 } from "../../types/api";
 
+// Transform Express Lane MEV Percentage data
+const transformPercentageData = (data: unknown[]) => {
+  const typedData = data as ExpressLaneMEVPercentagePerMinute[];
+  if (!typedData) return [];
+  return typedData.map((item) => ({
+    time: item.time,
+    total: item.percentage,
+    normal: 0,
+    timeboost: item.percentage,
+  }));
+};
+
+const percentageLines = [
+  { dataKey: "total", name: "Percentage", strokeColor: chartColors.timeboost },
+];
+
 function ExpressLaneSection({ id }: { id?: string }) {
-  const expressLaneMEVPercentagePerMinute =
-    useExpressLaneMEVPercentagePerMinute();
+  // These don't use time series, so we keep them as regular hooks
   const expressLaneNetProfit = useExpressLaneNetProfit();
   const expressLaneProfitByController = useExpressLaneProfitByController();
 
   usePeriodicApiRefreshByKeys(
     [
-      ["express-lane-mev-percentage"],
-      ["express-lane-mev-percentage-per-minute"],
       ["express-lane-net-profit"],
       ["express-lane-profit-by-controller"],
     ],
@@ -37,19 +48,11 @@ function ExpressLaneSection({ id }: { id?: string }) {
     200
   );
 
-  // Transform Express Lane MEV Percentage per minute data
-  const transformPercentageTimeSeriesData = useMemo<TimeSeriesData>(() => {
-    const percentageData = expressLaneMEVPercentagePerMinute.data as
-      | ExpressLaneMEVPercentagePerMinute[]
-      | undefined;
-    if (!percentageData) return [];
-    return percentageData.map((item) => ({
-      time: item.time,
-      total: item.percentage,
-      normal: 0,
-      timeboost: item.percentage,
-    }));
-  }, [expressLaneMEVPercentagePerMinute.data]);
+  // Fetch function for MEV Percentage chart
+  const fetchMEVPercentage = useCallback(
+    (timeRange: string) => apiClient.getExpressLaneMEVPercentagePerMinute(timeRange),
+    []
+  );
 
   // Transform Express Lane Net Profit data
   const transformExpressLaneNetProfitData = useMemo(() => {
@@ -103,30 +106,18 @@ function ExpressLaneSection({ id }: { id?: string }) {
       <Box className="section-content">
         {/* Top Row - 2 charts */}
         <Box className="chart-grid chart-grid-dense" sx={{ marginBottom: '16px' }}>
-          <ChartCard
+          <TimeSeriesChart
+            enableTimeRangeSelector
             title="MEV Percentage"
-            isLoading={expressLaneMEVPercentagePerMinute.isLoading}
-            isError={expressLaneMEVPercentagePerMinute.isError}
-            errorMessage={expressLaneMEVPercentagePerMinute.error?.message}
+            queryKey="express-lane-mev-percentage-per-minute"
+            fetchData={fetchMEVPercentage}
+            transformData={transformPercentageData}
+            lines={percentageLines}
+            yAxisLabel="Percentage (%)"
             className="chart-card-half"
             variant="compact"
             accentColor={chartColors.timeboost}
-          >
-            <TimeSeriesChart
-              data={transformPercentageTimeSeriesData}
-              xAxisKey="time"
-              yAxisLabel="Percentage (%)"
-              showArea={true}
-              hideZeroValues={true}
-              lines={[
-                {
-                  dataKey: "total",
-                  name: "Percentage",
-                  strokeColor: chartColors.timeboost,
-                },
-              ]}
-            />
-          </ChartCard>
+          />
 
           <ChartCard
             title="Net Profit by Round"

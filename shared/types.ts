@@ -212,9 +212,10 @@ export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 /**
  * Time series data point for chart visualization
+ * time is Unix timestamp in seconds - frontend handles formatting based on time range
  */
 export interface TimeSeriesDataPoint {
-  time: string;
+  time: number;
   total: number;
   normal: number;
   timeboost: number;
@@ -227,9 +228,10 @@ export type TimeSeriesResponse = TimeSeriesDataPoint[];
 
 /**
  * Time series data point by protocol for Atomic MEV Timeboosted
+ * time is Unix timestamp in seconds - frontend handles formatting based on time range
  */
 export interface TimeSeriesByProtocolDataPoint {
-  time: string;
+  time: number;
   proto: string;
   profit_usd: number;
 }
@@ -250,9 +252,10 @@ export interface PieChartResponse {
 
 /**
  * Time series data point with percentage for Express Lane MEV Percentage over time
+ * time is Unix timestamp in seconds - frontend handles formatting based on time range
  */
 export interface TimeSeriesPercentageDataPoint {
-  time: string;
+  time: number;
   total: number;
   timeboost: number;
   percentage: number;

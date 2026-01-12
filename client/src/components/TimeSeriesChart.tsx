@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import * as echarts from 'echarts/core'
 import { LineChart } from 'echarts/charts'
@@ -9,7 +9,11 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption, SeriesOption } from 'echarts'
+import { useQuery } from '@tanstack/react-query'
 import { chartTheme } from '../theme'
+import type { TimeRange } from '../hooks/useTimeRange'
+import ChartCard from './ChartCard'
+import TimeRangeSelector from './TimeRangeSelector'
 
 echarts.use([
   LineChart,
@@ -21,9 +25,10 @@ echarts.use([
 
 /**
  * Time series data point for chart visualization
+ * time is now a Unix timestamp (number) - will be formatted based on timeRange
  */
 export interface TimeSeriesDataPoint {
-  time: string;
+  time: number;
   total: number;
   normal: number;
   timeboost: number;
@@ -43,7 +48,8 @@ export interface LineConfig {
 }
 
 export interface TimeSeriesChartProps {
-  data?: TimeSeriesData | Record<string, string | number | null | undefined>[];
+  /** Chart data (used when enableTimeRangeSelector is false) */
+  data?: TimeSeriesData | Record<string, unknown>[];
   dataKey?: string;
   xAxisKey?: string;
   name?: string;
@@ -58,12 +64,91 @@ export interface TimeSeriesChartProps {
   showArea?: boolean;
   fillOpacity?: number;
   hideZeroValues?: boolean;
+  /** Time range for formatting x-axis labels */
+  timeRange?: TimeRange;
+
+  // Time range selector props (used when enableTimeRangeSelector is true)
+  /** Enable per-chart time range selector with data fetching */
+  enableTimeRangeSelector?: boolean;
+  /** Chart title (required when enableTimeRangeSelector is true) */
+  title?: string;
+  /** Unique query key for caching (required when enableTimeRangeSelector is true) */
+  queryKey?: string;
+  /** Function to fetch data given a time range */
+  fetchData?: (timeRange: string) => Promise<unknown[]>;
+  /** Transform raw data to chart format */
+  transformData?: (data: unknown[]) => Record<string, unknown>[];
+  /** Dynamic line config generator (called with raw data) */
+  dynamicLines?: (data: unknown[]) => LineConfig[];
+  /** Default time range */
+  defaultTimeRange?: TimeRange;
+  /** ChartCard className */
+  className?: string;
+  /** ChartCard variant */
+  variant?: 'default' | 'medium' | 'compact' | 'mini';
+  /** Accent color for the card */
+  accentColor?: string;
+  /** Loading state (used when enableTimeRangeSelector is false but wrapped in ChartCard) */
+  isLoading?: boolean;
+  /** Error state */
+  isError?: boolean;
+  /** Error message */
+  errorMessage?: string;
+}
+
+/**
+ * Format a Unix timestamp based on the selected time range.
+ * - 1d: "HH:mm" format (e.g., "14:30")
+ * - 7d, 30d, 90d: "MMM DD" format (e.g., "Jan 10")
+ */
+function formatTimestamp(timestamp: number | string, timeRange?: TimeRange): string {
+  // Handle legacy string format (for backwards compatibility)
+  if (typeof timestamp === 'string') {
+    return timestamp
+  }
+
+  const date = new Date(timestamp * 1000)
+
+  if (isNaN(date.getTime())) {
+    return ''
+  }
+
+  if (!timeRange || timeRange === '1d') {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const mins = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${mins}`
+  }
+
+  // 7d, 30d, 90d - show date
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const month = months[date.getMonth()]
+  const day = date.getDate()
+  return `${month} ${day}`
+}
+
+/**
+ * Calculate the label interval to show approximately 6-8 labels on the x-axis
+ */
+function calculateLabelInterval(dataLength: number): number | 'auto' {
+  if (dataLength <= 8) return 0 // Show all labels if few data points
+
+  // Target around 6-8 labels
+  const targetLabels = 7
+  const interval = Math.ceil(dataLength / targetLabels) - 1
+
+  return Math.max(0, interval)
 }
 
 const DEFAULT_STROKE_COLOR = '#8884d8';
 const DEFAULT_STROKE_WIDTH = 2;
 const DEFAULT_FILL_OPACITY = 0.3;
 const DEFAULT_POINT_RADIUS = 3;
+
+const QUERY_CONFIG = {
+  staleTime: 30 * 1000,
+  refetchInterval: 60 * 1000,
+  refetchOnWindowFocus: false,
+}
 
 function createLineConfigs(
   lines?: LineConfig[],
@@ -103,7 +188,10 @@ function normalizeNumber(value: unknown): number | null {
   return null;
 }
 
-function TimeSeriesChart({
+/**
+ * Internal chart rendering component
+ */
+function ChartContent({
   data = [],
   dataKey,
   xAxisKey = 'time',
@@ -119,7 +207,12 @@ function TimeSeriesChart({
   showArea = true,
   fillOpacity = DEFAULT_FILL_OPACITY,
   hideZeroValues = false,
-}: TimeSeriesChartProps) {
+  timeRange,
+}: Pick<TimeSeriesChartProps,
+  'data' | 'dataKey' | 'xAxisKey' | 'name' | 'strokeColor' | 'lines' |
+  'showGrid' | 'showLegend' | 'strokeWidth' | 'showDots' | 'xAxisLabel' |
+  'yAxisLabel' | 'showArea' | 'fillOpacity' | 'hideZeroValues' | 'timeRange'
+>) {
   const lineConfigs = useMemo(
     () =>
       createLineConfigs(
@@ -137,9 +230,14 @@ function TimeSeriesChart({
     () =>
       data.map((point) => {
         const value = (point as Record<string, unknown>)[xAxisKey];
-        return value !== undefined && value !== null ? String(value) : '';
+        if (value === undefined || value === null) return '';
+        // Format timestamp if it's a number (Unix timestamp)
+        if (typeof value === 'number') {
+          return formatTimestamp(value, timeRange);
+        }
+        return String(value);
       }),
-    [data, xAxisKey]
+    [data, xAxisKey, timeRange]
   );
 
   const series = useMemo<SeriesOption[]>(
@@ -200,6 +298,9 @@ function TimeSeriesChart({
       ? (numLegendItems > 5 ? 90 : numLegendItems > 3 ? 70 : 48)
       : 24;
 
+    // Calculate label interval for x-axis
+    const labelInterval = calculateLabelInterval(labels.length);
+
     return {
       animation: true,
       tooltip: { trigger: 'axis', confine: true },
@@ -230,8 +331,13 @@ function TimeSeriesChart({
         axisLabel: {
           fontSize: chartTheme.fontSize.axisLabelMedium,
           color: chartTheme.text.axisLabel,
+          interval: labelInterval,
+          rotate: 0,
         },
-        axisTick: { alignWithLabel: true },
+        axisTick: {
+          alignWithLabel: true,
+          interval: labelInterval,
+        },
         axisLine: {
           lineStyle: {
             color: chartTheme.line.axis,
@@ -263,7 +369,7 @@ function TimeSeriesChart({
       },
       series,
     };
-  }, [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid, lineConfigs.length]);
+  }, [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid, lineConfigs.length, timeRange]);
 
   return (
     <div className="chart-container">
@@ -272,5 +378,95 @@ function TimeSeriesChart({
   );
 }
 
-export default React.memo(TimeSeriesChart)
+/**
+ * TimeSeriesChart component with optional time range selector
+ *
+ * When enableTimeRangeSelector is false (default): renders just the chart
+ * When enableTimeRangeSelector is true: wraps chart in ChartCard with time range controls
+ */
+function TimeSeriesChart(props: TimeSeriesChartProps) {
+  const {
+    enableTimeRangeSelector = false,
+    title,
+    queryKey,
+    fetchData,
+    transformData,
+    dynamicLines,
+    defaultTimeRange = '1d',
+    className,
+    variant = 'default',
+    accentColor,
+    lines,
+    data: propData,
+    isLoading: propIsLoading,
+    isError: propIsError,
+    errorMessage: propErrorMessage,
+    ...chartProps
+  } = props;
 
+  // Time range state (only used when enableTimeRangeSelector is true)
+  const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange)
+
+  // Data fetching (only used when enableTimeRangeSelector is true)
+  const { data: fetchedData, isLoading, isError, error } = useQuery({
+    queryKey: [queryKey, timeRange],
+    queryFn: () => fetchData!(timeRange),
+    ...QUERY_CONFIG,
+    enabled: enableTimeRangeSelector && !!fetchData && !!queryKey,
+  })
+
+  // If time range selector is disabled, render just the chart
+  if (!enableTimeRangeSelector) {
+    return (
+      <ChartContent
+        data={propData}
+        lines={lines}
+        timeRange={props.timeRange}
+        {...chartProps}
+      />
+    );
+  }
+
+  // Transform data if needed
+  const chartData = useMemo(() => {
+    if (!fetchedData) return []
+    if (transformData) {
+      return transformData(fetchedData)
+    }
+    return fetchedData as Record<string, unknown>[]
+  }, [fetchedData, transformData])
+
+  // Use dynamic lines if provided, otherwise use static lines
+  const chartLines = useMemo(() => {
+    if (dynamicLines && fetchedData) {
+      return dynamicLines(fetchedData)
+    }
+    return lines
+  }, [dynamicLines, fetchedData, lines])
+
+  const selector = (
+    <TimeRangeSelector value={timeRange} onChange={setTimeRange} size="small" />
+  )
+
+  return (
+    <ChartCard
+      title={title || ''}
+      isLoading={isLoading}
+      isError={isError}
+      errorMessage={error?.message}
+      className={className}
+      variant={variant}
+      accentColor={accentColor}
+      headerAction={selector}
+    >
+      <ChartContent
+        data={chartData}
+        lines={chartLines}
+        timeRange={timeRange}
+        {...chartProps}
+      />
+    </ChartCard>
+  )
+}
+
+export default React.memo(TimeSeriesChart)

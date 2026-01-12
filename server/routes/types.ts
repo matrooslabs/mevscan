@@ -39,6 +39,7 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
+  getTimeGrouping,
 } from '../helper';
 import type { Request, Response } from 'express';
 import type { Express } from 'express';
@@ -86,6 +87,7 @@ export {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
+  getTimeGrouping,
 };
 
 // Re-export Express types
