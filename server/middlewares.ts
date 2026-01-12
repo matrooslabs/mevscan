@@ -5,8 +5,15 @@ import { ClickHouseClient } from '@clickhouse/client';
 import {
   createCacheMiddleware,
   cleanupExpiredCache,
-  DEFAULT_CACHE_EXPIRE_MS,
+  DEFAULT_CACHE_TTL_MS,
+  getCacheStats,
+  clearCache,
 } from './middleware/cache';
+import {
+  prewarmCache,
+  setupScheduledCacheRefresh,
+  initializeCacheWarming,
+} from './middleware/cacheWarming';
 import type { ErrorResponse } from '@mevscan/shared';
 export {
   formatRelativeTime,
@@ -102,11 +109,15 @@ export function loggingMiddleware() {
 }
 
 /**
- * Caching middleware factory - pass a custom expiry or use the default
+ * Caching middleware factory with stale-while-revalidate support
+ * TTL is automatically determined based on the timeRange query parameter
  */
-export function cacheMiddleware(expireDurationMs = DEFAULT_CACHE_EXPIRE_MS) {
-  return createCacheMiddleware(expireDurationMs);
+export function cacheMiddleware() {
+  return createCacheMiddleware();
 }
+
+// Re-export cache utilities
+export { getCacheStats, clearCache, initializeCacheWarming, prewarmCache, setupScheduledCacheRefresh };
 
 /**
  * Setup periodic cache cleanup (every 5 minutes)

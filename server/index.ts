@@ -9,6 +9,7 @@ import {
   setupCacheCleanup,
   errorHandlerMiddleware,
   notFoundMiddleware,
+  initializeCacheWarming,
 } from './middlewares';
 import { registerRoutes } from './routes';
 import { config } from './config';
@@ -60,7 +61,17 @@ app.use(errorHandlerMiddleware());
 app.use(notFoundMiddleware());
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
   console.log(`📡 API endpoints available at http://localhost:${PORT}`);
+
+  // Initialize cache warming after server is ready
+  // This pre-warms expensive queries (30d, 90d) and sets up scheduled refresh
+  try {
+    await initializeCacheWarming();
+    console.log('✓ Cache warming initialized');
+  } catch (error) {
+    console.error('WARNING: Cache warming failed to initialize:', error);
+    // Don't exit - cache warming is optional, server can still function
+  }
 });
