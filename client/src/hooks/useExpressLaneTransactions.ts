@@ -35,6 +35,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
   // Handle incoming messages from Ably
   const handleMessage = useCallback((message: { data?: unknown }) => {
+    console.log("[useExpressLaneTransactions] Received message:", message);
     const newTransactions = message.data as
       | ExpressLaneTransaction[]
       | undefined;
@@ -111,7 +112,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
     return () => {
       isCancelled = true;
-    }; 
+    };
   }, [channel]);
 
   // Compute round info from latest transaction
