@@ -1,11 +1,13 @@
 import Ably from 'ably';
 import { ClickHouseClient } from '@clickhouse/client';
 import { initClickHouseClient } from '@mevscan/shared/clickhouse';
-import { getAbly } from '@mevscan/shared/ably';
 import { publishExpressLaneTransactions } from './services/expressLaneService';
+import { publishAuctionInfo } from './services/auctionService';
 import { config } from './config';
+import logger from './logger';
 
 let channelLastStoredBlockNumberTxIndex: Record<string, [number, number]> = {};
+let lastPublishedRound: Record<string, number> = {};
 interface InitResult {
     clickhouseClient: ClickHouseClient;
     ably: Ably.Realtime;
@@ -13,17 +15,18 @@ interface InitResult {
 
 async function init(): Promise<InitResult> {
     try {
-        const ably = getAbly({ apiKey: config.ably.apiKey });
+        logger.info(`Initializing ClickHouse client and Ably with API key: ${config.ably.apiKey}`);
+        const ably = new Ably.Realtime({ key: config.ably.apiKey });
         const clickhouseClient = initClickHouseClient(config.clickhouse);
         const pingResult = await clickhouseClient.ping();
         if (!pingResult.success) {
-            console.error('ERROR: Failed to ping ClickHouse client');
+            logger.fatal('Failed to ping ClickHouse client');
             process.exit(1);
         }
-        console.log('✓ ClickHouse client initialized successfully');
+        logger.info('ClickHouse client initialized successfully');
         return { clickhouseClient, ably };
     } catch (error) {
-        console.error('ERROR: Failed to initialize ClickHouse client:', error);
+        logger.fatal({ err: error }, 'Failed to initialize ClickHouse client');
         process.exit(1);
     }
 }
@@ -40,6 +43,7 @@ async function init(): Promise<InitResult> {
 
     while (true) {
         await publishExpressLaneTransactions(ably, clickhouseClient, channelLastStoredBlockNumberTxIndex);
+        await publishAuctionInfo(ably, clickhouseClient, lastPublishedRound);
         await new Promise(resolve => setTimeout(resolve, config.ably.refreshIntervalMs));
     }
 })();

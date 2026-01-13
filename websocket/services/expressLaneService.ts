@@ -6,9 +6,9 @@
 
 import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
-import { ABLY_CHANNELS } from "@mevscan/shared/ablyConstants";
-import { config, NodeEnv } from "../config";
+import { ABLY_CHANNELS } from "@mevscan/shared/ably";
 import { ExpressLaneTransaction } from "@mevscan/shared/types";
+import logger from '../logger';
 
 async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, blockNumber: number, txIndex: number): Promise<ExpressLaneTransaction[]> {
     const query = ` SELECT
@@ -29,7 +29,7 @@ async function getExpressLaneTransactions(clickhouseClient: ClickHouseClient, bl
         AND (
             bh.block_number > {blockNumber:UInt64}
             OR (bh.block_number = {blockNumber:UInt64} AND bh.tx_index > {txIndex:UInt32})
-        ) 
+        )
     ORDER BY bh.block_number ASC, bh.tx_index ASC
     `;
 
@@ -81,10 +81,8 @@ export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickh
         return;
     }
 
-    if (config.nodeEnv === NodeEnv.TEST) {
-        console.log('Publishing Express Lane Transactions data:', transactions);
-    } else {
-        await ablyChannel.publish(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, transactions);
-    }
+    logger.debug(`Publishing ${transactions.length} Express Lane Transactions to Ably channel: ${ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS}`);
+    logger.debug({ count: transactions.length, transactions: transactions }, 'Publishing Express Lane Transactions');
+    await ablyChannel.publish(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, transactions);
     lastStoredBlockNumberTxIndex[ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS] = [transactions[transactions.length - 1]!.blockNumber, transactions[transactions.length - 1]!.txIndex];
 }

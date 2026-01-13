@@ -101,8 +101,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
         );
         setTransactions(filteredTransactions);
         setIsConnected(true);
-      } catch (error) {
-        console.error("Failed to load express lane transaction history", error);
+      } catch {
         setIsConnected(false);
       }
     };
@@ -111,7 +110,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
     return () => {
       isCancelled = true;
-    }; 
+    };
   }, [channel]);
 
   // Compute round info from latest transaction

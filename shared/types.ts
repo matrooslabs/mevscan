@@ -481,3 +481,21 @@ export interface ExpressLaneTransaction {
   expressLaneController: string | null;
   mevType: string;
 }
+
+/**
+ * Auction Info from timeboost.auction table
+ */
+export interface AuctionInfo {
+  blockNumber: number | null;
+  logIndex: number | null;
+  txHash: string | null;
+  contractAddress: string;
+  isMultiBidAuction: boolean;
+  round: number;
+  firstPriceBidder: string;
+  firstPriceExpressLaneController: string;
+  firstPriceAmount: string;
+  price: string;
+  roundStartTimestamp: number;
+  roundEndTimestamp: number;
+}

@@ -2,39 +2,14 @@
   "name": "@mevscan/shared",
   "version": "1.0.0",
   "description": "Shared TypeScript type definitions for MEVScan",
-  "main": "dist/types.js",
-  "types": "dist/types.d.ts",
+  "main": "./types.ts",
+  "types": "./types.ts",
   "exports": {
-    ".": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.js",
-      "require": "./dist/types.js",
-      "default": "./types.ts"
-    },
-    "./clickhouse": {
-      "types": "./dist/clickhouse.d.ts",
-      "import": "./dist/clickhouse.js",
-      "require": "./dist/clickhouse.js",
-      "default": "./clickhouse.ts"
-    },
-    "./config": {
-      "types": "./dist/config.d.ts",
-      "import": "./dist/config.js",
-      "require": "./dist/config.js",
-      "default": "./config.ts"
-    },
-    "./ably": {
-      "types": "./dist/ably.d.ts",
-      "import": "./dist/ably.js",
-      "require": "./dist/ably.js",
-      "default": "./ably.ts"
-    },
-    "./ablyConstants": {
-      "types": "./dist/ablyConstants.d.ts",
-      "import": "./dist/ablyConstants.js",
-      "require": "./dist/ablyConstants.js",
-      "default": "./ablyConstants.ts"
-    }
+    ".": "./types.ts",
+    "./types": "./types.ts",
+    "./clickhouse": "./clickhouse.ts",
+    "./config": "./config.ts",
+    "./ably": "./ably.ts"
   },
   "scripts": {
     "build": "tsc",
