@@ -11,7 +11,6 @@ import {
   formatEthValue,
   getTimeRangeFilter,
   getTimestampTimeRangeFilter,
-  getTimeGrouping,
 } from './types';
 import { transformTimeSeriesData, RawTimeSeriesRow } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
@@ -25,13 +24,12 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '1d';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
 
       const query = `
         SELECT
-          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) as time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(m.profit_usd, m.timeboosted = true) as timeboost
@@ -78,13 +76,12 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '1d';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
 
       const query = `
         SELECT
-          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) as time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(m.profit_usd, m.timeboosted = true) as timeboost
@@ -132,13 +129,12 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '1d';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
 
       const query = `
         SELECT
-          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
           sumIf(m.profit_usd, m.timeboosted = false) as normal,
           sumIf(
@@ -185,13 +181,12 @@ export function registerMevRoutes(app: Express) {
     res: Response<TimeSeriesResponse | ErrorResponse>
   ) => {
     try {
-      const timeRange = (req.query.timeRange as string) || '1d';
+      const timeRange = (req.query.timeRange as string) || '24hours';
       const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
 
       const query = `
         SELECT
-          toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
+          toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
           sumIf(
             m.profit_usd,
