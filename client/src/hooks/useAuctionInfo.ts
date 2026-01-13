@@ -14,8 +14,11 @@ export function useAuctionInfo(): UseAuctionInfoResult {
 
   const handleMessage = useCallback((message: { data?: unknown }) => {
     const data = message.data as AuctionInfo | undefined;
+    console.log("[useAuctionInfo] Received message:", message);
+    console.log("[useAuctionInfo] Parsed data:", data);
 
     if (!data) {
+      console.log("[useAuctionInfo] No data, skipping");
       return;
     }
 
@@ -38,6 +41,7 @@ export function useAuctionInfo(): UseAuctionInfoResult {
 
     const loadHistory = async () => {
       try {
+        console.log("[useAuctionInfo] Loading history...");
         const history = await channel.history({
           limit: 1,
           direction: "forwards",
@@ -45,15 +49,18 @@ export function useAuctionInfo(): UseAuctionInfoResult {
         if (isCancelled) return;
 
         const items = history?.items ?? [];
+        console.log("[useAuctionInfo] History items:", items);
         if (items.length === 0) {
+          console.log("[useAuctionInfo] No history items found");
           return;
         }
 
         const data = items[0].data as AuctionInfo;
+        console.log("[useAuctionInfo] History data:", data);
         setAuctionInfo(data);
         setIsConnected(true);
       } catch (error) {
-        console.error("Failed to load auction info history", error);
+        console.error("[useAuctionInfo] Failed to load auction info history", error);
         setIsConnected(false);
       }
     };
