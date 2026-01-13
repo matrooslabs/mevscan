@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import logger from './logger';
 
 // Load environment variables from the root directory
 // Both development and production resolve to the project root
@@ -64,22 +65,22 @@ export const config: Config = {
 
 // Validate critical configurations immediately
 if (!config.clickhouse.url) {
-  console.error('ERROR: CLICKHOUSE_URL environment variable is required');
+  logger.fatal('CLICKHOUSE_URL environment variable is required');
   process.exit(1);
 }
 if (!config.clickhouse.username) {
-  console.error('ERROR: CLICKHOUSE_USERNAME environment variable is required');
+  logger.fatal('CLICKHOUSE_USERNAME environment variable is required');
   process.exit(1);
 }
 if (!config.clickhouse.password) {
-  console.error('ERROR: CLICKHOUSE_PASSWORD environment variable is required');
+  logger.fatal('CLICKHOUSE_PASSWORD environment variable is required');
   process.exit(1);
 }
 if (!config.clickhouse.database) {
-  console.error('ERROR: CLICKHOUSE_DATABASE environment variable is required');
+  logger.fatal('CLICKHOUSE_DATABASE environment variable is required');
   process.exit(1);
 }
 if (!config.ably.apiKey) {
-  console.error('ERROR: ABLY_API_KEY environment variable is required');
+  logger.fatal('ABLY_API_KEY environment variable is required');
   process.exit(1);
 }

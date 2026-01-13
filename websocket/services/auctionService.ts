@@ -1,8 +1,8 @@
 import Ably from 'ably';
 import { ClickHouseClient } from "@clickhouse/client";
-import { ABLY_CHANNELS } from "@mevscan/shared/ablyConstants";
-import { config, NodeEnv } from "../config";
+import { ABLY_CHANNELS } from "@mevscan/shared/ably";
 import { AuctionInfo } from "@mevscan/shared/types";
+import logger from '../logger';
 
 async function getLatestAuctionInfo(clickhouseClient: ClickHouseClient): Promise<AuctionInfo | null> {
     const query = `
@@ -38,22 +38,12 @@ export async function publishAuctionInfo(
     clickhouseClient: ClickHouseClient,
     lastPublishedRound: Record<string, number>
 ) {
-    try {
         const ablyChannel = ably.channels.get(ABLY_CHANNELS.AUCTION_INFO);
         let lastRound = lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] ?? null;
 
-        // On cold start, try to get last round from Ably history
-        if (lastRound === null) {
-            const history = await ablyChannel.history({ limit: 1 });
-            const message = history.items.map((item) => item.data);
-            if (message && message.length > 0) {
-                const auctionData = message[0] as unknown as AuctionInfo;
-                lastRound = auctionData.round;
-            }
-        }
-
         const auctionInfo = await getLatestAuctionInfo(clickhouseClient);
         if (!auctionInfo) {
+            logger.warn('No auction info found from db to publish');
             return;
         }
 
@@ -62,14 +52,7 @@ export async function publishAuctionInfo(
             return;
         }
 
-        if (config.nodeEnv === NodeEnv.TEST) {
-            console.log('Publishing Auction Info:', auctionInfo);
-        } else {
-            await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
-        }
-
+        logger.info({ info: auctionInfo }, 'Publishing auction info');
+        await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
         lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] = auctionInfo.round;
-    } catch (error) {
-        console.error('Failed to publish auction info:', error);
-    }
 }
