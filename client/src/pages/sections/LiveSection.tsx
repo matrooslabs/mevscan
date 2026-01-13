@@ -14,6 +14,7 @@ import type { EChartsOption } from "echarts";
 import NumberFlow from "@number-flow/react";
 import { chartColorPalette, chartTheme } from "../../theme";
 import { useExpressLaneTransactions } from "../../hooks/useExpressLaneTransactions";
+import { useAuctionInfo } from "../../hooks/useAuctionInfo";
 import { ABLY_CHANNELS } from "../../constants/ably";
 import MEVTransactionTable from "../../components/MEVTransactionTable";
 import GasUsageChart from "../../components/GasUsageChart";
@@ -25,7 +26,7 @@ import "./LiveSection.css";
 // Stat Card Component
 interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
   prefix?: string;
   suffix?: string;
 }
@@ -42,11 +43,32 @@ function StatCard({ title, value, prefix, suffix }: StatCardProps) {
           component="div"
           className="live-section-stat-value"
         >
-          <NumberFlow value={value} prefix={prefix} suffix={suffix} />
+          {typeof value === "number" ? (
+            <NumberFlow value={value} prefix={prefix} suffix={suffix} />
+          ) : (
+            <>
+              {prefix}
+              {value}
+              {suffix}
+            </>
+          )}
         </Typography>
       </CardContent>
     </Card>
   );
+}
+
+// Helper to format wei to ETH
+function formatWeiToEth(weiString: string): string {
+  const wei = BigInt(weiString);
+  const eth = Number(wei) / 1e18;
+  return eth.toFixed(4);
+}
+
+// Helper to truncate address
+function truncateAddress(address: string): string {
+  if (address.length <= 13) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function LiveSectionContent({ id }: { id?: string }) {
@@ -57,6 +79,8 @@ function LiveSectionContent({ id }: { id?: string }) {
     cumulativeProfit,
     isConnected,
   } = useExpressLaneTransactions();
+
+  const { auctionInfo } = useAuctionInfo();
 
   // Express lane price for the BEP line
   const bepPriceUSD = roundInfo.expressLanePriceUsd || 30;
@@ -271,16 +295,34 @@ function LiveSectionContent({ id }: { id?: string }) {
       <Box className="live-section-main-content">
         <Stack direction="row" spacing={1} justifyContent="space-between">
           <StatCard title="Profit" value={cumulativeProfit} prefix="$" />
-          <StatCard title="Current Round" value={roundInfo.currentRound} />
           <StatCard
-            title="Current Block Number"
-            value={roundInfo.currentBlockNumber}
+            title="Current Round"
+            value={auctionInfo?.round ?? roundInfo.currentRound}
           />
           <StatCard
-            title="Number of Transactions"
-            value={transactions.length}
+            title="Winning Bidder"
+            value={
+              auctionInfo?.firstPriceBidder
+                ? truncateAddress(auctionInfo.firstPriceBidder)
+                : "-"
+            }
           />
-          <StatCard title="Gas Used" value={roundInfo.gasUsed} suffix=" wei" />
+          <StatCard
+            title="Winning Bid"
+            value={
+              auctionInfo?.firstPriceAmount
+                ? formatWeiToEth(auctionInfo.firstPriceAmount)
+                : "-"
+            }
+            suffix=" ETH"
+          />
+          <StatCard
+            title="Actual Price"
+            value={
+              auctionInfo?.price ? formatWeiToEth(auctionInfo.price) : "-"
+            }
+            suffix=" ETH"
+          />
         </Stack>
         <Stack direction="column" spacing={1}>
           <Card className="live-section-chart-card">
@@ -389,7 +431,9 @@ function LiveSectionContent({ id }: { id?: string }) {
 function LiveSection({ id }: { id?: string }) {
   return (
     <ChannelProvider channelName={ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS}>
-      <LiveSectionContent id={id} />
+      <ChannelProvider channelName={ABLY_CHANNELS.AUCTION_INFO}>
+        <LiveSectionContent id={id} />
+      </ChannelProvider>
     </ChannelProvider>
   );
 }
