@@ -6,7 +6,6 @@ import {
   jsonMiddleware,
   loggingMiddleware,
   cacheMiddleware,
-  setupCacheCleanup,
   errorHandlerMiddleware,
   notFoundMiddleware,
 } from './middlewares';
@@ -46,9 +45,6 @@ app.use(corsMiddleware());
 app.use(jsonMiddleware());
 app.use(loggingMiddleware());
 app.use(cacheMiddleware());
-
-// Setup periodic cache cleanup (every 5 minutes)
-setupCacheCleanup();
 
 // Register routes
 registerRoutes(app);
