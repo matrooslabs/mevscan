@@ -38,21 +38,21 @@ export async function publishAuctionInfo(
     clickhouseClient: ClickHouseClient,
     lastPublishedRound: Record<string, number>
 ) {
-        const ablyChannel = ably.channels.get(ABLY_CHANNELS.AUCTION_INFO);
-        let lastRound = lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] ?? null;
+    const ablyChannel = ably.channels.get(ABLY_CHANNELS.AUCTION_INFO);
+    let lastRound = lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] ?? null;
 
-        const auctionInfo = await getLatestAuctionInfo(clickhouseClient);
-        if (!auctionInfo) {
-            logger.warn('No auction info found from db to publish');
-            return;
-        }
+    const auctionInfo = await getLatestAuctionInfo(clickhouseClient);
+    if (!auctionInfo) {
+        logger.warn('No auction info found from db to publish');
+        return;
+    }
 
-        // Only publish if round has changed
-        if (lastRound !== null && auctionInfo.round === lastRound) {
-            return;
-        }
+    // Only publish if round has changed
+    if (lastRound !== null && auctionInfo.round === lastRound) {
+        return;
+    }
 
-        logger.info({ info: auctionInfo }, 'Publishing auction info');
-        await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
-        lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] = auctionInfo.round;
+    logger.debug({ info: auctionInfo }, 'Publishing auction info');
+    await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
+    lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] = auctionInfo.round;
 }

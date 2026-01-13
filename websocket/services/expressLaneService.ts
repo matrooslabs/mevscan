@@ -81,7 +81,6 @@ export async function publishExpressLaneTransactions(ably: Ably.Realtime, clickh
         return;
     }
 
-    logger.debug(`Publishing ${transactions.length} Express Lane Transactions to Ably channel: ${ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS}`);
     logger.debug({ count: transactions.length, transactions: transactions }, 'Publishing Express Lane Transactions');
     await ablyChannel.publish(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, transactions);
     lastStoredBlockNumberTxIndex[ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS] = [transactions[transactions.length - 1]!.blockNumber, transactions[transactions.length - 1]!.txIndex];
