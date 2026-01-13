@@ -11,7 +11,7 @@ This feature will be delivered in two PRs:
 | PR | Scope | Dependencies |
 |----|-------|--------------|
 | **PR1** | Add timeRange parameter to backend & frontend | None |
-| **PR2** | Improve cache behavior (stale-while-revalidate, pre-warming) | PR1 |
+| **PR2** | Simplify caching with apicache library | PR1 |
 
 ---
 
@@ -141,131 +141,47 @@ Ensure all time-series endpoints support the `timeRange` query parameter:
 
 ---
 
-# PR2: Cache Improvements
+# PR2: Simplify Caching
 
 ## Goal
-Implement stale-while-revalidate caching pattern and cache pre-warming to eliminate user wait times on cache misses.
+Replace custom cache middleware with the battle-tested `apicache` library for simpler, more maintainable caching.
 
 ## Prerequisites
 - PR1 must be merged (time range parameter support)
 
-## Current Problem
-On cache miss or expiry, users must wait for the full database query to complete. For 90-day queries, this can take several seconds.
+## Implementation
 
-## Stale-While-Revalidate Pattern
-
-Implement the following cache behavior:
-
-```
-Request: GET /api/gross-mev?timeRange=30d
-
-Case 1: Fresh cache exists (within TTL)
-  → Return cached data immediately
-
-Case 2: Stale cache exists (past TTL but data available)
-  → Return stale data immediately
-  → Trigger background refresh (non-blocking)
-  → Next request gets fresh data
-
-Case 3: No cache (cold start)
-  → Fetch from database (user waits)
-  → Cache result for future requests
-```
-
-## Cache TTL by Range
-Longer time ranges change less frequently, so use longer TTLs:
-
-| Time Range | Cache TTL |
-|------------|-----------|
-| 1d | 5 minutes |
-| 7d | 10 minutes |
-| 30d | 30 minutes |
-| 90d | 60 minutes |
-
-## Background Refresh Implementation
-
-Update `/server/middleware/cache.ts`:
+### Use apicache Library
+Replace the custom cache implementation with [apicache](https://github.com/kwhitley/apicache):
 
 ```typescript
-interface CacheEntry {
-  data: unknown;
-  createdAt: number;
-  ttl: number;
-}
+import apicache from 'apicache';
 
-function isFresh(entry: CacheEntry): boolean {
-  return Date.now() < entry.createdAt + entry.ttl;
-}
-
-function isStale(entry: CacheEntry): boolean {
-  return !isFresh(entry);
-}
-
-// Non-blocking background refresh
-function triggerBackgroundRefresh(key: string, fetchFn: () => Promise<unknown>) {
-  setImmediate(async () => {
-    try {
-      const freshData = await fetchFn();
-      cache.set(key, {
-        data: freshData,
-        createdAt: Date.now(),
-        ttl: getTTLForKey(key)
-      });
-      console.log(`[CACHE REFRESH] ${key}`);
-    } catch (error) {
-      console.error(`[CACHE REFRESH ERROR] ${key}`, error);
-    }
-  });
+export function cacheMiddleware(duration = '5 minutes') {
+  return apicache.middleware(duration);
 }
 ```
 
-## Cache Pre-warming
+### Cache Behavior
+- All GET requests with 2xx responses are cached for 5 minutes
+- Cache keys are automatically generated from URL + query string
+- Automatic cache expiry (no manual cleanup needed)
 
-For expensive long-range queries, pre-warm cache on server startup and periodically.
-
-**On startup:**
-```typescript
-async function prewarmCache() {
-  const endpoints = [
-    '/api/gross-mev',
-    '/api/gross-atomic-arb',
-    '/api/gross-cex-dex-quotes',
-    '/api/gross-liquidation'
-  ];
-  const ranges = ['30d', '90d'];
-
-  for (const endpoint of endpoints) {
-    for (const range of ranges) {
-      await internalFetch(`${endpoint}?timeRange=${range}`);
-      await sleep(100); // Avoid overwhelming database
-    }
-  }
-  console.log('[CACHE] Pre-warming complete');
-}
-```
-
-**Scheduled refresh (every 30 minutes):**
-```typescript
-setInterval(prewarmCache, 30 * 60 * 1000);
-```
+### Files Changed
+- `server/middlewares.ts` - Use apicache instead of custom implementation
+- `server/index.ts` - Remove `setupCacheCleanup()` call
+- `server/middleware/cache.ts` - Deleted (no longer needed)
 
 ## Backend Checklist (PR2)
-- [ ] Refactor cache middleware to support stale-while-revalidate
-- [ ] Add `CacheEntry` interface with `createdAt` and `ttl` fields
-- [ ] Implement `triggerBackgroundRefresh()` function
-- [ ] Add TTL configuration per time range
-- [ ] Implement `getTTLForKey()` helper to extract timeRange from cache key
-- [ ] Add cache pre-warming function
-- [ ] Call pre-warm on server startup (after routes registered)
-- [ ] Add scheduled cache refresh interval
+- [x] Install `apicache` and `@types/apicache`
+- [x] Update `server/middlewares.ts` to use apicache
+- [x] Remove custom cache middleware file
+- [x] Remove manual cache cleanup setup
 
 ## Testing (PR2)
-- [ ] Test fresh cache returns immediately
-- [ ] Test stale cache returns immediately and triggers background refresh
-- [ ] Test cold cache fetches from database
-- [ ] Verify pre-warming populates cache on startup
-- [ ] Verify scheduled refresh keeps cache warm
-- [ ] Performance test: measure response times before/after
+- [ ] Verify `x-apicache-*` headers in API responses
+- [ ] Test cache hit on repeated requests
+- [ ] Verify cache expires after 5 minutes
 
 ---
 
@@ -274,3 +190,4 @@ setInterval(prewarmCache, 30 * 60 * 1000);
 - The 180d range is omitted for now but can be added later if needed
 - Consider adding a "Custom" range option in future iterations
 - Monitor ClickHouse query performance for 90-day queries and optimize indexes if needed
+- If per-route TTLs are needed in the future, apicache supports per-route configuration

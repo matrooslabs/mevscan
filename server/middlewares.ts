@@ -1,14 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
+import apicache from 'apicache';
 import { ClickHouseClient } from '@clickhouse/client';
-import {
-  createCacheMiddleware,
-  cleanupExpiredCache,
-  DEFAULT_CACHE_TTL_MS,
-  getCacheStats,
-  clearCache,
-} from './middleware/cache';
 import type { ErrorResponse } from '@mevscan/shared';
 export {
   formatRelativeTime,
@@ -104,23 +98,25 @@ export function loggingMiddleware() {
 }
 
 /**
- * Caching middleware factory with stale-while-revalidate support
- * TTL is automatically determined based on the timeRange query parameter
+ * Caching middleware using apicache
+ * Caches GET requests with 2xx responses for 5 minutes by default
  */
-export function cacheMiddleware() {
-  return createCacheMiddleware();
+export function cacheMiddleware(duration = '5 minutes') {
+  return apicache.middleware(duration);
 }
 
-// Re-export cache utilities
-export { getCacheStats, clearCache };
+/**
+ * Get cache statistics
+ */
+export function getCacheStats() {
+  return apicache.getIndex();
+}
 
 /**
- * Setup periodic cache cleanup (every 5 minutes)
+ * Clear all cache entries
  */
-export function setupCacheCleanup() {
-  setInterval(() => {
-    cleanupExpiredCache();
-  }, 5 * 60 * 1000);
+export function clearCache() {
+  return apicache.clear();
 }
 
 // Error handling middleware
