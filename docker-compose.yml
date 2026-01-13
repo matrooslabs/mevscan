@@ -19,6 +19,7 @@ services:
       - CLICKHOUSE_USERNAME=${CLICKHOUSE_USERNAME}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
+      - NODE_ENV=${NODE_ENV}
     env_file:
       - .env
     restart: unless-stopped
@@ -54,6 +55,7 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
       - ABLY_API_KEY=${ABLY_API_KEY}
+      - NODE_ENV=${NODE_ENV}
     env_file:
       - .env
     restart: unless-stopped
