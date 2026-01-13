@@ -38,34 +38,38 @@ export async function publishAuctionInfo(
     clickhouseClient: ClickHouseClient,
     lastPublishedRound: Record<string, number>
 ) {
-    const ablyChannel = ably.channels.get(ABLY_CHANNELS.AUCTION_INFO);
-    let lastRound = lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] ?? null;
+    try {
+        const ablyChannel = ably.channels.get(ABLY_CHANNELS.AUCTION_INFO);
+        let lastRound = lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] ?? null;
 
-    // On cold start, try to get last round from Ably history
-    if (lastRound === null) {
-        const history = await ablyChannel.history({ limit: 1 });
-        const message = history.items.map((item) => item.data);
-        if (message && message.length > 0) {
-            const auctionData = message[0] as unknown as AuctionInfo;
-            lastRound = auctionData.round;
+        // On cold start, try to get last round from Ably history
+        if (lastRound === null) {
+            const history = await ablyChannel.history({ limit: 1 });
+            const message = history.items.map((item) => item.data);
+            if (message && message.length > 0) {
+                const auctionData = message[0] as unknown as AuctionInfo;
+                lastRound = auctionData.round;
+            }
         }
-    }
 
-    const auctionInfo = await getLatestAuctionInfo(clickhouseClient);
-    if (!auctionInfo) {
-        return;
-    }
+        const auctionInfo = await getLatestAuctionInfo(clickhouseClient);
+        if (!auctionInfo) {
+            return;
+        }
 
-    // Only publish if round has changed
-    if (lastRound !== null && auctionInfo.round === lastRound) {
-        return;
-    }
+        // Only publish if round has changed
+        if (lastRound !== null && auctionInfo.round === lastRound) {
+            return;
+        }
 
-    if (config.nodeEnv === NodeEnv.TEST) {
-        console.log('Publishing Auction Info:', auctionInfo);
-    } else {
-        await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
-    }
+        if (config.nodeEnv === NodeEnv.TEST) {
+            console.log('Publishing Auction Info:', auctionInfo);
+        } else {
+            await ablyChannel.publish(ABLY_CHANNELS.AUCTION_INFO, auctionInfo);
+        }
 
-    lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] = auctionInfo.round;
+        lastPublishedRound[ABLY_CHANNELS.AUCTION_INFO] = auctionInfo.round;
+    } catch (error) {
+        console.error('Failed to publish auction info:', error);
+    }
 }

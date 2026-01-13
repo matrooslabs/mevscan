@@ -293,12 +293,21 @@ function LiveSectionContent({ id }: { id?: string }) {
   return (
     <Box id={id} className="section-container">
       <Box className="live-section-main-content">
-        <Stack direction="row" spacing={1} justifyContent="space-between">
+        <Stack direction="row" spacing={1} justifyContent="space-between" flexWrap="wrap">
           <StatCard title="Profit" value={cumulativeProfit} prefix="$" />
           <StatCard
             title="Current Round"
             value={auctionInfo?.round ?? roundInfo.currentRound}
           />
+          <StatCard
+            title="Current Block Number"
+            value={roundInfo.currentBlockNumber}
+          />
+          <StatCard
+            title="Number of Transactions"
+            value={transactions.length}
+          />
+          <StatCard title="Gas Used" value={roundInfo.gasUsed} suffix=" wei" />
           <StatCard
             title="Winning Bidder"
             value={
