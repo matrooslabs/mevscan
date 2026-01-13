@@ -21,10 +21,10 @@ const cacheStore: CacheStore = {};
  * Longer time ranges change less frequently, so use longer TTLs
  */
 const TTL_BY_TIME_RANGE: Record<string, number> = {
-  '1d': 5 * 60 * 1000,    // 5 minutes
-  '7d': 10 * 60 * 1000,   // 10 minutes
-  '30d': 30 * 60 * 1000,  // 30 minutes
-  '90d': 60 * 60 * 1000,  // 60 minutes
+  '1d': 5 * 60 * 1000,       // 5 minutes
+  '7d': 10 * 60 * 1000,      // 10 minutes
+  '30d': 24 * 60 * 60 * 1000, // 24 hours
+  '90d': 24 * 60 * 60 * 1000, // 24 hours
 };
 
 // Default TTL when timeRange is not specified or unknown
@@ -69,13 +69,6 @@ function isFresh(entry: CacheEntry): boolean {
 }
 
 /**
- * Check if a cache entry is stale (past TTL but data available)
- */
-function isStale(entry: CacheEntry): boolean {
-  return !isFresh(entry);
-}
-
-/**
  * Factory to create a caching middleware with stale-while-revalidate support
  *
  * Behavior:
@@ -99,13 +92,12 @@ export function createCacheMiddleware() {
 
     if (cachedEntry) {
       if (isFresh(cachedEntry)) {
-        // Case 1: Fresh cache - return immediately
+        // Fresh cache - return immediately
         console.log(`[CACHE HIT] ${cacheKey}`);
         res.json(cachedEntry.data);
         return;
-      } else if (isStale(cachedEntry)) {
-        // Case 2: Stale cache - return stale data immediately
-        // The cache will be refreshed on a subsequent request that misses
+      } else {
+        // Stale cache - return stale data immediately
         console.log(`[CACHE STALE] ${cacheKey} - returning stale data`);
         res.json(cachedEntry.data);
         return;
@@ -174,7 +166,6 @@ export function getCacheStats(): {
     createdAt: number;
     ttl: number;
     isFresh: boolean;
-    isStale: boolean;
   }>;
 } {
   const entries = Object.keys(cacheStore).map(key => {
@@ -184,7 +175,6 @@ export function getCacheStats(): {
       createdAt: entry.createdAt,
       ttl: entry.ttl,
       isFresh: isFresh(entry),
-      isStale: isStale(entry),
     };
   });
 
