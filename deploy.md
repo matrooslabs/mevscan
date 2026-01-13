@@ -222,11 +222,17 @@ docker-compose down --rmi all
 ### Project Structure
 ```
 mevscan/
-├── shared/          # @mevscan/shared - Common TypeScript types
-├── server/          # @mevscan/server - Express.js API
-├── client/          # @mevscan/client - React application
-├── websocket/       # @mevscan/websocket - Real-time data streaming
-├── package.json     # Root workspace configuration
+├── shared/              # @mevscan/shared - Common TypeScript types & utilities
+│   └── src/
+│       ├── index.ts     # Re-exports all modules
+│       ├── types.ts     # Type definitions
+│       ├── clickhouse.ts
+│       └── ably.ts
+├── server/              # @mevscan/server - Express.js API
+├── client/              # @mevscan/client - React application
+├── websocket/           # @mevscan/websocket - Real-time data streaming
+├── tsconfig.base.json   # Shared TypeScript config
+├── package.json         # Root workspace configuration
 └── docker-compose.yml
 ```
 
@@ -270,6 +276,104 @@ mevscan/
 │            ClickHouse Database          │
 └─────────────────────────────────────────┘
 ```
+
+## TypeScript Architecture
+
+### Overview
+
+This project uses **tsx** to run TypeScript directly without a build step. This simplifies both development and production workflows.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    @mevscan/shared                          │
+│  shared/src/                                                │
+│  ├── index.ts      # Re-exports all modules                 │
+│  ├── types.ts      # Shared type definitions                │
+│  ├── clickhouse.ts # ClickHouse client utilities            │
+│  └── ably.ts       # Ably channel constants                 │
+└─────────────────────────────────────────────────────────────┘
+          ▲                    ▲                    ▲
+          │                    │                    │
+    ┌─────┴─────┐        ┌─────┴─────┐        ┌─────┴─────┐
+    │  server   │        │  client   │        │ websocket │
+    │  (tsx)    │        │  (Vite)   │        │  (tsx)    │
+    └───────────┘        └───────────┘        └───────────┘
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `tsconfig.base.json` | Shared TypeScript compiler options |
+| `shared/src/index.ts` | Central export point for all shared code |
+| `shared/package.json` | Exports point directly to `.ts` files |
+
+### Shared Package Exports
+
+The `@mevscan/shared` package exports TypeScript source files directly:
+
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./clickhouse": "./src/clickhouse.ts",
+    "./ably": "./src/ably.ts"
+  }
+}
+```
+
+### Importing Shared Code
+
+```typescript
+// Import everything from index
+import { AuctionInfo, initClickHouseClient } from '@mevscan/shared';
+
+// Or import from specific modules
+import { ABLY_CHANNELS } from '@mevscan/shared/ably';
+import { initClickHouseClient } from '@mevscan/shared/clickhouse';
+import type { ExpressLaneTransaction } from '@mevscan/shared/types';
+```
+
+### Why tsx?
+
+| Approach | Dev Workflow | Production | Trade-off |
+|----------|--------------|------------|-----------|
+| **Traditional (tsc)** | Build shared first, then run | Compiled JS | Complex workflow |
+| **tsx (current)** | Just run, no build | tsx runtime | ~50ms startup overhead |
+
+We chose tsx because:
+- **Simpler workflow**: No build step needed for development
+- **Faster iteration**: Changes to shared code take effect immediately
+- **Consistent**: Same behavior in dev and production
+- **Minimal overhead**: ~50ms startup time is negligible for long-running services
+
+### Development Commands
+
+```bash
+# Run any service directly - no build step needed
+npm run dev:server      # Start API server
+npm run dev:websocket   # Start WebSocket service
+npm run dev             # Start client (Vite)
+
+# Type checking (without compilation)
+npm run build:check --workspace=shared
+```
+
+### Docker Runtime
+
+Both server and websocket Dockerfiles use tsx at runtime:
+
+```dockerfile
+CMD ["npx", "tsx", "index.ts"]
+```
+
+This means:
+- No TypeScript compilation during Docker build
+- Source `.ts` files are copied directly
+- tsx executes TypeScript at container startup
 
 ## Troubleshooting
 
@@ -361,35 +465,41 @@ If you encounter build errors:
 
 ### Development
 
-For local development, it's recommended to run services directly (not via Docker):
+For local development, run services directly using tsx (no build step needed):
 
-**Prerequisites:**
-1. Install dependencies from the root directory:
-   ```bash
-   npm install
-   ```
-   This will install all workspace dependencies (shared, server, client).
+**Setup:**
+```bash
+npm install   # Install all workspace dependencies
+```
 
-2. Run services:
-   - **Frontend**: `npm run dev` (from project root) - starts React dev server on localhost:5173
-   - **Backend**: `npm run dev:server` (from project root) or `npm run dev` (from `server/` directory)
-   - **Backend (watch mode)**: `npm run dev:watch` (from project root) or `npm run dev:watch` (from `server/` directory)
-   - **WebSocket**: `npm run dev` (from `websocket/` directory) or `npm run dev:watch` for watch mode
+**Run services:**
+```bash
+npm run dev             # Frontend (Vite) - localhost:5173
+npm run dev:server      # API server - localhost:3001
+npm run dev:websocket   # WebSocket service
+```
 
-**Workspace Structure:**
-- Root: Contains workspace configuration and shared scripts
-- `shared/`: Type definitions used by server, client, and websocket
-- `server/`: Express.js API server
-- `client/`: React application
-- `websocket/`: Real-time data streaming service
+**Watch mode (auto-restart on changes):**
+```bash
+npm run dev:watch --workspace=server
+npm run dev:watch --workspace=websocket
+```
+
+**Key benefit:** No need to build the shared package first. tsx runs TypeScript directly.
 
 ### Production
 
 Use Docker Compose for production deployments:
 
-1. Set production environment variables in `.env`
-2. Build and start services: `docker-compose up --build -d`
-3. Monitor logs: `docker-compose logs -f`
+```bash
+# Build and start all services
+docker-compose up --build -d
+
+# Monitor logs
+docker-compose logs -f
+```
+
+Both server and websocket containers use tsx at runtime, so there's no TypeScript compilation step during Docker build.
 
 ## Health Checks
 
