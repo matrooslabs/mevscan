@@ -4,33 +4,29 @@
   "description": "WebSocket service for MEVScan",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build",
     "start": "node dist/index.js",
     "dev": "tsx index.ts",
     "dev:watch": "tsx watch index.ts"
   },
   "keywords": [
     "websocket",
-    "pubnub",
+    "ably",
     "blockchain",
     "mev"
   ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@clickhouse/client": "^0.2.7",
-    "@mevscan/server": "*",
     "@mevscan/shared": "*",
     "ably": "^2.15.0",
     "pino": "^9.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
-    "nodemon": "^3.0.1",
     "pino-pretty": "^13.0.0",
-    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.6.0"
   }
 }

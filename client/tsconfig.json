@@ -17,14 +17,10 @@
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "checkJs": false,
-    "baseUrl": ".",
-    "paths": {
-      "@mevscan/shared": ["../shared/types"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "../shared/types.ts", "src/vite-env.d.ts"]
+  "include": ["src"],
+  "references": [
+    { "path": "../shared" }
+  ]
 }
-
