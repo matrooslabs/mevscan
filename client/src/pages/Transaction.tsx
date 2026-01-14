@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useTransaction } from '../hooks/useApi'
-import type { Transaction } from '@mevscan/shared'
+import type { Transaction as TransactionType } from '@mevscan/shared'
 import AtomicMEVDetails from '../components/AtomicMEVDetails'
 import CexDexMEVDetails from '../components/CexDexMEVDetails'
 import LiquidationMEVDetails from '../components/LiquidationMEVDetails'
@@ -35,7 +35,7 @@ function Transaction() {
     )
   }
 
-  const transaction: Transaction = transactionData || {
+  const transaction: TransactionType = transactionData || {
     hash: tx_hash || '0x0000...0000',
     blockNumber: 0,
     profit: 0,
@@ -65,7 +65,7 @@ function Transaction() {
       setTimeout(() => {
         setCopiedHash(null)
       }, 2000)
-    } catch (err) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
       textArea.value = text

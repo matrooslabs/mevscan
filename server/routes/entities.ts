@@ -16,8 +16,6 @@ import {
 import {
   formatRelativeTime,
   formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
 } from './types';
 
 /**

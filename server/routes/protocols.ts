@@ -3,17 +3,13 @@ import {
   Request,
   Response,
   ErrorResponse,
-  TimeSeriesByProtocolDataPoint,
   TimeSeriesByProtocolResponse,
 } from './types';
 import {
-  formatRelativeTime,
-  formatEthValue,
   getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
   getTimeGrouping,
 } from './types';
-import { transformProtocolTimeSeriesData, RawProtocolTimeSeriesRow } from '../utils/transformTimeSeries';
+import { transformProtocolTimeSeriesData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
 /**

@@ -3,16 +3,12 @@ import {
   Request,
   Response,
   ErrorResponse,
-  TimeSeriesDataPoint,
   TimeSeriesResponse,
 } from './types';
 import {
-  formatRelativeTime,
-  formatEthValue,
   getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
 } from './types';
-import { transformTimeSeriesData, RawTimeSeriesRow } from '../utils/transformTimeSeries';
+import { transformTimeSeriesData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
 /**

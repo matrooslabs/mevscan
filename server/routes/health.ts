@@ -5,12 +5,6 @@ import {
   HealthResponse,
   RootResponse,
 } from './types';
-import {
-  formatRelativeTime,
-  formatEthValue,
-  getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
-} from './types';
 
 /**
  * Register health routes

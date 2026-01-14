@@ -6,17 +6,13 @@ import {
   ExpressLaneNetProfitResponse,
   ExpressLaneProfitByControllerResponse,
   PieChartResponse,
-  TimeSeriesPercentageDataPoint,
   TimeSeriesPercentageResponse,
 } from './types';
 import {
-  formatRelativeTime,
-  formatEthValue,
   getTimeRangeFilter,
-  getTimestampTimeRangeFilter,
   getTimeGrouping,
 } from './types';
-import { transformTimeSeriesPercentageData, RawTimeSeriesPercentageRow } from '../utils/transformTimeSeries';
+import { transformTimeSeriesPercentageData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
 /**

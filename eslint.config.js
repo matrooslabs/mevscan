@@ -5,6 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig([
   globalIgnores(['**/dist/**', '**/node_modules/**']),
@@ -38,7 +42,32 @@ export default defineConfig([
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './server/tsconfig.json',
+        project: path.join(__dirname, 'server/tsconfig.json'),
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  // Websocket configuration (Node.js environment) - TypeScript
+  {
+    files: ['websocket/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: path.join(__dirname, 'websocket/tsconfig.json'),
       },
     },
     plugins: {
@@ -85,7 +114,7 @@ export default defineConfig([
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
         sourceType: 'module',
-        project: './client/tsconfig.json',
+        project: path.join(__dirname, 'client/tsconfig.json'),
       },
     },
     plugins: {

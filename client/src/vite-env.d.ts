@@ -10,5 +10,6 @@ declare module 'react/jsx-runtime' {
 
 // Ensure JSX namespace is available globally
 declare namespace JSX {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, no-undef
   interface IntrinsicElements extends React.JSX.IntrinsicElements {}
 }

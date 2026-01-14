@@ -1,3 +1,4 @@
+import React from 'react'
 import { Box, ToggleButton, ToggleButtonGroup, styled } from '@mui/material'
 import { TIME_RANGES, TIME_RANGE_LABELS, type TimeRange } from '../hooks/useTimeRange'
 

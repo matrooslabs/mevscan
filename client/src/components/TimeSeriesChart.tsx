@@ -369,7 +369,7 @@ function ChartContent({
       },
       series,
     };
-  }, [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid, lineConfigs.length, timeRange]);
+  }, [series, labels, showLegend, xAxisLabel, yAxisLabel, showGrid, lineConfigs.length]);
 
   return (
     <div className="chart-container">
@@ -398,9 +398,6 @@ function TimeSeriesChart(props: TimeSeriesChartProps) {
     accentColor,
     lines,
     data: propData,
-    isLoading: propIsLoading,
-    isError: propIsError,
-    errorMessage: propErrorMessage,
     ...chartProps
   } = props;
 
@@ -415,19 +412,7 @@ function TimeSeriesChart(props: TimeSeriesChartProps) {
     enabled: enableTimeRangeSelector && !!fetchData && !!queryKey,
   })
 
-  // If time range selector is disabled, render just the chart
-  if (!enableTimeRangeSelector) {
-    return (
-      <ChartContent
-        data={propData}
-        lines={lines}
-        timeRange={props.timeRange}
-        {...chartProps}
-      />
-    );
-  }
-
-  // Transform data if needed
+  // Transform data if needed (must be called before conditional return per rules of hooks)
   const chartData = useMemo(() => {
     if (!fetchedData) return []
     if (transformData) {
@@ -443,6 +428,18 @@ function TimeSeriesChart(props: TimeSeriesChartProps) {
     }
     return lines
   }, [dynamicLines, fetchedData, lines])
+
+  // If time range selector is disabled, render just the chart
+  if (!enableTimeRangeSelector) {
+    return (
+      <ChartContent
+        data={propData}
+        lines={lines}
+        timeRange={props.timeRange}
+        {...chartProps}
+      />
+    );
+  }
 
   const selector = (
     <TimeRangeSelector value={timeRange} onChange={setTimeRange} size="small" />

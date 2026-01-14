@@ -7,7 +7,7 @@ import {
   ErrorResponse,
   LiquidationResponse,
 } from './types';
-import { transformSwapsData, Swap } from '../utils/transformSwaps';
+import { transformSwapsData } from '../utils/transformSwaps';
 import { handleRouteError } from '../utils/errorHandler';
 
 /**

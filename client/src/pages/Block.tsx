@@ -1,10 +1,10 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useBlock } from '../hooks/useApi'
-import type { Block } from '@mevscan/shared'
+import type { Block as BlockType } from '@mevscan/shared'
 import './Block.css'
 
-interface BlockWithExtended extends Block {
+interface BlockWithExtended extends BlockType {
   parentHash?: string;
   gasLimit?: string;
   baseFeePerGas?: string;
@@ -69,7 +69,7 @@ function Block() {
       setTimeout(() => {
         setCopiedHash(null)
       }, 2000)
-    } catch (err) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
       textArea.value = text
