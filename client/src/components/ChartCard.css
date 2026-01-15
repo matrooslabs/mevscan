@@ -16,7 +16,8 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     rgba(0, 153, 204, 0.6) 0%,
     rgba(204, 0, 102, 0.6) 50%,
     rgba(0, 170, 102, 0.6) 100%
@@ -105,7 +106,7 @@
 }
 
 .chart-card-title {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;

@@ -1,13 +1,6 @@
 import type { Express } from 'express';
-import {
-  Request,
-  Response,
-  ErrorResponse,
-  TimeSeriesResponse,
-} from './types';
-import {
-  getTimeRangeFilter,
-} from './types';
+import { Request, Response, ErrorResponse, TimeSeriesResponse } from './types';
+import { getTimeRangeFilter } from './types';
 import { transformTimeSeriesData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
@@ -15,15 +8,14 @@ import { handleRouteError } from '../utils/errorHandler';
  * Register mev routes
  */
 export function registerMevRoutes(app: Express) {
-  app.get('/api/gross-mev', async (
-    req: Request,
-    res: Response<TimeSeriesResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
+  app.get(
+    '/api/gross-mev',
+    async (req: Request, res: Response<TimeSeriesResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '24hours';
+        const timeFilter = getTimeRangeFilter(timeRange);
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
@@ -46,36 +38,38 @@ export function registerMevRoutes(app: Express) {
           time ASC
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        total: number;
-        normal: number;
-        timeboost: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            total: number;
+            normal: number;
+            timeboost: number;
+          }>
+        >();
 
-      const response: TimeSeriesResponse = transformTimeSeriesData(data);
+        const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Gross MEV');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Gross MEV');
+      }
     }
-  });
+  );
 
   // Get Gross Atomic Arb time series
-  app.get('/api/gross-atomic-arb', async (
-    req: Request,
-    res: Response<TimeSeriesResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
+  app.get(
+    '/api/gross-atomic-arb',
+    async (req: Request, res: Response<TimeSeriesResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '24hours';
+        const timeFilter = getTimeRangeFilter(timeRange);
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) as time,
           sum(m.profit_usd) as total,
@@ -99,36 +93,38 @@ export function registerMevRoutes(app: Express) {
           time ASC
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        total: number;
-        normal: number;
-        timeboost: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            total: number;
+            normal: number;
+            timeboost: number;
+          }>
+        >();
 
-      const response: TimeSeriesResponse = transformTimeSeriesData(data);
+        const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Gross Atomic Arb');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Gross Atomic Arb');
+      }
     }
-  });
+  );
 
   // Get Gross CexDexQuotes time series
-  app.get('/api/gross-cex-dex-quotes', async (
-    req: Request,
-    res: Response<TimeSeriesResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
+  app.get(
+    '/api/gross-cex-dex-quotes',
+    async (req: Request, res: Response<TimeSeriesResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '24hours';
+        const timeFilter = getTimeRangeFilter(timeRange);
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
@@ -151,36 +147,38 @@ export function registerMevRoutes(app: Express) {
           time ASC
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        total: number;
-        normal: number;
-        timeboost: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            total: number;
+            normal: number;
+            timeboost: number;
+          }>
+        >();
 
-      const response: TimeSeriesResponse = transformTimeSeriesData(data);
+        const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Gross CexDexQuotes');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Gross CexDexQuotes');
+      }
     }
-  });
+  );
 
   // Get Gross Liquidation time series
-  app.get('/api/gross-liquidation', async (
-    req: Request,
-    res: Response<TimeSeriesResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '24hours';
-      const timeFilter = getTimeRangeFilter(timeRange);
+  app.get(
+    '/api/gross-liquidation',
+    async (req: Request, res: Response<TimeSeriesResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '24hours';
+        const timeFilter = getTimeRangeFilter(timeRange);
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(toStartOfHour(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd) AS total,
@@ -206,25 +204,26 @@ export function registerMevRoutes(app: Express) {
           time ASC
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        total: number;
-        normal: number;
-        timeboost: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            total: number;
+            normal: number;
+            timeboost: number;
+          }>
+        >();
 
-      const response: TimeSeriesResponse = transformTimeSeriesData(data);
+        const response: TimeSeriesResponse = transformTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Gross Liquidation');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Gross Liquidation');
+      }
     }
-  });
-
-
+  );
 }

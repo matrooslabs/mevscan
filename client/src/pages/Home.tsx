@@ -1,11 +1,11 @@
-import { useState, FormEvent, ChangeEvent } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useLatestBlocks, useLatestTransactions, useTimeboostGrossRevenue } from "../hooks/useApi";
-import type { BlockListItem, Transaction } from "@mevscan/shared";
-import "./Home.css";
+import { useState, FormEvent, ChangeEvent } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useLatestBlocks, useLatestTransactions, useTimeboostGrossRevenue } from '../hooks/useApi';
+import type { BlockListItem, Transaction } from '@mevscan/shared';
+import './Home.css';
 
 function Home() {
-  const [txHash, setTxHash] = useState<string>("");
+  const [txHash, setTxHash] = useState<string>('');
   const navigate = useNavigate();
 
   // Fetch data using TanStack Query
@@ -32,7 +32,7 @@ function Home() {
       // Check if it's a block number (numeric)
       if (/^\d+$/.test(searchTerm)) {
         navigate(`/blocks/${searchTerm}`);
-      } 
+      }
       // Check if it's an address (starts with 0x and is 42 chars)
       else if (/^0x[a-fA-F0-9]{40}$/.test(searchTerm)) {
         navigate(`/address/${searchTerm}`);
@@ -47,12 +47,13 @@ function Home() {
   // Use data from TanStack Query or fallback to empty array
   // Ensure we always have an array, even if the API returns something unexpected
   const latestBlocks: BlockListItem[] = Array.isArray(latestBlocksData) ? latestBlocksData : [];
-  const latestTransactions: Transaction[] = Array.isArray(latestTransactionsData) ? latestTransactionsData : [];
+  const latestTransactions: Transaction[] = Array.isArray(latestTransactionsData)
+    ? latestTransactionsData
+    : [];
 
   // Get ETH price from the latest block (first block in the list)
-  const etherPrice = latestBlocks.length > 0 && latestBlocks[0].ethPrice 
-    ? latestBlocks[0].ethPrice 
-    : null;
+  const etherPrice =
+    latestBlocks.length > 0 && latestBlocks[0].ethPrice ? latestBlocks[0].ethPrice : null;
   // Get Timeboost Auction Revenue (total_first_price) - gross revenue (all-time)
   const timeboostAuctionRevenue = timeboostGrossRevenueData?.total_second_price ?? null;
 
@@ -79,20 +80,20 @@ function Home() {
         <div className="stat-item">
           <span className="stat-label">ETH Price</span>
           <span className="stat-value">
-            {etherPrice !== null 
+            {etherPrice !== null
               ? `$${etherPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              : blocksLoading 
-                ? 'Loading...' 
+              : blocksLoading
+                ? 'Loading...'
                 : 'N/A'}
           </span>
         </div>
         <div className="stat-item">
           <span className="stat-label">Timeboost Auction Revenue</span>
           <span className="stat-value">
-            {timeboostAuctionRevenue !== null 
+            {timeboostAuctionRevenue !== null
               ? `${timeboostAuctionRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETH`
-              : timeboostGrossRevenueLoading 
-                ? 'Loading...' 
+              : timeboostGrossRevenueLoading
+                ? 'Loading...'
                 : timeboostGrossRevenueError
                   ? 'Error'
                   : 'N/A'}
@@ -115,9 +116,7 @@ function Home() {
               </div>
             )}
             {blocksError && (
-              <div className="error-state">
-                Error loading blocks: {blocksError.message}
-              </div>
+              <div className="error-state">Error loading blocks: {blocksError.message}</div>
             )}
             {!blocksLoading && !blocksError && (
               <div className="blocks-list">
@@ -163,11 +162,15 @@ function Home() {
                             </div>
                           </div>
                         </div>
-                        <div className="block-value">${block.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="block-value">
+                          $
+                          {block.totalProfit.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
                       </div>
-                      {index < latestBlocks.length - 1 && (
-                        <hr className="block-separator" />
-                      )}
+                      {index < latestBlocks.length - 1 && <hr className="block-separator" />}
                     </div>
                   ))
                 )}
@@ -206,25 +209,27 @@ function Home() {
                           <span className="tx-icon">⇄</span>
                           <div className="tx-info">
                             <div className="tx-hash-time">
-                              <Link
-                                to={`/transaction/${tx.hash}`}
-                                className="link-primary tx-hash"
-                              >
+                              <Link to={`/transaction/${tx.hash}`} className="link-primary tx-hash">
                                 {tx.hash.substring(0, 16)}...
                               </Link>
-                              <span className="tx-time">Block {tx.blockNumber.toLocaleString()}</span>
+                              <span className="tx-time">
+                                Block {tx.blockNumber.toLocaleString()}
+                              </span>
                             </div>
                             <div className="tx-addresses">
                               <div className="tx-address-group">
                                 <span className="tx-label">MEV Type</span>
-                                <span className="tx-address">
-                                  {tx.mevType}
-                                </span>
+                                <span className="tx-address">{tx.mevType}</span>
                               </div>
                               <div className="tx-address-group">
                                 <span className="tx-label">Profit</span>
                                 <span className="tx-address">
-                                  ${tx.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                                  $
+                                  {tx.profit.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}{' '}
+                                  USD
                                 </span>
                               </div>
                               <div className="tx-address-group">
@@ -240,30 +245,36 @@ function Home() {
                                     to={`/address/${tx.expressLaneController}`}
                                     className="link-secondary tx-address"
                                   >
-                                    {tx.expressLaneController.substring(0, 10)}...{tx.expressLaneController.slice(-8)}
+                                    {tx.expressLaneController.substring(0, 10)}...
+                                    {tx.expressLaneController.slice(-8)}
                                   </Link>
                                 </div>
                               )}
                               {tx.expressLanePrice && (
                                 <div className="tx-address-group">
                                   <span className="tx-label">Express Lane Price</span>
-                                  <span className="tx-address">
-                                    {tx.expressLanePrice}
-                                  </span>
+                                  <span className="tx-address">{tx.expressLanePrice}</span>
                                 </div>
                               )}
-                              {tx.expressLaneRound !== null && tx.expressLaneRound !== undefined && (
-                                <div className="tx-address-group">
-                                  <span className="tx-label">Express Lane Round</span>
-                                  <span className="tx-address">
-                                    {tx.expressLaneRound.toLocaleString()}
-                                  </span>
-                                </div>
-                              )}
+                              {tx.expressLaneRound !== null &&
+                                tx.expressLaneRound !== undefined && (
+                                  <div className="tx-address-group">
+                                    <span className="tx-label">Express Lane Round</span>
+                                    <span className="tx-address">
+                                      {tx.expressLaneRound.toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
-                        <div className="tx-value">${tx.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="tx-value">
+                          $
+                          {tx.profit.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
                       </div>
                       {index < latestTransactions.length - 1 && (
                         <hr className="transaction-separator" />
@@ -281,4 +292,3 @@ function Home() {
 }
 
 export default Home;
-

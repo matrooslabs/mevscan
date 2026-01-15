@@ -2,7 +2,7 @@
 
 // Valid time range values
 export const VALID_TIME_RANGES = ['1d', '7d', '30d', '90d'] as const;
-export type TimeRange = typeof VALID_TIME_RANGES[number];
+export type TimeRange = (typeof VALID_TIME_RANGES)[number];
 
 export function formatRelativeTime(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
@@ -79,4 +79,3 @@ export function getTimestampTimeRangeFilter(timeRange: string): string {
       return `timestamp >= now() - INTERVAL 1 DAY`;
   }
 }
-

@@ -1,32 +1,32 @@
-import { useCallback } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
-import { AppBar, Toolbar, Button, Box } from '@mui/material'
-import logoImage from '../assets/logo-timeboost.png'
-import './Navbar.css'
+import { useCallback } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { AppBar, Toolbar, Button, Box } from '@mui/material';
+import logoImage from '../assets/logo-timeboost.png';
+import './Navbar.css';
 
 function Navbar() {
   const scrollToSection = useCallback((targetId: string) => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
 
-    const sectionHeading = document.getElementById(targetId)
-    if (!sectionHeading) return
+    const sectionHeading = document.getElementById(targetId);
+    if (!sectionHeading) return;
 
-    const navbarHeight = document.querySelector('.navbar')?.clientHeight || 0
-    const offset = 12
+    const navbarHeight = document.querySelector('.navbar')?.clientHeight || 0;
+    const offset = 12;
     const targetPosition =
-      sectionHeading.getBoundingClientRect().top + window.scrollY - navbarHeight - offset
+      sectionHeading.getBoundingClientRect().top + window.scrollY - navbarHeight - offset;
 
     window.scrollTo({
       top: Math.max(targetPosition, 0),
       behavior: 'smooth',
-    })
-  }, [])
+    });
+  }, []);
 
   const handleLogoClick = useCallback(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
 
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <AppBar position="sticky" elevation={0} className="navbar" color="transparent">
@@ -83,8 +83,7 @@ function Navbar() {
         </Box>
       </Toolbar>
     </AppBar>
-  )
+  );
 }
 
-export default Navbar
-
+export default Navbar;

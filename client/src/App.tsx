@@ -1,7 +1,7 @@
-import { Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Navbar from './components/Navbar'
-import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import Navbar from './components/Navbar';
+import './App.css';
 
 function App() {
   return (
@@ -11,8 +11,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
       </Routes>
     </>
-  )
+  );
 }
 
-export default App
-
+export default App;

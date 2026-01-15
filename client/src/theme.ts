@@ -37,20 +37,20 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#0099cc',      // Electric cyan (slightly darker for light mode)
+      main: '#0099cc', // Electric cyan (slightly darker for light mode)
       dark: '#007799',
       light: '#00bbee',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#cc0066',      // Hot magenta (slightly darker)
+      main: '#cc0066', // Hot magenta (slightly darker)
       dark: '#990050',
       light: '#ff0080',
       contrastText: '#ffffff',
     },
     background: {
-      default: '#f8f9fa',   // Light gray background
-      paper: '#ffffff',     // Pure white surface
+      default: '#f8f9fa', // Light gray background
+      paper: '#ffffff', // Pure white surface
     },
     text: {
       primary: '#0f172a',
@@ -299,25 +299,25 @@ export const chartColorPalette = [
 
 // Named chart colors for specific use cases
 export const chartColors = {
-  total: '#0f172a',      // Dark for total values
-  normal: '#ff9500',     // Amber for normal values
-  timeboost: '#00aa66',  // Green for timeboost values
-  atomic: '#0099cc',     // Cyan for atomic
-  cexdex: '#cc0066',     // Magenta for cexdex
+  total: '#0f172a', // Dark for total values
+  normal: '#ff9500', // Amber for normal values
+  timeboost: '#00aa66', // Green for timeboost values
+  atomic: '#0099cc', // Cyan for atomic
+  cexdex: '#cc0066', // Magenta for cexdex
   liquidation: '#8b3fd8', // Purple for liquidation
 } as const;
 
 // Chart styling theme - centralized color configuration for all charts
 export const chartTheme = {
   text: {
-    legend: 'rgba(15, 23, 42, 0.85)',      // Legend text color
-    axisLabel: 'rgba(15, 23, 42, 0.6)',    // Axis label color
-    axisName: 'rgba(15, 23, 42, 0.6)',     // Axis name color
+    legend: 'rgba(15, 23, 42, 0.85)', // Legend text color
+    axisLabel: 'rgba(15, 23, 42, 0.6)', // Axis label color
+    axisName: 'rgba(15, 23, 42, 0.6)', // Axis name color
   },
   line: {
-    axis: 'rgba(15, 23, 42, 0.15)',        // Axis line color
-    grid: 'rgba(15, 23, 42, 0.1)',         // Grid line color
-    border: 'rgba(15, 23, 42, 0.2)',       // Border color for bars/elements
+    axis: 'rgba(15, 23, 42, 0.15)', // Axis line color
+    grid: 'rgba(15, 23, 42, 0.1)', // Grid line color
+    border: 'rgba(15, 23, 42, 0.2)', // Border color for bars/elements
     borderEmphasis: 'rgba(15, 23, 42, 0.4)', // Border color on hover/emphasis
   },
   fontSize: {
@@ -326,4 +326,3 @@ export const chartTheme = {
     axisLabelMedium: 12,
   },
 } as const;
-

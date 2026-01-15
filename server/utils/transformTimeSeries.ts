@@ -1,7 +1,7 @@
 import {
   TimeSeriesDataPoint,
   TimeSeriesByProtocolDataPoint,
-  TimeSeriesPercentageDataPoint
+  TimeSeriesPercentageDataPoint,
 } from '../routes/types';
 
 export interface RawTimeSeriesRow {
@@ -43,7 +43,9 @@ export function transformTimeSeriesData(data: RawTimeSeriesRow[]): TimeSeriesDat
  * Transform protocol time series data.
  * Returns Unix timestamps (seconds) - frontend handles formatting based on time range.
  */
-export function transformProtocolTimeSeriesData(data: RawProtocolTimeSeriesRow[]): TimeSeriesByProtocolDataPoint[] {
+export function transformProtocolTimeSeriesData(
+  data: RawProtocolTimeSeriesRow[]
+): TimeSeriesByProtocolDataPoint[] {
   return data
     .filter((row) => row.time != null && !isNaN(row.time))
     .map((row) => ({
@@ -57,7 +59,9 @@ export function transformProtocolTimeSeriesData(data: RawProtocolTimeSeriesRow[]
  * Transform percentage time series data.
  * Returns Unix timestamps (seconds) - frontend handles formatting based on time range.
  */
-export function transformTimeSeriesPercentageData(data: RawTimeSeriesPercentageRow[]): TimeSeriesPercentageDataPoint[] {
+export function transformTimeSeriesPercentageData(
+  data: RawTimeSeriesPercentageRow[]
+): TimeSeriesPercentageDataPoint[] {
   return data
     .filter((row) => row.time != null && !isNaN(row.time))
     .map((row) => ({

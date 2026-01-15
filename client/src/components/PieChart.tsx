@@ -1,26 +1,26 @@
-import React, { useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { PieChart as EPieChart } from 'echarts/charts'
-import { LegendComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import type { EChartsOption, SeriesOption } from 'echarts'
-import { chartTheme } from '../theme'
+import React, { useMemo } from 'react';
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts/core';
+import { PieChart as EPieChart } from 'echarts/charts';
+import { LegendComponent, TooltipComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import type { EChartsOption, SeriesOption } from 'echarts';
+import { chartTheme } from '../theme';
 
-echarts.use([EPieChart, LegendComponent, TooltipComponent, CanvasRenderer])
+echarts.use([EPieChart, LegendComponent, TooltipComponent, CanvasRenderer]);
 
 export interface PieChartData {
-  name: string
-  value: number
-  color: string
+  name: string;
+  value: number;
+  color: string;
 }
 
 interface PieChartProps {
-  data: PieChartData[]
-  showLegend?: boolean
-  showTooltip?: boolean
-  innerRadius?: number
-  outerRadius?: number
+  data: PieChartData[];
+  showLegend?: boolean;
+  showTooltip?: boolean;
+  innerRadius?: number;
+  outerRadius?: number;
 }
 
 /**
@@ -38,11 +38,12 @@ function PieChart({
       {
         type: 'pie',
         radius: [innerRadius, outerRadius],
-        data: data?.map((d) => ({
-          value: d.value,
-          name: d.name,
-          itemStyle: { color: d.color },
-        })) || [],
+        data:
+          data?.map((d) => ({
+            value: d.value,
+            name: d.name,
+            itemStyle: { color: d.color },
+          })) || [],
         label: {
           formatter: ({ name, percent }) => {
             const pct = typeof percent === 'number' ? percent : 0;
@@ -56,7 +57,7 @@ function PieChart({
       },
     ],
     [data, innerRadius, outerRadius]
-  )
+  );
 
   const option = useMemo<EChartsOption>(
     () => ({
@@ -74,19 +75,17 @@ function PieChart({
       series,
     }),
     [series, showLegend, showTooltip]
-  )
+  );
 
   if (!data || data.length === 0) {
-    return <div>No data available</div>
+    return <div>No data available</div>;
   }
 
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>
       <ReactECharts option={option} notMerge lazyUpdate />
     </div>
-  )
+  );
 }
 
-export default React.memo(PieChart)
-
-
+export default React.memo(PieChart);

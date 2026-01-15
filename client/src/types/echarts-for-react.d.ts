@@ -19,4 +19,3 @@ declare module 'echarts-for-react' {
   const ReactECharts: React.FC<ReactEChartsProps>;
   export default ReactECharts;
 }
-

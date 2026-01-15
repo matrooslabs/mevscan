@@ -9,7 +9,10 @@ export interface Swap {
   amount_out: [string, string];
 }
 
-export function transformSwapsData(row: Record<string, unknown>, prefix: string = 'swaps.'): Swap[] {
+export function transformSwapsData(
+  row: Record<string, unknown>,
+  prefix: string = 'swaps.'
+): Swap[] {
   const traceIdx = row[`${prefix}trace_idx`];
   const from = row[`${prefix}from`];
   const recipient = row[`${prefix}recipient`];

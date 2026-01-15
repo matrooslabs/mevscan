@@ -1,7 +1,7 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import type { UseQueryResult } from '@tanstack/react-query'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import ApiClient from '../services/apiClient'
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import ApiClient from '../services/apiClient';
 import type {
   Transaction,
   Block,
@@ -21,22 +21,22 @@ import type {
   AtomicArbResponse,
   CexDexQuoteResponse,
   LiquidationResponse,
-} from '@mevscan/shared'
+} from '@mevscan/shared';
 
 // Initialize API client - you may want to configure this based on your environment
-const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || '')
+const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || '');
 
 // Export the apiClient instance for use in components
-export { apiClient }
+export { apiClient };
 
 /**
  * Query priority levels for staggered loading
  */
 export enum QueryPriority {
-  CRITICAL = 0,    // Load immediately (0ms delay)
-  HIGH = 1,        // Load after 100ms
-  MEDIUM = 2,      // Load after 300ms
-  LOW = 3,         // Load after 600ms
+  CRITICAL = 0, // Load immediately (0ms delay)
+  HIGH = 1, // Load after 100ms
+  MEDIUM = 2, // Load after 300ms
+  LOW = 3, // Load after 600ms
 }
 
 /**
@@ -47,7 +47,7 @@ const STAGGER_DELAYS = {
   [QueryPriority.HIGH]: 100,
   [QueryPriority.MEDIUM]: 300,
   [QueryPriority.LOW]: 600,
-}
+};
 
 /**
  * React Query configuration constants
@@ -63,7 +63,7 @@ const QUERY_CONFIG = {
   refetchOnWindowFocus: false,
   // Keep previous data while refetching to prevent flicker
   keepPreviousData: true,
-}
+};
 
 /**
  * Hook to enable query after delay (for staggered loading)
@@ -74,26 +74,26 @@ function useStaggeredQuery<T>(
   priority: QueryPriority = QueryPriority.MEDIUM,
   customConfig?: Partial<typeof QUERY_CONFIG>
 ) {
-  const delay = STAGGER_DELAYS[priority]
-  const [enabled, setEnabled] = useState(delay === 0)
+  const delay = STAGGER_DELAYS[priority];
+  const [enabled, setEnabled] = useState(delay === 0);
 
   useEffect(() => {
     if (delay > 0 && !enabled) {
       const timer = setTimeout(() => {
-        setEnabled(true)
-      }, delay)
-      return () => clearTimeout(timer)
+        setEnabled(true);
+      }, delay);
+      return () => clearTimeout(timer);
     }
-  }, [delay, enabled])
+  }, [delay, enabled]);
 
-  const config = { ...QUERY_CONFIG, ...customConfig }
-  
+  const config = { ...QUERY_CONFIG, ...customConfig };
+
   return useQuery({
     queryKey,
     queryFn,
     enabled,
     ...config,
-  })
+  });
 }
 
 /**
@@ -105,11 +105,11 @@ export function useLatestBlocks(limit?: number): UseQueryResult<BlockListItem[],
   return useQuery({
     queryKey: ['blocks', 'latest', limit],
     queryFn: async () => {
-      const data = await apiClient.getLatestBlocks(limit)
-      return data
+      const data = await apiClient.getLatestBlocks(limit);
+      return data;
     },
     refetchInterval: 12000, // Refetch every 12 seconds for real-time updates
-  })
+  });
 }
 
 /**
@@ -121,11 +121,11 @@ export function useLatestTransactions(limit?: number): UseQueryResult<Transactio
   return useQuery({
     queryKey: ['transactions', 'latest', limit],
     queryFn: async () => {
-      const data = await apiClient.getLatestTransactions(limit)
-      return data
+      const data = await apiClient.getLatestTransactions(limit);
+      return data;
     },
     refetchInterval: 12000, // Refetch every 12 seconds for real-time updates
-  })
+  });
 }
 
 /**
@@ -137,11 +137,11 @@ export function useBlock(blockId: string): UseQueryResult<Block, Error> {
   return useQuery({
     queryKey: ['blocks', blockId],
     queryFn: async () => {
-      const data = await apiClient.getBlock(blockId)
-      return data
+      const data = await apiClient.getBlock(blockId);
+      return data;
     },
     enabled: !!blockId, // Only run query if blockId is provided
-  })
+  });
 }
 
 /**
@@ -153,11 +153,11 @@ export function useTransaction(transactionId: string): UseQueryResult<Transactio
   return useQuery({
     queryKey: ['transactions', transactionId],
     queryFn: async () => {
-      const data = await apiClient.getTransaction(transactionId)
-      return data
+      const data = await apiClient.getTransaction(transactionId);
+      return data;
     },
     enabled: !!transactionId, // Only run query if transactionId is provided
-  })
+  });
 }
 
 /**
@@ -165,15 +165,19 @@ export function useTransaction(transactionId: string): UseQueryResult<Transactio
  * @param address - Address hash
  * @returns Query result with address data
  */
-export function useAddress(address: string, page: number = 1, pageSize: number = 20): UseQueryResult<Address, Error> {
+export function useAddress(
+  address: string,
+  page: number = 1,
+  pageSize: number = 20
+): UseQueryResult<Address, Error> {
   return useQuery({
     queryKey: ['addresses', address, page, pageSize],
     queryFn: async () => {
-      const data = await apiClient.getAddress(address, page, pageSize)
-      return data
+      const data = await apiClient.getAddress(address, page, pageSize);
+      return data;
     },
     enabled: !!address, // Only run query if address is provided
-  })
+  });
 }
 
 /**
@@ -186,12 +190,12 @@ export function useGrossMEV(timeRange: string = '1d'): UseQueryResult<TimeSeries
   return useStaggeredQuery<TimeSeriesResponse>(
     ['gross-mev', timeRange],
     async () => {
-      const data = await apiClient.getGrossMEV(timeRange)
-      return data
+      const data = await apiClient.getGrossMEV(timeRange);
+      return data;
     },
     QueryPriority.CRITICAL,
     { refetchInterval: 60000 } // 60 seconds
-  )
+  );
 }
 
 /**
@@ -200,16 +204,18 @@ export function useGrossMEV(timeRange: string = '1d'): UseQueryResult<TimeSeries
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossAtomicArb(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossAtomicArb(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
     ['gross-atomic-arb', timeRange],
     async () => {
-      const data = await apiClient.getGrossAtomicArb(timeRange)
-      return data
+      const data = await apiClient.getGrossAtomicArb(timeRange);
+      return data;
     },
     QueryPriority.CRITICAL,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -218,16 +224,18 @@ export function useGrossAtomicArb(timeRange: string = '1d'): UseQueryResult<Time
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossCexDexQuotes(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossCexDexQuotes(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
     ['gross-cex-dex-quotes', timeRange],
     async () => {
-      const data = await apiClient.getGrossCexDexQuotes(timeRange)
-      return data
+      const data = await apiClient.getGrossCexDexQuotes(timeRange);
+      return data;
     },
     QueryPriority.CRITICAL,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -236,16 +244,18 @@ export function useGrossCexDexQuotes(timeRange: string = '1d'): UseQueryResult<T
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data
  */
-export function useGrossLiquidation(timeRange: string = '1d'): UseQueryResult<TimeSeriesResponse, Error> {
+export function useGrossLiquidation(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesResponse, Error> {
   return useStaggeredQuery<TimeSeriesResponse>(
     ['gross-liquidation', timeRange],
     async () => {
-      const data = await apiClient.getGrossLiquidation(timeRange)
-      return data
+      const data = await apiClient.getGrossLiquidation(timeRange);
+      return data;
     },
     QueryPriority.CRITICAL,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -254,16 +264,18 @@ export function useGrossLiquidation(timeRange: string = '1d'): UseQueryResult<Ti
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useAtomicMEVTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useAtomicMEVTimeboosted(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['atomic-mev-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getAtomicMEVTimeboosted(timeRange)
-      return data
+      const data = await apiClient.getAtomicMEVTimeboosted(timeRange);
+      return data;
     },
     QueryPriority.HIGH,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -272,16 +284,18 @@ export function useAtomicMEVTimeboosted(timeRange: string = '1d'): UseQueryResul
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with pie chart data
  */
-export function useExpressLaneMEVPercentage(timeRange: string = '1d'): UseQueryResult<PieChartResponse, Error> {
+export function useExpressLaneMEVPercentage(
+  timeRange: string = '1d'
+): UseQueryResult<PieChartResponse, Error> {
   return useStaggeredQuery<PieChartResponse>(
     ['express-lane-mev-percentage', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneMEVPercentage(timeRange)
-      return data
+      const data = await apiClient.getExpressLaneMEVPercentage(timeRange);
+      return data;
     },
     QueryPriority.HIGH,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -290,16 +304,18 @@ export function useExpressLaneMEVPercentage(timeRange: string = '1d'): UseQueryR
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series percentage data
  */
-export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '1d'): UseQueryResult<TimeSeriesPercentageResponse, Error> {
+export function useExpressLaneMEVPercentagePerMinute(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesPercentageResponse, Error> {
   return useStaggeredQuery<TimeSeriesPercentageResponse>(
     ['express-lane-mev-percentage-per-minute', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneMEVPercentagePerMinute(timeRange)
-      return data
+      const data = await apiClient.getExpressLaneMEVPercentagePerMinute(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -308,16 +324,18 @@ export function useExpressLaneMEVPercentagePerMinute(timeRange: string = '1d'): 
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useAtomicMEV(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useAtomicMEV(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['atomic-mev', timeRange],
     async () => {
-      const data = await apiClient.getAtomicMEV(timeRange)
-      return data
+      const data = await apiClient.getAtomicMEV(timeRange);
+      return data;
     },
     QueryPriority.HIGH,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -326,16 +344,18 @@ export function useAtomicMEV(timeRange: string = '1d'): UseQueryResult<TimeSerie
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useCexDex(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useCexDex(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['cexdex', timeRange],
     async () => {
-      const data = await apiClient.getCexDex(timeRange)
-      return data
+      const data = await apiClient.getCexDex(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -344,16 +364,18 @@ export function useCexDex(timeRange: string = '1d'): UseQueryResult<TimeSeriesBy
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useCexDexTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useCexDexTimeboosted(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['cexdex-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getCexDexTimeboosted(timeRange)
-      return data
+      const data = await apiClient.getCexDexTimeboosted(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -362,16 +384,18 @@ export function useCexDexTimeboosted(timeRange: string = '1d'): UseQueryResult<T
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useLiquidation(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useLiquidation(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['liquidation', timeRange],
     async () => {
-      const data = await apiClient.getLiquidation(timeRange)
-      return data
+      const data = await apiClient.getLiquidation(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -380,16 +404,18 @@ export function useLiquidation(timeRange: string = '1d'): UseQueryResult<TimeSer
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with time series data by protocol
  */
-export function useLiquidationTimeboosted(timeRange: string = '1d'): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
+export function useLiquidationTimeboosted(
+  timeRange: string = '1d'
+): UseQueryResult<TimeSeriesByProtocolResponse, Error> {
   return useStaggeredQuery<TimeSeriesByProtocolResponse>(
     ['liquidation-timeboosted', timeRange],
     async () => {
-      const data = await apiClient.getLiquidationTimeboosted(timeRange)
-      return data
+      const data = await apiClient.getLiquidationTimeboosted(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -398,16 +424,18 @@ export function useLiquidationTimeboosted(timeRange: string = '1d'): UseQueryRes
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Net Profit data
  */
-export function useExpressLaneNetProfit(timeRange: string = '1d'): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
+export function useExpressLaneNetProfit(
+  timeRange: string = '1d'
+): UseQueryResult<ExpressLaneNetProfitResponse, Error> {
   return useStaggeredQuery<ExpressLaneNetProfitResponse>(
     ['express-lane-net-profit', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneNetProfit(timeRange)
-      return data
+      const data = await apiClient.getExpressLaneNetProfit(timeRange);
+      return data;
     },
     QueryPriority.LOW,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -416,16 +444,18 @@ export function useExpressLaneNetProfit(timeRange: string = '1d'): UseQueryResul
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Profit by Controller data
  */
-export function useExpressLaneProfitByController(timeRange: string = '1d'): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
+export function useExpressLaneProfitByController(
+  timeRange: string = '1d'
+): UseQueryResult<ExpressLaneProfitByControllerResponse, Error> {
   return useStaggeredQuery<ExpressLaneProfitByControllerResponse>(
     ['express-lane-profit-by-controller', timeRange],
     async () => {
-      const data = await apiClient.getExpressLaneProfitByController(timeRange)
-      return data
+      const data = await apiClient.getExpressLaneProfitByController(timeRange);
+      return data;
     },
     QueryPriority.LOW,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -437,12 +467,12 @@ export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueRespo
   return useStaggeredQuery<TimeboostRevenueResponse>(
     ['timeboost-gross-revenue'],
     async () => {
-      const data = await apiClient.getTimeboostGrossRevenue()
-      return data
+      const data = await apiClient.getTimeboostGrossRevenue();
+      return data;
     },
     QueryPriority.LOW,
     { refetchInterval: 120000 } // 2 minutes - all-time data changes less frequently
-  )
+  );
 }
 
 /**
@@ -451,16 +481,18 @@ export function useTimeboostGrossRevenue(): UseQueryResult<TimeboostRevenueRespo
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Timeboost Revenue data
  */
-export function useTimeboostRevenue(timeRange: string = '1d'): UseQueryResult<TimeboostRevenueResponse, Error> {
+export function useTimeboostRevenue(
+  timeRange: string = '1d'
+): UseQueryResult<TimeboostRevenueResponse, Error> {
   return useStaggeredQuery<TimeboostRevenueResponse>(
     ['timeboost-revenue', timeRange],
     async () => {
-      const data = await apiClient.getTimeboostRevenue(timeRange)
-      return data
+      const data = await apiClient.getTimeboostRevenue(timeRange);
+      return data;
     },
     QueryPriority.LOW,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -469,16 +501,18 @@ export function useTimeboostRevenue(timeRange: string = '1d'): UseQueryResult<Ti
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Bids per Address data
  */
-export function useBidsPerAddress(timeRange: string = '1d'): UseQueryResult<BidsPerAddressResponse, Error> {
+export function useBidsPerAddress(
+  timeRange: string = '1d'
+): UseQueryResult<BidsPerAddressResponse, Error> {
   return useStaggeredQuery<BidsPerAddressResponse>(
     ['bids-per-address', timeRange],
     async () => {
-      const data = await apiClient.getBidsPerAddress(timeRange)
-      return data
+      const data = await apiClient.getBidsPerAddress(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -487,16 +521,18 @@ export function useBidsPerAddress(timeRange: string = '1d'): UseQueryResult<Bids
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Auction Win Count data
  */
-export function useAuctionWinCount(timeRange: string = '1d'): UseQueryResult<AuctionWinCountResponse, Error> {
+export function useAuctionWinCount(
+  timeRange: string = '1d'
+): UseQueryResult<AuctionWinCountResponse, Error> {
   return useStaggeredQuery<AuctionWinCountResponse>(
     ['auction-win-count', timeRange],
     async () => {
-      const data = await apiClient.getAuctionWinCount(timeRange)
-      return data
+      const data = await apiClient.getAuctionWinCount(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -508,12 +544,12 @@ export function useBidsPerRound(): UseQueryResult<BidsPerRoundResponse, Error> {
   return useStaggeredQuery<BidsPerRoundResponse>(
     ['bids-per-round'],
     async () => {
-      const data = await apiClient.getBidsPerRound()
-      return data
+      const data = await apiClient.getBidsPerRound();
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
@@ -522,46 +558,46 @@ export function useBidsPerRound(): UseQueryResult<BidsPerRoundResponse, Error> {
  * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
  * @returns Query result with Express Lane Price data
  */
-export function useExpressLanePrice(timeRange: string = '1d'): UseQueryResult<ExpressLanePriceResponse, Error> {
+export function useExpressLanePrice(
+  timeRange: string = '1d'
+): UseQueryResult<ExpressLanePriceResponse, Error> {
   return useStaggeredQuery<ExpressLanePriceResponse>(
     ['express-lane-price', timeRange],
     async () => {
-      const data = await apiClient.getExpressLanePrice(timeRange)
-      return data
+      const data = await apiClient.getExpressLanePrice(timeRange);
+      return data;
     },
     QueryPriority.MEDIUM,
     { refetchInterval: 60000 }
-  )
+  );
 }
 
 /**
  * Hook to refresh multiple API queries
  * @param queries - Array of UseQueryResult objects to refresh
  * @returns Object with refresh function and loading state
- * 
+ *
  * @example
  * ```tsx
  * const grossMEV = useGrossMEV()
  * const atomicMEV = useAtomicMEV()
  * const { refresh, isRefreshing } = useApiRefresh([grossMEV, atomicMEV])
- * 
+ *
  * // Later in your component:
  * <button onClick={refresh}>Refresh Data</button>
  * ```
  */
-export function useApiRefresh(
-  queries: UseQueryResult<unknown, Error>[]
-): {
-  refresh: () => Promise<void>
-  isRefreshing: boolean
+export function useApiRefresh(queries: UseQueryResult<unknown, Error>[]): {
+  refresh: () => Promise<void>;
+  isRefreshing: boolean;
 } {
   const refresh = useCallback(async () => {
-    await Promise.all(queries.map(query => query.refetch()))
-  }, [queries])
+    await Promise.all(queries.map((query) => query.refetch()));
+  }, [queries]);
 
-  const isRefreshing = queries.some(query => query.isFetching)
+  const isRefreshing = queries.some((query) => query.isFetching);
 
-  return { refresh, isRefreshing }
+  return { refresh, isRefreshing };
 }
 
 /**
@@ -569,38 +605,34 @@ export function useApiRefresh(
  * Useful when you want to refresh queries without having access to the query results
  * @param queryKeys - Array of query keys to refresh
  * @returns Object with refresh function and loading state
- * 
+ *
  * @example
  * ```tsx
  * const { refresh, isRefreshing } = useApiRefreshByKeys([
  *   ['gross-mev', '15min'],
  *   ['atomic-mev', '15min']
  * ])
- * 
+ *
  * // Later in your component:
  * <button onClick={refresh}>Refresh Data</button>
  * ```
  */
-export function useApiRefreshByKeys(
-  queryKeys: unknown[][]
-): {
-  refresh: () => Promise<void>
-  isRefreshing: boolean
+export function useApiRefreshByKeys(queryKeys: unknown[][]): {
+  refresh: () => Promise<void>;
+  isRefreshing: boolean;
 } {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const refresh = useCallback(async () => {
-    await Promise.all(
-      queryKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
-    )
-  }, [queryClient, queryKeys])
+    await Promise.all(queryKeys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+  }, [queryClient, queryKeys]);
 
-  const isRefreshing = queryKeys.some(queryKey => {
-    const state = queryClient.getQueryState(queryKey)
-    return state?.fetchStatus === 'fetching'
-  })
+  const isRefreshing = queryKeys.some((queryKey) => {
+    const state = queryClient.getQueryState(queryKey);
+    return state?.fetchStatus === 'fetching';
+  });
 
-  return { refresh, isRefreshing }
+  return { refresh, isRefreshing };
 }
 
 /**
@@ -609,7 +641,7 @@ export function useApiRefreshByKeys(
  * @param intervalMs - Refresh interval in milliseconds (default: 30000)
  * @param enabled - Whether periodic refresh is enabled (default: true)
  * @returns Object with refresh function, loading state, and controls
- * 
+ *
  * @example
  * ```tsx
  * const grossMEV = useGrossMEV()
@@ -619,7 +651,7 @@ export function useApiRefreshByKeys(
  *   30000, // 30 seconds
  *   true // enabled by default
  * )
- * 
+ *
  * // Pause/resume periodic refresh
  * <button onClick={isPaused ? resume : pause}>
  *   {isPaused ? 'Resume Auto-refresh' : 'Pause Auto-refresh'}
@@ -631,52 +663,52 @@ export function usePeriodicApiRefresh(
   intervalMs: number = 30000,
   enabled: boolean = true
 ): {
-  refresh: () => Promise<void>
-  isRefreshing: boolean
-  pause: () => void
-  resume: () => void
-  isPaused: boolean
+  refresh: () => Promise<void>;
+  isRefreshing: boolean;
+  pause: () => void;
+  resume: () => void;
+  isPaused: boolean;
 } {
-  const [isPaused, setIsPaused] = useState(!enabled)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [isPaused, setIsPaused] = useState(!enabled);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
-    await Promise.all(queries.map(query => query.refetch()))
-  }, [queries])
+    await Promise.all(queries.map((query) => query.refetch()));
+  }, [queries]);
 
   const pause = useCallback(() => {
-    setIsPaused(true)
-  }, [])
+    setIsPaused(true);
+  }, []);
 
   const resume = useCallback(() => {
-    setIsPaused(false)
-  }, [])
+    setIsPaused(false);
+  }, []);
 
   useEffect(() => {
     if (isPaused || intervalMs <= 0) {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
-      return
+      return;
     }
 
     // Set up periodic refresh
     intervalRef.current = setInterval(() => {
-      refresh()
-    }, intervalMs)
+      refresh();
+    }, intervalMs);
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
-    }
-  }, [isPaused, intervalMs, refresh])
+    };
+  }, [isPaused, intervalMs, refresh]);
 
-  const isRefreshing = queries.some(query => query.isFetching)
+  const isRefreshing = queries.some((query) => query.isFetching);
 
-  return { refresh, isRefreshing, pause, resume, isPaused }
+  return { refresh, isRefreshing, pause, resume, isPaused };
 }
 
 /**
@@ -687,7 +719,7 @@ export function usePeriodicApiRefresh(
  * @param enabled - Whether periodic refresh is enabled (default: true)
  * @param staggerMs - Delay between each query refresh in milliseconds (default: 200)
  * @returns Object with refresh function, loading state, and controls
- * 
+ *
  * @example
  * ```tsx
  * const { refresh, isRefreshing, pause, resume, isPaused } = usePeriodicApiRefreshByKeys(
@@ -699,7 +731,7 @@ export function usePeriodicApiRefresh(
  *   true, // enabled by default
  *   200 // 200ms stagger between refreshes
  * )
- * 
+ *
  * // Pause/resume periodic refresh
  * <button onClick={isPaused ? resume : pause}>
  *   {isPaused ? 'Resume Auto-refresh' : 'Pause Auto-refresh'}
@@ -712,63 +744,63 @@ export function usePeriodicApiRefreshByKeys(
   enabled: boolean = true,
   staggerMs: number = 200
 ): {
-  refresh: () => Promise<void>
-  isRefreshing: boolean
-  pause: () => void
-  resume: () => void
-  isPaused: boolean
+  refresh: () => Promise<void>;
+  isRefreshing: boolean;
+  pause: () => void;
+  resume: () => void;
+  isPaused: boolean;
 } {
-  const queryClient = useQueryClient()
-  const [isPaused, setIsPaused] = useState(!enabled)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const queryClient = useQueryClient();
+  const [isPaused, setIsPaused] = useState(!enabled);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
     // Stagger refreshes to avoid overwhelming the server
     for (let i = 0; i < queryKeys.length; i++) {
-      queryClient.invalidateQueries({ queryKey: queryKeys[i] })
+      queryClient.invalidateQueries({ queryKey: queryKeys[i] });
       // Wait before next refresh (except for the last one)
       if (i < queryKeys.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, staggerMs))
+        await new Promise((resolve) => setTimeout(resolve, staggerMs));
       }
     }
-  }, [queryClient, queryKeys, staggerMs])
+  }, [queryClient, queryKeys, staggerMs]);
 
   const pause = useCallback(() => {
-    setIsPaused(true)
-  }, [])
+    setIsPaused(true);
+  }, []);
 
   const resume = useCallback(() => {
-    setIsPaused(false)
-  }, [])
+    setIsPaused(false);
+  }, []);
 
   useEffect(() => {
     if (isPaused || intervalMs <= 0) {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
-      return
+      return;
     }
 
     // Set up periodic refresh
     intervalRef.current = setInterval(() => {
-      refresh()
-    }, intervalMs)
+      refresh();
+    }, intervalMs);
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
-    }
-  }, [isPaused, intervalMs, refresh])
+    };
+  }, [isPaused, intervalMs, refresh]);
 
-  const isRefreshing = queryKeys.some(queryKey => {
-    const state = queryClient.getQueryState(queryKey)
-    return state?.fetchStatus === 'fetching'
-  })
+  const isRefreshing = queryKeys.some((queryKey) => {
+    const state = queryClient.getQueryState(queryKey);
+    return state?.fetchStatus === 'fetching';
+  });
 
-  return { refresh, isRefreshing, pause, resume, isPaused }
+  return { refresh, isRefreshing, pause, resume, isPaused };
 }
 
 /**
@@ -780,11 +812,11 @@ export function useAtomicArb(txHash: string): UseQueryResult<AtomicArbResponse, 
   return useQuery({
     queryKey: ['atomic-arb', txHash],
     queryFn: async () => {
-      const data = await apiClient.getAtomicArb(txHash)
-      return data
+      const data = await apiClient.getAtomicArb(txHash);
+      return data;
     },
     enabled: !!txHash, // Only run query if txHash is provided
-  })
+  });
 }
 
 /**
@@ -796,11 +828,11 @@ export function useCexDexQuote(txHash: string): UseQueryResult<CexDexQuoteRespon
   return useQuery({
     queryKey: ['cexdex-quote', txHash],
     queryFn: async () => {
-      const data = await apiClient.getCexDexQuote(txHash)
-      return data
+      const data = await apiClient.getCexDexQuote(txHash);
+      return data;
     },
     enabled: !!txHash, // Only run query if txHash is provided
-  })
+  });
 }
 
 /**
@@ -812,10 +844,9 @@ export function useLiquidationDetails(txHash: string): UseQueryResult<Liquidatio
   return useQuery({
     queryKey: ['liquidation-details', txHash],
     queryFn: async () => {
-      const data = await apiClient.getLiquidationByTxHash(txHash)
-      return data
+      const data = await apiClient.getLiquidationByTxHash(txHash);
+      return data;
     },
     enabled: !!txHash, // Only run query if txHash is provided
-  })
+  });
 }
-

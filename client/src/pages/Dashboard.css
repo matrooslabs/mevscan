@@ -25,7 +25,8 @@
   transform: translateX(-50%);
   width: 200px;
   height: 4px;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent 0%,
     rgba(0, 153, 204, 0.6) 25%,
     rgba(204, 0, 102, 0.6) 50%,
@@ -35,7 +36,7 @@
 }
 
 .dashboard-title {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-size: 4rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -56,11 +57,7 @@
 }
 
 .dashboard-title-text {
-  background: linear-gradient(135deg,
-    #0099cc 0%,
-    #cc0066 50%,
-    #00aa66 100%
-  );
+  background: linear-gradient(135deg, #0099cc 0%, #cc0066 50%, #00aa66 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -79,7 +76,7 @@
   text-align: center;
   margin: 0;
   padding: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: rgba(15, 23, 42, 0.6);

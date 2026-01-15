@@ -7,7 +7,6 @@
   min-height: 100vh;
 }
 
-
 .search-section {
   background-color: var(--color-bg-secondary);
   padding: var(--spacing-lg) var(--spacing-lg);
@@ -67,7 +66,6 @@
 .search-button:hover {
   background-color: var(--color-primary-hover);
 }
-
 
 .stats-bar {
   max-width: var(--max-width-content);
@@ -312,7 +310,7 @@
 
 .tx-icon {
   font-size: 1.25rem;
-  color: #FFA726;
+  color: #ffa726;
   margin-top: 0.125rem;
   flex-shrink: 0;
 }
@@ -450,7 +448,7 @@
 
 .block-number {
   font-size: 0.875rem;
-  color: #FFA726;
+  color: #ffa726;
   text-decoration: none;
   font-weight: 500;
 }
@@ -494,7 +492,7 @@
 }
 
 .block-miner:hover {
-  color: #FFA726;
+  color: #ffa726;
   text-decoration: underline;
 }
 
@@ -507,7 +505,7 @@
 
 .block-txns {
   font-size: 0.8125rem;
-  color: #FFA726;
+  color: #ffa726;
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
@@ -667,4 +665,3 @@
     gap: 0.5rem;
   }
 }
-

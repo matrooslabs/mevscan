@@ -1,10 +1,5 @@
 import type { Express } from 'express';
-import {
-  Request,
-  Response,
-  HealthResponse,
-  RootResponse,
-} from './types';
+import { Request, Response, HealthResponse, RootResponse } from './types';
 
 /**
  * Register health routes
@@ -16,7 +11,7 @@ export function registerHealthRoutes(app: Express) {
 
   // Root endpoint
   app.get('/', (req: Request, res: Response<RootResponse>) => {
-    res.json({ 
+    res.json({
       message: 'MEVScan API Server',
       version: '1.0.0',
       endpoints: [
@@ -43,9 +38,8 @@ export function registerHealthRoutes(app: Express) {
         'GET /api/mev/atomic?tx_hash=<tx_hash>',
         'GET /api/mev/cexdex?tx_hash=<tx_hash>',
         'GET /api/mev/liquidations?tx_hash=<tx_hash>',
-        'GET /health'
-      ]
+        'GET /health',
+      ],
     });
   });
-
 }

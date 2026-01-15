@@ -1,30 +1,30 @@
-import React, { useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { BarChart as EBarChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import type { EChartsOption, SeriesOption } from 'echarts'
-import { chartTheme } from '../theme'
+import React, { useMemo } from 'react';
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts/core';
+import { BarChart as EBarChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import type { EChartsOption, SeriesOption } from 'echarts';
+import { chartTheme } from '../theme';
 
-echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
+echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 export interface BarChartData {
-  name: string
-  value: number
+  name: string;
+  value: number;
 }
 
 interface BarChartProps {
-  data: BarChartData[]
-  xAxisKey?: string
-  yAxisLabel?: string
-  showGrid?: boolean
-  showLegend?: boolean
-  showTooltip?: boolean
-  barColor?: string
+  data: BarChartData[];
+  xAxisKey?: string;
+  yAxisLabel?: string;
+  showGrid?: boolean;
+  showLegend?: boolean;
+  showTooltip?: boolean;
+  barColor?: string;
 }
 
-const FONT_SIZE_MEDIUM = 12
+const FONT_SIZE_MEDIUM = 12;
 
 /**
  * BarChart - A reusable vertical bar chart component using ECharts
@@ -38,8 +38,11 @@ function BarChart({
   showTooltip = true,
   barColor = '#8884d8',
 }: BarChartProps) {
-  const labels = useMemo(() => (data ?? []).map((d) => d[xAxisKey as keyof BarChartData] as string), [data, xAxisKey])
-  const seriesData = useMemo(() => (data ?? []).map((d) => d.value ?? null), [data])
+  const labels = useMemo(
+    () => (data ?? []).map((d) => d[xAxisKey as keyof BarChartData] as string),
+    [data, xAxisKey]
+  );
+  const seriesData = useMemo(() => (data ?? []).map((d) => d.value ?? null), [data]);
 
   const series = useMemo<SeriesOption[]>(
     () => [
@@ -55,12 +58,14 @@ function BarChart({
       },
     ],
     [seriesData, barColor]
-  )
+  );
 
   const option = useMemo<EChartsOption>(
     () => ({
       animation: true,
-      tooltip: showTooltip ? { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true } : undefined,
+      tooltip: showTooltip
+        ? { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true }
+        : undefined,
       legend: showLegend
         ? {
             bottom: 0,
@@ -111,18 +116,17 @@ function BarChart({
       series,
     }),
     [labels, series, showLegend, showTooltip, yAxisLabel, showGrid]
-  )
+  );
 
   if (!data || data.length === 0) {
-    return <div>No data available</div>
+    return <div>No data available</div>;
   }
 
   return (
     <div className="chart-container" style={{ width: '100%', height: '100%' }}>
       <ReactECharts option={option} notMerge lazyUpdate />
     </div>
-  )
+  );
 }
 
-export default React.memo(BarChart)
-
+export default React.memo(BarChart);

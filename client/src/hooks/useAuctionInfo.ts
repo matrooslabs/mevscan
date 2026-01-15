@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
-import { useChannel } from "ably/react";
-import { ABLY_CHANNELS } from "../constants/ably";
-import type { AuctionInfo } from "@mevscan/shared";
+import { useState, useCallback, useEffect } from 'react';
+import { useChannel } from 'ably/react';
+import { ABLY_CHANNELS } from '../constants/ably';
+import type { AuctionInfo } from '@mevscan/shared';
 
 export interface UseAuctionInfoResult {
   auctionInfo: AuctionInfo | null;
@@ -18,13 +18,10 @@ export function useAuctionInfo(): UseAuctionInfoResult {
     setAuctionInfo(data);
   }, []);
 
-  const { channel } = useChannel(
-    ABLY_CHANNELS.AUCTION_INFO,
-    (message) => {
-      setIsConnected(true);
-      handleMessage(message);
-    }
-  );
+  const { channel } = useChannel(ABLY_CHANNELS.AUCTION_INFO, (message) => {
+    setIsConnected(true);
+    handleMessage(message);
+  });
 
   // Fetch history on cold start
   useEffect(() => {
@@ -36,7 +33,7 @@ export function useAuctionInfo(): UseAuctionInfoResult {
       try {
         const history = await channel.history({
           limit: 1,
-          direction: "backwards",
+          direction: 'backwards',
         });
         if (isCancelled) return;
 

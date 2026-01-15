@@ -1,4 +1,3 @@
-
 import { createClient, ClickHouseClient } from '@clickhouse/client';
 
 interface ClickHouseConfig {
@@ -9,10 +8,10 @@ interface ClickHouseConfig {
 }
 
 export function initClickHouseClient(config: ClickHouseConfig): ClickHouseClient {
-    return createClient({
-      host: config.url,
-      username: config.username,
-      password: config.password,
-      database: config.database,
-    });
-  }
+  return createClient({
+    host: config.url,
+    username: config.username,
+    password: config.password,
+    database: config.database,
+  });
+}

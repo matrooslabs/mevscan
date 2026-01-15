@@ -8,10 +8,7 @@ import {
   PieChartResponse,
   TimeSeriesPercentageResponse,
 } from './types';
-import {
-  getTimeRangeFilter,
-  getTimeGrouping,
-} from './types';
+import { getTimeRangeFilter, getTimeGrouping } from './types';
 import { transformTimeSeriesPercentageData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
@@ -19,15 +16,14 @@ import { handleRouteError } from '../utils/errorHandler';
  * Register expresslane routes
  */
 export function registerExpressLaneRoutes(app: Express) {
-  app.get('/api/express-lane/mev-percentage', async (
-    req: Request,
-    res: Response<PieChartResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
+  app.get(
+    '/api/express-lane/mev-percentage',
+    async (req: Request, res: Response<PieChartResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+
+        const query = `
         SELECT
           sum(m.profit_usd) AS total,
           sumIf(m.profit_usd, m.timeboosted = 1) AS timeboost,
@@ -45,50 +41,52 @@ export function registerExpressLaneRoutes(app: Express) {
           AND ${timeFilter}
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
-
-      const data = await result.json<Array<{
-        total: number;
-        timeboost: number;
-        percentage: number;
-      }>>();
-
-      if (data.length === 0) {
-        res.json({
-          total: 0,
-          timeboost: 0,
-          percentage: 0,
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
         });
-        return;
+
+        const data = await result.json<
+          Array<{
+            total: number;
+            timeboost: number;
+            percentage: number;
+          }>
+        >();
+
+        if (data.length === 0) {
+          res.json({
+            total: 0,
+            timeboost: 0,
+            percentage: 0,
+          });
+          return;
+        }
+
+        const row = data[0];
+        const response: PieChartResponse = {
+          total: row.total || 0,
+          timeboost: row.timeboost || 0,
+          percentage: row.percentage || 0,
+        };
+
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Express Lane MEV Percentage');
       }
-
-      const row = data[0];
-      const response: PieChartResponse = {
-        total: row.total || 0,
-        timeboost: row.timeboost || 0,
-        percentage: row.percentage || 0,
-      };
-
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Express Lane MEV Percentage');
     }
-  });
+  );
 
   // Get Express Lane MEV Percentage per minute time series
-  app.get('/api/express-lane/mev-percentage-per-minute', async (
-    req: Request,
-    res: Response<TimeSeriesPercentageResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/express-lane/mev-percentage-per-minute',
+    async (req: Request, res: Response<TimeSeriesPercentageResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
           sum(m.profit_usd)                              AS total,
@@ -109,36 +107,38 @@ export function registerExpressLaneRoutes(app: Express) {
         ORDER BY time ASC
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        total: number;
-        timeboost: number;
-        percentage: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            total: number;
+            timeboost: number;
+            percentage: number;
+          }>
+        >();
 
-      const response: TimeSeriesPercentageResponse = transformTimeSeriesPercentageData(data);
+        const response: TimeSeriesPercentageResponse = transformTimeSeriesPercentageData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Express Lane MEV Percentage per minute');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Express Lane MEV Percentage per minute');
+      }
     }
-  });
+  );
 
   // Get Express Lane Net Profit
-  app.get('/api/express-lane/net-profit', async (
-    req: Request,
-    res: Response<ExpressLaneNetProfitResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
+  app.get(
+    '/api/express-lane/net-profit',
+    async (req: Request, res: Response<ExpressLaneNetProfitResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+
+        const query = `
         SELECT
           bh.express_lane_round AS round,
           bh.express_lane_controller AS controller,
@@ -163,43 +163,45 @@ export function registerExpressLaneRoutes(app: Express) {
         LIMIT 100
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        round: number;
-        controller: string;
-        price: number;
-        profit: number;
-        net_profit: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            round: number;
+            controller: string;
+            price: number;
+            profit: number;
+            net_profit: number;
+          }>
+        >();
 
-      const response: ExpressLaneNetProfitResponse = data.map((row) => ({
-        round: row.round || 0,
-        controller: row.controller || '',
-        price: row.price || 0,
-        profit: row.profit || 0,
-        net_profit: row.net_profit || 0,
-      }));
+        const response: ExpressLaneNetProfitResponse = data.map((row) => ({
+          round: row.round || 0,
+          controller: row.controller || '',
+          price: row.price || 0,
+          profit: row.profit || 0,
+          net_profit: row.net_profit || 0,
+        }));
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Express Lane Net Profit');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Express Lane Net Profit');
+      }
     }
-  });
+  );
 
   // Get Express Lane Profit by Controller
-  app.get('/api/express-lane/profit-by-controller', async (
-    req: Request,
-    res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-    
-      const query = `
+  app.get(
+    '/api/express-lane/profit-by-controller',
+    async (req: Request, res: Response<ExpressLaneProfitByControllerResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+
+        const query = `
         SELECT 
           controller,
           sum(net_profit) as net_profit_total
@@ -232,26 +234,27 @@ export function registerExpressLaneRoutes(app: Express) {
           controller
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        controller: string;
-        net_profit_total: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            controller: string;
+            net_profit_total: number;
+          }>
+        >();
 
-      const response: ExpressLaneProfitByControllerResponse = data.map((row) => ({
-        controller: row.controller || '',
-        net_profit_total: row.net_profit_total || 0,
-      }));
+        const response: ExpressLaneProfitByControllerResponse = data.map((row) => ({
+          controller: row.controller || '',
+          net_profit_total: row.net_profit_total || 0,
+        }));
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Express Lane Profit by Controller');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Express Lane Profit by Controller');
+      }
     }
-  });
-
-
+  );
 }

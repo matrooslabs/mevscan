@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import ReactECharts from "echarts-for-react";
-import type { EChartsOption } from "echarts";
-import { chartColors, chartTheme } from "../theme";
+import { useMemo } from 'react';
+import ReactECharts from 'echarts-for-react';
+import type { EChartsOption } from 'echarts';
+import { chartColors, chartTheme } from '../theme';
 
 /**
  * Data point for lane comparison time series
@@ -23,10 +23,10 @@ function generateMockData(): LaneTimeSeriesDataPoint[] {
 
   for (let i = 14; i >= 0; i--) {
     const time = new Date(now.getTime() - i * 60 * 1000);
-    const timeStr = time.toLocaleTimeString("en-US", {
+    const timeStr = time.toLocaleTimeString('en-US', {
       hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: '2-digit',
+      minute: '2-digit',
     });
 
     data.push({
@@ -50,7 +50,7 @@ function GasUsageChart({ data }: GasUsageChartProps) {
     return {
       animation: true,
       tooltip: {
-        trigger: "axis",
+        trigger: 'axis',
         confine: true,
         formatter: (params: unknown) => {
           const items = params as Array<{
@@ -59,19 +59,19 @@ function GasUsageChart({ data }: GasUsageChartProps) {
             seriesName: string;
             color: string;
           }>;
-          if (!items || items.length === 0) return "";
+          if (!items || items.length === 0) return '';
           const time = items[0].name;
           const lines = items.map((item) => {
             const colorDot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};margin-right:6px;"></span>`;
             return `${colorDot}${item.seriesName}: ${item.value.toLocaleString()} gas`;
           });
-          return `<strong>${time}</strong><br/>${lines.join("<br/>")}`;
+          return `<strong>${time}</strong><br/>${lines.join('<br/>')}`;
         },
       },
       legend: {
         show: true,
         bottom: 0,
-        data: ["Normal Lane", "Express Lane"],
+        data: ['Normal Lane', 'Express Lane'],
         textStyle: {
           color: chartTheme.text.legend,
           fontSize: chartTheme.fontSize.legend,
@@ -85,7 +85,7 @@ function GasUsageChart({ data }: GasUsageChartProps) {
         containLabel: false,
       },
       xAxis: {
-        type: "category",
+        type: 'category',
         data: times,
         boundaryGap: false,
         axisLabel: {
@@ -100,9 +100,9 @@ function GasUsageChart({ data }: GasUsageChartProps) {
         },
       },
       yAxis: {
-        type: "value",
-        name: "Gas Used",
-        nameLocation: "middle",
+        type: 'value',
+        name: 'Gas Used',
+        nameLocation: 'middle',
         nameGap: 45,
         nameTextStyle: {
           color: chartTheme.text.axisName,
@@ -115,7 +115,7 @@ function GasUsageChart({ data }: GasUsageChartProps) {
         splitLine: {
           show: true,
           lineStyle: {
-            type: "dashed",
+            type: 'dashed',
             color: chartTheme.line.grid,
           },
         },
@@ -127,8 +127,8 @@ function GasUsageChart({ data }: GasUsageChartProps) {
       },
       series: [
         {
-          name: "Normal Lane",
-          type: "line",
+          name: 'Normal Lane',
+          type: 'line',
           data: normalLaneData,
           smooth: 0.2,
           showSymbol: true,
@@ -144,8 +144,8 @@ function GasUsageChart({ data }: GasUsageChartProps) {
           },
         },
         {
-          name: "Express Lane",
-          type: "line",
+          name: 'Express Lane',
+          type: 'line',
           data: expressLaneData,
           smooth: 0.2,
           showSymbol: true,
@@ -169,10 +169,9 @@ function GasUsageChart({ data }: GasUsageChartProps) {
       option={chartOptions}
       notMerge
       lazyUpdate
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 }
 
 export default GasUsageChart;
-

@@ -1,11 +1,11 @@
-import React from 'react'
-import { Box, ToggleButton, ToggleButtonGroup, styled } from '@mui/material'
-import { TIME_RANGES, TIME_RANGE_LABELS, type TimeRange } from '../hooks/useTimeRange'
+import React from 'react';
+import { Box, ToggleButton, ToggleButtonGroup, styled } from '@mui/material';
+import { TIME_RANGES, TIME_RANGE_LABELS, type TimeRange } from '../hooks/useTimeRange';
 
 interface TimeRangeSelectorProps {
-  value: TimeRange
-  onChange: (range: TimeRange) => void
-  size?: 'small' | 'default'
+  value: TimeRange;
+  onChange: (range: TimeRange) => void;
+  size?: 'small' | 'default';
 }
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)<{ $small?: boolean }>(({ $small }) => ({
@@ -27,7 +27,7 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)<{ $small?: boolean }>(
       },
     },
   },
-}))
+}));
 
 const StyledToggleButton = styled(ToggleButton)<{ $small?: boolean }>(({ $small }) => ({
   fontFamily: '"IBM Plex Mono", "Courier New", monospace',
@@ -43,15 +43,15 @@ const StyledToggleButton = styled(ToggleButton)<{ $small?: boolean }>(({ $small 
     backgroundColor: 'rgba(0, 153, 204, 0.08)',
     color: '#0099cc',
   },
-}))
+}));
 
 function TimeRangeSelector({ value, onChange, size = 'default' }: TimeRangeSelectorProps) {
-  const isSmall = size === 'small'
+  const isSmall = size === 'small';
   const handleChange = (_event: React.MouseEvent<HTMLElement>, newRange: TimeRange | null) => {
     if (newRange !== null) {
-      onChange(newRange)
+      onChange(newRange);
     }
-  }
+  };
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -70,7 +70,7 @@ function TimeRangeSelector({ value, onChange, size = 'default' }: TimeRangeSelec
         ))}
       </StyledToggleButtonGroup>
     </Box>
-  )
+  );
 }
 
-export default TimeRangeSelector
+export default TimeRangeSelector;

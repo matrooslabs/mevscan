@@ -1,18 +1,20 @@
-import { useCallback } from "react";
-import { Typography, Box } from "@mui/material";
-import { chartColorPalette, chartColors } from "../../theme";
-import TimeSeriesChart, { type LineConfig } from "../../components/TimeSeriesChart";
-import { apiClient } from "../../hooks/useApi";
-import "./SectionCommon.css";
+import { useCallback } from 'react';
+import { Typography, Box } from '@mui/material';
+import { chartColorPalette, chartColors } from '../../theme';
+import TimeSeriesChart, { type LineConfig } from '../../components/TimeSeriesChart';
+import { apiClient } from '../../hooks/useApi';
+import './SectionCommon.css';
 
 // Transform standard time series data
 const transformTimeSeriesData = (data: unknown[]) => {
-  return (data as { time: number; total: number; normal: number; timeboost: number }[]).map((item) => ({
-    time: item.time,
-    total: item.total,
-    normal: item.normal,
-    timeboost: item.timeboost,
-  }));
+  return (data as { time: number; total: number; normal: number; timeboost: number }[]).map(
+    (item) => ({
+      time: item.time,
+      total: item.total,
+      normal: item.normal,
+      timeboost: item.timeboost,
+    })
+  );
 };
 
 // Transform protocol data for multi-line charts
@@ -38,7 +40,7 @@ const transformProtocolData = (data: unknown[]) => {
     const dataPoint: Record<string, number> = { time };
 
     protocols.forEach((proto) => {
-      const safeProtoName = proto.replace(/[^a-zA-Z0-9]/g, "_");
+      const safeProtoName = proto.replace(/[^a-zA-Z0-9]/g, '_');
       dataPoint[safeProtoName] = protoMap.get(proto) || 0;
     });
 
@@ -55,48 +57,69 @@ const generateProtocolLineConfigs = (data: unknown[]): LineConfig[] => {
 
   const protocols = Array.from(new Set(typedData.map((item) => String(item.proto)))).sort();
   return protocols.map((proto, index) => ({
-    dataKey: proto.replace(/[^a-zA-Z0-9]/g, "_"),
+    dataKey: proto.replace(/[^a-zA-Z0-9]/g, '_'),
     name: proto,
     strokeColor: chartColorPalette[index % chartColorPalette.length],
   }));
 };
 
 const grossMevLines: LineConfig[] = [
-  { dataKey: "total", name: "Total", strokeColor: chartColors.total },
-  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
-  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+  { dataKey: 'total', name: 'Total', strokeColor: chartColors.total },
+  { dataKey: 'normal', name: 'Normal', strokeColor: chartColors.normal },
+  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: chartColors.timeboost },
 ];
 
 const atomicArbLines: LineConfig[] = [
-  { dataKey: "total", name: "Total", strokeColor: chartColors.atomic },
-  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
-  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+  { dataKey: 'total', name: 'Total', strokeColor: chartColors.atomic },
+  { dataKey: 'normal', name: 'Normal', strokeColor: chartColors.normal },
+  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: chartColors.timeboost },
 ];
 
 const cexDexLines: LineConfig[] = [
-  { dataKey: "total", name: "Total", strokeColor: chartColors.cexdex },
-  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
-  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+  { dataKey: 'total', name: 'Total', strokeColor: chartColors.cexdex },
+  { dataKey: 'normal', name: 'Normal', strokeColor: chartColors.normal },
+  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: chartColors.timeboost },
 ];
 
 const liquidationLines: LineConfig[] = [
-  { dataKey: "total", name: "Total", strokeColor: chartColors.liquidation },
-  { dataKey: "normal", name: "Normal", strokeColor: chartColors.normal },
-  { dataKey: "timeboost", name: "Timeboost", strokeColor: chartColors.timeboost },
+  { dataKey: 'total', name: 'Total', strokeColor: chartColors.liquidation },
+  { dataKey: 'normal', name: 'Normal', strokeColor: chartColors.normal },
+  { dataKey: 'timeboost', name: 'Timeboost', strokeColor: chartColors.timeboost },
 ];
 
 function MEVSection({ id }: { id?: string }) {
   // Fetch functions for each chart
   const fetchGrossMEV = useCallback((timeRange: string) => apiClient.getGrossMEV(timeRange), []);
-  const fetchGrossAtomicArb = useCallback((timeRange: string) => apiClient.getGrossAtomicArb(timeRange), []);
-  const fetchGrossCexDex = useCallback((timeRange: string) => apiClient.getGrossCexDexQuotes(timeRange), []);
-  const fetchGrossLiquidation = useCallback((timeRange: string) => apiClient.getGrossLiquidation(timeRange), []);
+  const fetchGrossAtomicArb = useCallback(
+    (timeRange: string) => apiClient.getGrossAtomicArb(timeRange),
+    []
+  );
+  const fetchGrossCexDex = useCallback(
+    (timeRange: string) => apiClient.getGrossCexDexQuotes(timeRange),
+    []
+  );
+  const fetchGrossLiquidation = useCallback(
+    (timeRange: string) => apiClient.getGrossLiquidation(timeRange),
+    []
+  );
   const fetchAtomicMEV = useCallback((timeRange: string) => apiClient.getAtomicMEV(timeRange), []);
-  const fetchAtomicMEVTimeboosted = useCallback((timeRange: string) => apiClient.getAtomicMEVTimeboosted(timeRange), []);
+  const fetchAtomicMEVTimeboosted = useCallback(
+    (timeRange: string) => apiClient.getAtomicMEVTimeboosted(timeRange),
+    []
+  );
   const fetchCexDex = useCallback((timeRange: string) => apiClient.getCexDex(timeRange), []);
-  const fetchCexDexTimeboosted = useCallback((timeRange: string) => apiClient.getCexDexTimeboosted(timeRange), []);
-  const fetchLiquidation = useCallback((timeRange: string) => apiClient.getLiquidation(timeRange), []);
-  const fetchLiquidationTimeboosted = useCallback((timeRange: string) => apiClient.getLiquidationTimeboosted(timeRange), []);
+  const fetchCexDexTimeboosted = useCallback(
+    (timeRange: string) => apiClient.getCexDexTimeboosted(timeRange),
+    []
+  );
+  const fetchLiquidation = useCallback(
+    (timeRange: string) => apiClient.getLiquidation(timeRange),
+    []
+  );
+  const fetchLiquidationTimeboosted = useCallback(
+    (timeRange: string) => apiClient.getLiquidationTimeboosted(timeRange),
+    []
+  );
 
   return (
     <Box id={id} className="section-container">

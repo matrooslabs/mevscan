@@ -18,12 +18,15 @@
     "build:client": "npm run build --workspace=client",
     "build:server": "npm run build --workspace=server",
     "build:websocket": "npm run build --workspace=websocket",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "format:check": "npm run format:check --workspaces --if-present"
   },
   "devDependencies": {
     "@types/apicache": "^1.6.8",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
+    "prettier": "^3.8.0",
     "typescript": "^5.6.0"
   },
   "dependencies": {

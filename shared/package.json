@@ -11,7 +11,9 @@
     "./ably": "./src/ably.ts"
   },
   "scripts": {
-    "build:check": "tsc --noEmit"
+    "build:check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.7"

@@ -180,9 +180,12 @@ class ApiClient {
    */
   async getAtomicMEVTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/atomic-mev/timeboosted',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -210,11 +213,16 @@ class ApiClient {
    * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to time series percentage data
    */
-  async getExpressLaneMEVPercentagePerMinute(timeRange: string = '1d'): Promise<TimeSeriesPercentageResponse> {
+  async getExpressLaneMEVPercentagePerMinute(
+    timeRange: string = '1d'
+  ): Promise<TimeSeriesPercentageResponse> {
     try {
-      const response = await this.client.get<TimeSeriesPercentageResponse>('/api/express-lane/mev-percentage-per-minute', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesPercentageResponse>(
+        '/api/express-lane/mev-percentage-per-minute',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -228,9 +236,12 @@ class ApiClient {
    */
   async getAtomicMEV(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/atomic-mev', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/atomic-mev',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -244,9 +255,12 @@ class ApiClient {
    */
   async getCexDex(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/cexdex',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -260,9 +274,12 @@ class ApiClient {
    */
   async getCexDexTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/cexdex/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/cexdex/timeboosted',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -276,9 +293,12 @@ class ApiClient {
    */
   async getLiquidation(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/liquidation',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -292,9 +312,12 @@ class ApiClient {
    */
   async getLiquidationTimeboosted(timeRange: string = '1d'): Promise<TimeSeriesByProtocolResponse> {
     try {
-      const response = await this.client.get<TimeSeriesByProtocolResponse>('/api/protocols/liquidation/timeboosted', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<TimeSeriesByProtocolResponse>(
+        '/api/protocols/liquidation/timeboosted',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -308,9 +331,12 @@ class ApiClient {
    */
   async getExpressLaneNetProfit(timeRange: string = '1d'): Promise<ExpressLaneNetProfitResponse> {
     try {
-      const response = await this.client.get<ExpressLaneNetProfitResponse>('/api/express-lane/net-profit', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLaneNetProfitResponse>(
+        '/api/express-lane/net-profit',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -322,11 +348,16 @@ class ApiClient {
    * @param timeRange - Time range for the data (1d, 7d, 30d, 90d)
    * @returns Promise resolving to Express Lane Profit by Controller data
    */
-  async getExpressLaneProfitByController(timeRange: string = '1d'): Promise<ExpressLaneProfitByControllerResponse> {
+  async getExpressLaneProfitByController(
+    timeRange: string = '1d'
+  ): Promise<ExpressLaneProfitByControllerResponse> {
     try {
-      const response = await this.client.get<ExpressLaneProfitByControllerResponse>('/api/express-lane/profit-by-controller', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLaneProfitByControllerResponse>(
+        '/api/express-lane/profit-by-controller',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -339,7 +370,9 @@ class ApiClient {
    */
   async getTimeboostGrossRevenue(): Promise<TimeboostRevenueResponse> {
     try {
-      const response = await this.client.get<TimeboostRevenueResponse>('/api/timeboost/gross-revenue');
+      const response = await this.client.get<TimeboostRevenueResponse>(
+        '/api/timeboost/gross-revenue'
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -369,9 +402,12 @@ class ApiClient {
    */
   async getBidsPerAddress(timeRange: string = '1d'): Promise<BidsPerAddressResponse> {
     try {
-      const response = await this.client.get<BidsPerAddressResponse>('/api/timeboost/bids-per-address', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<BidsPerAddressResponse>(
+        '/api/timeboost/bids-per-address',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -385,9 +421,12 @@ class ApiClient {
    */
   async getAuctionWinCount(timeRange: string = '1d'): Promise<AuctionWinCountResponse> {
     try {
-      const response = await this.client.get<AuctionWinCountResponse>('/api/timeboost/auction-win-count', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<AuctionWinCountResponse>(
+        '/api/timeboost/auction-win-count',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -414,9 +453,12 @@ class ApiClient {
    */
   async getExpressLanePrice(timeRange: string = '1d'): Promise<ExpressLanePriceResponse> {
     try {
-      const response = await this.client.get<ExpressLanePriceResponse>('/api/timeboost/express-lane-price', {
-        params: { timeRange },
-      });
+      const response = await this.client.get<ExpressLanePriceResponse>(
+        '/api/timeboost/express-lane-price',
+        {
+          params: { timeRange },
+        }
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -481,13 +523,14 @@ class ApiClient {
     if (axios.isAxiosError(error)) {
       if (error.response) {
         // Server responded with error status
-        const message = (error.response.data as { message?: string })?.message || error.response.statusText;
-        return new Error(
-          `API Error: ${error.response.status} - ${message}`
-        );
+        const message =
+          (error.response.data as { message?: string })?.message || error.response.statusText;
+        return new Error(`API Error: ${error.response.status} - ${message}`);
       } else if (error.request) {
         // Request made but no response received
-        return new Error('Network Error: No response from server. Make sure the server is running on http://localhost:3001');
+        return new Error(
+          'Network Error: No response from server. Make sure the server is running on http://localhost:3001'
+        );
       } else {
         // Error setting up request
         return new Error(`Request Error: ${error.message}`);
@@ -501,4 +544,3 @@ class ApiClient {
 }
 
 export default ApiClient;
-

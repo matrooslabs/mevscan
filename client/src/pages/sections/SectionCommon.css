@@ -3,7 +3,7 @@
 }
 
 .section-title {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-weight: 700;
   font-size: 2rem;
   letter-spacing: 0.02em;
@@ -22,7 +22,8 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     rgba(0, 153, 204, 0.6) 0%,
     rgba(204, 0, 102, 0.6) 50%,
     rgba(0, 170, 102, 0.6) 100%
@@ -58,10 +59,7 @@
   transform: translateY(-50%);
   width: 4px;
   height: 40px;
-  background: linear-gradient(180deg,
-    rgba(0, 153, 204, 0.6) 0%,
-    rgba(204, 0, 102, 0.6) 100%
-  );
+  background: linear-gradient(180deg, rgba(0, 153, 204, 0.6) 0%, rgba(204, 0, 102, 0.6) 100%);
   border-radius: 2px;
 }
 
@@ -94,7 +92,7 @@
 }
 
 .metric-large-value {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-size: 3rem;
   font-weight: 700;
   color: #0099cc;
@@ -102,16 +100,15 @@
 }
 
 .metric-medium-value {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-size: 2rem;
   font-weight: 700;
   color: #00aa66;
 }
 
 .metric-small-value {
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-size: 1.5rem;
   font-weight: 700;
   color: #ff9500;
 }
-

@@ -1,11 +1,11 @@
-import './Dashboard.css'
-import { Typography, Box, IconButton } from '@mui/material'
-import TwitterIcon from '@mui/icons-material/Twitter'
-import GitHubIcon from '@mui/icons-material/GitHub'
-import MEVSection from './sections/MEVSection'
-import ExpressLaneSection from './sections/ExpressLaneSection'
-import LiveSection from './sections/LiveSection'
-import TimeboostSection from './sections/TimeboostSection'
+import './Dashboard.css';
+import { Typography, Box, IconButton } from '@mui/material';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import MEVSection from './sections/MEVSection';
+import ExpressLaneSection from './sections/ExpressLaneSection';
+import LiveSection from './sections/LiveSection';
+import TimeboostSection from './sections/TimeboostSection';
 
 function Dashboard() {
   return (
@@ -48,7 +48,7 @@ function Dashboard() {
         <TimeboostSection id="timeboost-section" />
       </div>
     </>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;

@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useChannel } from "ably/react";
-import { ABLY_CHANNELS } from "../constants/ably";
-import type { ExpressLaneTransaction } from "@mevscan/shared";
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useChannel } from 'ably/react';
+import { ABLY_CHANNELS } from '../constants/ably';
+import type { ExpressLaneTransaction } from '@mevscan/shared';
 
 export interface RoundInfo {
   currentRound: number;
@@ -28,22 +28,14 @@ export interface UseExpressLaneTransactionsResult {
 }
 
 export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
-  const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>(
-    []
-  );
+  const [transactions, setTransactions] = useState<ExpressLaneTransaction[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   // Handle incoming messages from Ably
   const handleMessage = useCallback((message: { data?: unknown }) => {
-    const newTransactions = message.data as
-      | ExpressLaneTransaction[]
-      | undefined;
+    const newTransactions = message.data as ExpressLaneTransaction[] | undefined;
 
-    if (
-      !newTransactions ||
-      !Array.isArray(newTransactions) ||
-      newTransactions.length === 0
-    ) {
+    if (!newTransactions || !Array.isArray(newTransactions) || newTransactions.length === 0) {
       return;
     }
 
@@ -55,21 +47,16 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
         0
       );
       const combined = [...prev, ...newTransactions];
-      const filtered = combined.filter(
-        (tx) => tx.expressLaneRound === maxExpressLaneRound
-      );
+      const filtered = combined.filter((tx) => tx.expressLaneRound === maxExpressLaneRound);
       return filtered;
     });
   }, []);
 
   // Subscribe to the express lane transactions channel
-  const { channel } = useChannel(
-    ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS,
-    (message) => {
-      setIsConnected(true);
-      handleMessage(message);
-    }
-  );
+  const { channel } = useChannel(ABLY_CHANNELS.EXPRESS_LANE_TRANSACTIONS, (message) => {
+    setIsConnected(true);
+    handleMessage(message);
+  });
 
   // Fetch a snapshot of the most recent 60 messages on cold start
   useEffect(() => {
@@ -81,7 +68,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       try {
         const history = await channel.history({
           limit: 30,
-          direction: "forwards",
+          direction: 'forwards',
         });
         if (isCancelled) return;
 
@@ -118,8 +105,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
     if (transactions.length === 0) {
       return {
         currentRound: 0,
-        currentOwner: "0x0000000000000000000000000000000000000000",
-        expressLanePriceEth: "0",
+        currentOwner: '0x0000000000000000000000000000000000000000',
+        expressLanePriceEth: '0',
         expressLanePriceUsd: 0,
         currentBlockNumber: 0,
         gasUsed: 0,
@@ -130,10 +117,8 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
 
     return {
       currentRound: latestTx.expressLaneRound ?? 0,
-      currentOwner:
-        latestTx.expressLaneController ??
-        "0x0000000000000000000000000000000000000000",
-      expressLanePriceEth: latestTx.expressLanePrice ?? "0",
+      currentOwner: latestTx.expressLaneController ?? '0x0000000000000000000000000000000000000000',
+      expressLanePriceEth: latestTx.expressLanePrice ?? '0',
       expressLanePriceUsd: latestTx.expressLanePriceUsd ?? 0,
       currentBlockNumber: latestTx.blockNumber,
       gasUsed: 0, // Would need gas data from the transaction
@@ -145,10 +130,7 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
     if (transactions.length === 0) return [];
 
     // Group transactions by distinct timestamp
-    const timestampMap = new Map<
-      number,
-      { Atomic: number; CexDex: number; Liquidation: number }
-    >();
+    const timestampMap = new Map<number, { Atomic: number; CexDex: number; Liquidation: number }>();
 
     transactions.forEach((tx) => {
       const timestamp = tx.blockTimestamp;
@@ -160,11 +142,11 @@ export function useExpressLaneTransactions(): UseExpressLaneTransactionsResult {
       const entry = timestampMap.get(timestamp)!;
 
       // Map mevType to chart categories
-      if (tx.mevType === "AtomicArb") {
+      if (tx.mevType === 'AtomicArb') {
         entry.Atomic += tx.profitUsd;
-      } else if (tx.mevType === "CexDexQuotes") {
+      } else if (tx.mevType === 'CexDexQuotes') {
         entry.CexDex += tx.profitUsd;
-      } else if (tx.mevType === "Liquidation") {
+      } else if (tx.mevType === 'Liquidation') {
         entry.Liquidation += tx.profitUsd;
       }
     });

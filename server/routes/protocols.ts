@@ -1,14 +1,6 @@
 import type { Express } from 'express';
-import {
-  Request,
-  Response,
-  ErrorResponse,
-  TimeSeriesByProtocolResponse,
-} from './types';
-import {
-  getTimeRangeFilter,
-  getTimeGrouping,
-} from './types';
+import { Request, Response, ErrorResponse, TimeSeriesByProtocolResponse } from './types';
+import { getTimeRangeFilter, getTimeGrouping } from './types';
 import { transformProtocolTimeSeriesData } from '../utils/transformTimeSeries';
 import { handleRouteError } from '../utils/errorHandler';
 
@@ -16,16 +8,15 @@ import { handleRouteError } from '../utils/errorHandler';
  * Register protocols routes
  */
 export function registerProtocolsRoutes(app: Express) {
-  app.get('/api/protocols/atomic-mev/timeboosted', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/atomic-mev/timeboosted',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   SELECT
     toUnixTimestamp(${timeGrouping}(toDateTime(e.block_timestamp))) AS time,
     proto,
@@ -43,36 +34,38 @@ export function registerProtocolsRoutes(app: Express) {
   ORDER BY time ASC, proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Atomic MEV Timeboosted');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Atomic MEV Timeboosted');
+      }
     }
-  });
+  );
 
   // Get Atomic Arb MEV time series by protocol
-  app.get('/api/protocols/atomic-mev', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/atomic-mev',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   WITH
       proto_list AS (
           SELECT DISTINCT
@@ -111,36 +104,38 @@ export function registerProtocolsRoutes(app: Express) {
       p.proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Atomic Arb MEV');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Atomic Arb MEV');
+      }
     }
-  });
+  );
 
   // Get CexDex Arb time series by protocol
-  app.get('/api/protocols/cexdex', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/cexdex',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   WITH
       proto_list AS (
           SELECT DISTINCT
@@ -178,36 +173,38 @@ export function registerProtocolsRoutes(app: Express) {
       proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'CexDex Arb');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'CexDex Arb');
+      }
     }
-  });
+  );
 
   // Get CexDex MEV Timeboosted time series by protocol
-  app.get('/api/protocols/cexdex/timeboosted', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/cexdex/timeboosted',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   WITH
       proto_list AS (
           SELECT DISTINCT
@@ -246,36 +243,38 @@ export function registerProtocolsRoutes(app: Express) {
       proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'CexDex MEV Timeboosted');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'CexDex MEV Timeboosted');
+      }
     }
-  });
+  );
 
   // Get Liquidation time series by protocol
-  app.get('/api/protocols/liquidation', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/liquidation',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   WITH
       proto_list AS (
           SELECT DISTINCT
@@ -313,36 +312,38 @@ export function registerProtocolsRoutes(app: Express) {
       proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Liquidation');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Liquidation');
+      }
     }
-  });
+  );
 
   // Get Liquidation Timeboosted time series by protocol
-  app.get('/api/protocols/liquidation/timeboosted', async (
-    req: Request,
-    res: Response<TimeSeriesByProtocolResponse | ErrorResponse>
-  ) => {
-    try {
-      const timeRange = (req.query.timeRange as string) || '1d';
-      const timeFilter = getTimeRangeFilter(timeRange);
-      const timeGrouping = getTimeGrouping(timeRange);
+  app.get(
+    '/api/protocols/liquidation/timeboosted',
+    async (req: Request, res: Response<TimeSeriesByProtocolResponse | ErrorResponse>) => {
+      try {
+        const timeRange = (req.query.timeRange as string) || '1d';
+        const timeFilter = getTimeRangeFilter(timeRange);
+        const timeGrouping = getTimeGrouping(timeRange);
 
-      const query = `
+        const query = `
   WITH
       proto_list AS (
           SELECT DISTINCT
@@ -381,24 +382,25 @@ export function registerProtocolsRoutes(app: Express) {
       proto
       `;
 
-      const result = await req.clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      });
+        const result = await req.clickhouse.query({
+          query,
+          format: 'JSONEachRow',
+        });
 
-      const data = await result.json<Array<{
-        time: number;
-        proto: string;
-        profit_usd: number;
-      }>>();
+        const data = await result.json<
+          Array<{
+            time: number;
+            proto: string;
+            profit_usd: number;
+          }>
+        >();
 
-      const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
+        const response: TimeSeriesByProtocolResponse = transformProtocolTimeSeriesData(data);
 
-      res.json(response);
-    } catch (error) {
-      handleRouteError(error, res, 'Liquidation Timeboosted');
+        res.json(response);
+      } catch (error) {
+        handleRouteError(error, res, 'Liquidation Timeboosted');
+      }
     }
-  });
-
-
+  );
 }

@@ -1,12 +1,12 @@
 /* CSS Custom Properties (Variables) */
 :root {
   /* Colors - Primary (Matroos compass yellow) */
-  --color-primary: #ffb200;            /* was #FFA726 */
-  --color-primary-hover: #e59400;      /* a bit deeper on hover */
+  --color-primary: #ffb200; /* was #FFA726 */
+  --color-primary-hover: #e59400; /* a bit deeper on hover */
 
   /* Brand-specific helpers */
-  --color-brand-compass: #ffb200;      /* compass icon */
-  --color-brand-ink: #000000;          /* logo text / strong text */
+  --color-brand-compass: #ffb200; /* compass icon */
+  --color-brand-ink: #000000; /* logo text / strong text */
 
   /* Colors - Neutral */
   --color-white: #ffffff;

@@ -11,17 +11,17 @@ import {
   TableRow,
   Chip,
   Paper,
-} from "@mui/material";
-import { Link } from "react-router-dom";
-import { chartColorPalette } from "../theme";
-import "./MEVTransactionTable.css";
+} from '@mui/material';
+import { Link } from 'react-router-dom';
+import { chartColorPalette } from '../theme';
+import './MEVTransactionTable.css';
 
 // Helper to normalize MEV type for display
 const normalizeMevType = (mevType: string): string => {
   const normalized = mevType.toLowerCase();
-  if (normalized === "atomic" || normalized === "atomic_arb") return "Atomic";
-  if (normalized === "cex_dex" || normalized === "cexdex") return "CexDex";
-  if (normalized === "liquidation") return "Liquidation";
+  if (normalized === 'atomic' || normalized === 'atomic_arb') return 'Atomic';
+  if (normalized === 'cex_dex' || normalized === 'cexdex') return 'CexDex';
+  if (normalized === 'liquidation') return 'Liquidation';
   return mevType;
 };
 
@@ -29,11 +29,11 @@ const normalizeMevType = (mevType: string): string => {
 const getMevTypeColor = (mevType: string): string => {
   const normalized = normalizeMevType(mevType);
   switch (normalized) {
-    case "Atomic":
+    case 'Atomic':
       return chartColorPalette[0]; // '#8884d8'
-    case "CexDex":
+    case 'CexDex':
       return chartColorPalette[1]; // '#82ca9d'
-    case "Liquidation":
+    case 'Liquidation':
       return chartColorPalette[2]; // '#ffc658'
     default:
       return chartColorPalette[0];
@@ -74,18 +74,11 @@ export default function MEVTransactionTable({
     <Card className="mev-tx-table-card">
       <CardContent className="mev-tx-table-card-content">
         <Box className="mev-tx-table-title-container">
-          <Typography
-            variant="h6"
-            component="h3"
-            className="mev-tx-table-title"
-          >
+          <Typography variant="h6" component="h3" className="mev-tx-table-title">
             Transactions
           </Typography>
         </Box>
-        <TableContainer
-          component={Paper}
-          className="mev-tx-table-container"
-        >
+        <TableContainer component={Paper} className="mev-tx-table-container">
           <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>
@@ -100,57 +93,47 @@ export default function MEVTransactionTable({
                 <TableRow>
                   <TableCell colSpan={4} align="center">
                     <Typography variant="body2" color="text.secondary">
-                      {isConnected
-                        ? "Waiting for transactions..."
-                        : "Connecting to live feed..."}
+                      {isConnected ? 'Waiting for transactions...' : 'Connecting to live feed...'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                transactions.slice().reverse().map((tx, index) => (
-                  <TableRow key={index} className="mev-tx-table-row">
-                    <TableCell className="mev-tx-table-hash monospace">
-                      <Link
-                        to={`https://arbiscan.io/tx/${tx.txHash}`}
-                        className="hash-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {formatTxHash(tx.txHash)}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="monospace">
-                      {tx.blockNumber}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={normalizeMevType(tx.mevType)}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          borderColor: getMevTypeColor(tx.mevType),
-                          color: getMevTypeColor(tx.mevType),
-                          backgroundColor: hexToRgba(
-                            getMevTypeColor(tx.mevType),
-                            0.08
-                          ),
-                          "&:hover": {
-                            backgroundColor: hexToRgba(
-                              getMevTypeColor(tx.mevType),
-                              0.15
-                            ),
-                          },
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      className="mev-tx-table-profit"
-                    >
-                      ${tx.profitUsd.toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))
+                transactions
+                  .slice()
+                  .reverse()
+                  .map((tx, index) => (
+                    <TableRow key={index} className="mev-tx-table-row">
+                      <TableCell className="mev-tx-table-hash monospace">
+                        <Link
+                          to={`https://arbiscan.io/tx/${tx.txHash}`}
+                          className="hash-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {formatTxHash(tx.txHash)}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="monospace">{tx.blockNumber}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={normalizeMevType(tx.mevType)}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            borderColor: getMevTypeColor(tx.mevType),
+                            color: getMevTypeColor(tx.mevType),
+                            backgroundColor: hexToRgba(getMevTypeColor(tx.mevType), 0.08),
+                            '&:hover': {
+                              backgroundColor: hexToRgba(getMevTypeColor(tx.mevType), 0.15),
+                            },
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="right" className="mev-tx-table-profit">
+                        ${tx.profitUsd.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))
               )}
             </TableBody>
           </Table>

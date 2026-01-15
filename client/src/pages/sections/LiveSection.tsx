@@ -1,27 +1,20 @@
-import { useMemo } from "react";
-import {
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  Stack,
-  Grid,
-} from "@mui/material";
+import { useMemo } from 'react';
+import { Typography, Box, Card, CardContent, Stack, Grid } from '@mui/material';
 
-import { ChannelProvider } from "ably/react";
-import ReactECharts from "echarts-for-react";
-import type { EChartsOption } from "echarts";
-import NumberFlow from "@number-flow/react";
-import { chartColorPalette, chartTheme } from "../../theme";
-import { useExpressLaneTransactions } from "../../hooks/useExpressLaneTransactions";
-import { useAuctionInfo } from "../../hooks/useAuctionInfo";
-import { ABLY_CHANNELS } from "../../constants/ably";
-import MEVTransactionTable from "../../components/MEVTransactionTable";
-import GasUsageChart from "../../components/GasUsageChart";
-import TransactionCountChart from "../../components/TransactionCountChart";
-import TradeVolumeChart from "../../components/TradeVolumeChart";
-import "./SectionCommon.css";
-import "./LiveSection.css";
+import { ChannelProvider } from 'ably/react';
+import ReactECharts from 'echarts-for-react';
+import type { EChartsOption } from 'echarts';
+import NumberFlow from '@number-flow/react';
+import { chartColorPalette, chartTheme } from '../../theme';
+import { useExpressLaneTransactions } from '../../hooks/useExpressLaneTransactions';
+import { useAuctionInfo } from '../../hooks/useAuctionInfo';
+import { ABLY_CHANNELS } from '../../constants/ably';
+import MEVTransactionTable from '../../components/MEVTransactionTable';
+import GasUsageChart from '../../components/GasUsageChart';
+import TransactionCountChart from '../../components/TransactionCountChart';
+import TradeVolumeChart from '../../components/TradeVolumeChart';
+import './SectionCommon.css';
+import './LiveSection.css';
 
 // Stat Card Component
 interface StatCardProps {
@@ -38,12 +31,8 @@ function StatCard({ title, value, prefix, suffix }: StatCardProps) {
         <Typography variant="caption" className="live-section-stat-label">
           {title}
         </Typography>
-        <Typography
-          variant="h5"
-          component="div"
-          className="live-section-stat-value"
-        >
-          {typeof value === "number" ? (
+        <Typography variant="h5" component="div" className="live-section-stat-value">
+          {typeof value === 'number' ? (
             <NumberFlow value={value} prefix={prefix} suffix={suffix} />
           ) : (
             <>
@@ -72,13 +61,8 @@ function truncateAddress(address: string): string {
 }
 
 function LiveSectionContent({ id }: { id?: string }) {
-  const {
-    transactions,
-    roundInfo,
-    profitByType,
-    cumulativeProfit,
-    isConnected,
-  } = useExpressLaneTransactions();
+  const { transactions, roundInfo, profitByType, cumulativeProfit, isConnected } =
+    useExpressLaneTransactions();
 
   const { auctionInfo } = useAuctionInfo();
 
@@ -88,11 +72,11 @@ function LiveSectionContent({ id }: { id?: string }) {
   // Helper to format timestamp for display
   const formatTimestamp = (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString("en-US", {
+    return date.toLocaleTimeString('en-US', {
       hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     });
   };
 
@@ -103,10 +87,7 @@ function LiveSectionContent({ id }: { id?: string }) {
     return profitByType.map((entry, index) => {
       const cumulative = profitByType
         .slice(0, index + 1)
-        .reduce(
-          (sum, item) => sum + item.Atomic + item.CexDex + item.Liquidation,
-          0
-        );
+        .reduce((sum, item) => sum + item.Atomic + item.CexDex + item.Liquidation, 0);
       return {
         time: formatTimestamp(entry.timestamp),
         profit: cumulative,
@@ -120,10 +101,10 @@ function LiveSectionContent({ id }: { id?: string }) {
     const profits = profitData.map((d) => d.profit);
 
     // Extract profit data by MEV type for stacked bars
-    const mevTypes: Array<"Atomic" | "CexDex" | "Liquidation"> = [
-      "Atomic",
-      "CexDex",
-      "Liquidation",
+    const mevTypes: Array<'Atomic' | 'CexDex' | 'Liquidation'> = [
+      'Atomic',
+      'CexDex',
+      'Liquidation',
     ];
     const mevTypeColors: Record<string, string> = {
       Atomic: chartColorPalette[0],
@@ -148,7 +129,7 @@ function LiveSectionContent({ id }: { id?: string }) {
     return {
       animation: true,
       tooltip: {
-        trigger: "axis",
+        trigger: 'axis',
         confine: true,
         formatter: (params: unknown) => {
           const data = params as Array<{
@@ -158,19 +139,19 @@ function LiveSectionContent({ id }: { id?: string }) {
             color: string;
             seriesType?: string;
           }>;
-          if (!data || data.length === 0) return "";
+          if (!data || data.length === 0) return '';
           const time = data[0].name;
           const lines = data.map((item) => {
             const colorDot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};margin-right:6px;"></span>`;
             return `${colorDot}${item.seriesName}: $${item.value.toFixed(2)}`;
           });
-          return `<strong>${time}</strong><br/>${lines.join("<br/>")}`;
+          return `<strong>${time}</strong><br/>${lines.join('<br/>')}`;
         },
       },
       legend: {
         show: true,
         bottom: 0,
-        data: [...mevTypes, "Cumulative Profit", "Express Lane Price"],
+        data: [...mevTypes, 'Cumulative Profit', 'Express Lane Price'],
         textStyle: {
           color: chartTheme.text.legend,
           fontSize: chartTheme.fontSize.legend,
@@ -184,11 +165,11 @@ function LiveSectionContent({ id }: { id?: string }) {
         containLabel: false,
       },
       xAxis: {
-        type: "category",
+        type: 'category',
         data: times,
         boundaryGap: true,
-        name: "Time",
-        nameLocation: "middle",
+        name: 'Time',
+        nameLocation: 'middle',
         nameGap: 20,
         nameTextStyle: {
           color: chartTheme.text.axisName,
@@ -205,9 +186,9 @@ function LiveSectionContent({ id }: { id?: string }) {
         },
       },
       yAxis: {
-        type: "value",
-        name: "Profit (USD)",
-        nameLocation: "middle",
+        type: 'value',
+        name: 'Profit (USD)',
+        nameLocation: 'middle',
         nameGap: 40,
         nameTextStyle: {
           color: chartTheme.text.axisName,
@@ -220,7 +201,7 @@ function LiveSectionContent({ id }: { id?: string }) {
         splitLine: {
           show: true,
           lineStyle: {
-            type: "dashed",
+            type: 'dashed',
             color: chartTheme.line.grid,
           },
         },
@@ -234,18 +215,18 @@ function LiveSectionContent({ id }: { id?: string }) {
         // Stacked bar series for MEV type breakdown
         ...barDataByType.map((typeData) => ({
           name: typeData.name,
-          type: "bar" as const,
-          stack: "profit",
+          type: 'bar' as const,
+          stack: 'profit',
           data: typeData.data,
-          barWidth: "20%",
-          barCategoryGap: "20%",
+          barWidth: '20%',
+          barCategoryGap: '20%',
           itemStyle: {
             color: typeData.color,
             borderWidth: 1,
             borderColor: chartTheme.line.border,
           },
           emphasis: {
-            focus: "series" as const,
+            focus: 'series' as const,
             itemStyle: {
               borderWidth: 2,
               borderColor: chartTheme.line.borderEmphasis,
@@ -255,35 +236,35 @@ function LiveSectionContent({ id }: { id?: string }) {
         })),
         // Line series for cumulative profit
         {
-          name: "Cumulative Profit",
-          type: "line",
+          name: 'Cumulative Profit',
+          type: 'line',
           data: profits,
           smooth: 0.2,
           showSymbol: true,
           symbolSize: 6,
           lineStyle: {
             width: 3,
-            color: "#3b82f6",
+            color: '#3b82f6',
           },
-          itemStyle: { color: "#3b82f6" },
+          itemStyle: { color: '#3b82f6' },
           areaStyle: {
             opacity: 0.15,
-            color: "#3b82f6",
+            color: '#3b82f6',
           },
           z: 10,
         },
         // Line series for express lane price
         {
-          name: "Express Lane Price",
-          type: "line",
+          name: 'Express Lane Price',
+          type: 'line',
           data: times.map(() => bepPriceUSD),
           showSymbol: false,
           lineStyle: {
             width: 2,
-            color: "#ef4444",
-            type: "dashed",
+            color: '#ef4444',
+            type: 'dashed',
           },
-          itemStyle: { color: "#ef4444" },
+          itemStyle: { color: '#ef4444' },
           z: 0,
         },
       ],
@@ -296,43 +277,28 @@ function LiveSectionContent({ id }: { id?: string }) {
         <Stack direction="column" spacing={1}>
           <Stack direction="row" spacing={1} justifyContent="space-between">
             <StatCard title="Profit" value={cumulativeProfit} prefix="$" />
-            <StatCard
-              title="Current Round"
-              value={auctionInfo?.round ?? roundInfo.currentRound}
-            />
-            <StatCard
-              title="Current Block Number"
-              value={roundInfo.currentBlockNumber}
-            />
-            <StatCard
-              title="Number of Transactions"
-              value={transactions.length}
-            />
+            <StatCard title="Current Round" value={auctionInfo?.round ?? roundInfo.currentRound} />
+            <StatCard title="Current Block Number" value={roundInfo.currentBlockNumber} />
+            <StatCard title="Number of Transactions" value={transactions.length} />
           </Stack>
           <Stack direction="row" spacing={1} justifyContent="space-between">
             <StatCard title="Gas Used" value={roundInfo.gasUsed} suffix=" wei" />
             <StatCard
               title="Winning Bidder"
               value={
-                auctionInfo?.firstPriceBidder
-                  ? truncateAddress(auctionInfo.firstPriceBidder)
-                  : "-"
+                auctionInfo?.firstPriceBidder ? truncateAddress(auctionInfo.firstPriceBidder) : '-'
               }
             />
             <StatCard
               title="Winning Bid"
               value={
-                auctionInfo?.firstPriceAmount
-                  ? formatWeiToEth(auctionInfo.firstPriceAmount)
-                  : "-"
+                auctionInfo?.firstPriceAmount ? formatWeiToEth(auctionInfo.firstPriceAmount) : '-'
               }
               suffix=" ETH"
             />
             <StatCard
               title="Actual Price"
-              value={
-                auctionInfo?.price ? formatWeiToEth(auctionInfo.price) : "-"
-              }
+              value={auctionInfo?.price ? formatWeiToEth(auctionInfo.price) : '-'}
               suffix=" ETH"
             />
           </Stack>
@@ -341,26 +307,18 @@ function LiveSectionContent({ id }: { id?: string }) {
           <Card className="live-section-chart-card">
             <CardContent className="live-section-chart-card-content">
               <Box className="live-section-card-title-container">
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  className="live-section-card-title"
-                >
+                <Typography variant="h6" component="h3" className="live-section-card-title">
                   Express Lane MEV Profit
                 </Typography>
                 <Box className="live-section-live-indicator">
                   <Box
                     className="live-section-live-dot"
                     sx={{
-                      backgroundColor: isConnected ? "#22c55e" : "#ef4444",
+                      backgroundColor: isConnected ? '#22c55e' : '#ef4444',
                     }}
                   />
-                  <Typography
-                    variant="caption"
-                    className="live-section-live-text"
-                  >
-                    {isConnected ? "LIVE" : "CONNECTING"} - Round{" "}
-                    {roundInfo.currentRound} -{" "}
+                  <Typography variant="caption" className="live-section-live-text">
+                    {isConnected ? 'LIVE' : 'CONNECTING'} - Round {roundInfo.currentRound} -{' '}
                     {roundInfo.currentOwner.slice(0, 6)}...
                     {roundInfo.currentOwner.slice(-4)}
                   </Typography>
@@ -382,14 +340,10 @@ function LiveSectionContent({ id }: { id?: string }) {
             <Grid size={4}>
               <Card className="live-section-chart-card" sx={{ height: 280 }}>
                 <CardContent className="live-section-chart-card-content">
-                  <Typography
-                    variant="h6"
-                    component="h3"
-                    className="live-section-card-title"
-                  >
+                  <Typography variant="h6" component="h3" className="live-section-card-title">
                     Gas Usage
                   </Typography>
-                  <Box sx={{ height: 200, width: "100%" }}>
+                  <Box sx={{ height: 200, width: '100%' }}>
                     <GasUsageChart />
                   </Box>
                 </CardContent>
@@ -399,14 +353,10 @@ function LiveSectionContent({ id }: { id?: string }) {
             <Grid size={4}>
               <Card className="live-section-chart-card" sx={{ height: 280 }}>
                 <CardContent className="live-section-chart-card-content">
-                  <Typography
-                    variant="h6"
-                    component="h3"
-                    className="live-section-card-title"
-                  >
+                  <Typography variant="h6" component="h3" className="live-section-card-title">
                     Transaction Count
                   </Typography>
-                  <Box sx={{ height: 200, width: "100%" }}>
+                  <Box sx={{ height: 200, width: '100%' }}>
                     <TransactionCountChart />
                   </Box>
                 </CardContent>
@@ -414,16 +364,12 @@ function LiveSectionContent({ id }: { id?: string }) {
             </Grid>
 
             <Grid size={4}>
-              <Card className="live-section-chart-card" sx={{ height: "100%" }}>
+              <Card className="live-section-chart-card" sx={{ height: '100%' }}>
                 <CardContent className="live-section-chart-card-content">
-                  <Typography
-                    variant="h6"
-                    component="h3"
-                    className="live-section-card-title"
-                  >
+                  <Typography variant="h6" component="h3" className="live-section-card-title">
                     Trade Volume
                   </Typography>
-                  <Box sx={{ height: 200, width: "100%" }}>
+                  <Box sx={{ height: 200, width: '100%' }}>
                     <TradeVolumeChart />
                   </Box>
                 </CardContent>
@@ -431,10 +377,7 @@ function LiveSectionContent({ id }: { id?: string }) {
             </Grid>
           </Grid>
 
-          <MEVTransactionTable
-            transactions={transactions}
-            isConnected={isConnected}
-          />
+          <MEVTransactionTable transactions={transactions} isConnected={isConnected} />
         </Stack>
       </Box>
     </Box>

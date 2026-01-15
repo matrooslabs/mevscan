@@ -1,21 +1,21 @@
-import { useMemo, useCallback } from "react";
-import { Typography, Box } from "@mui/material";
-import TimeSeriesChart from "../../components/TimeSeriesChart";
-import BarChart from "../../components/BarChart";
+import { useMemo, useCallback } from 'react';
+import { Typography, Box } from '@mui/material';
+import TimeSeriesChart from '../../components/TimeSeriesChart';
+import BarChart from '../../components/BarChart';
 import {
   apiClient,
   useExpressLaneNetProfit,
   useExpressLaneProfitByController,
   usePeriodicApiRefreshByKeys,
-} from "../../hooks/useApi";
-import ChartCard from "../../components/ChartCard";
-import { chartColors } from "../../theme";
-import "./SectionCommon.css";
+} from '../../hooks/useApi';
+import ChartCard from '../../components/ChartCard';
+import { chartColors } from '../../theme';
+import './SectionCommon.css';
 import type {
   ExpressLaneMEVPercentagePerMinute,
   ExpressLaneNetProfitEntry,
   ExpressLaneProfitByControllerEntry,
-} from "../../types/api";
+} from '../../types/api';
 
 // Transform Express Lane MEV Percentage data
 const transformPercentageData = (data: unknown[]) => {
@@ -30,7 +30,7 @@ const transformPercentageData = (data: unknown[]) => {
 };
 
 const percentageLines = [
-  { dataKey: "total", name: "Percentage", strokeColor: chartColors.timeboost },
+  { dataKey: 'total', name: 'Percentage', strokeColor: chartColors.timeboost },
 ];
 
 function ExpressLaneSection({ id }: { id?: string }) {
@@ -39,10 +39,7 @@ function ExpressLaneSection({ id }: { id?: string }) {
   const expressLaneProfitByController = useExpressLaneProfitByController();
 
   usePeriodicApiRefreshByKeys(
-    [
-      ["express-lane-net-profit"],
-      ["express-lane-profit-by-controller"],
-    ],
+    [['express-lane-net-profit'], ['express-lane-profit-by-controller']],
     60000,
     true,
     200
@@ -56,9 +53,7 @@ function ExpressLaneSection({ id }: { id?: string }) {
 
   // Transform Express Lane Net Profit data
   const transformExpressLaneNetProfitData = useMemo(() => {
-    const netProfitData = expressLaneNetProfit.data as
-      | ExpressLaneNetProfitEntry[]
-      | undefined;
+    const netProfitData = expressLaneNetProfit.data as ExpressLaneNetProfitEntry[] | undefined;
     if (!netProfitData || netProfitData.length === 0) {
       return [];
     }
@@ -85,14 +80,12 @@ function ExpressLaneSection({ id }: { id?: string }) {
     }
     return profitByControllerData
       .map((item) => ({
-        name: item.controller || "Unknown",
+        name: item.controller || 'Unknown',
         value: item.net_profit_total || 0,
       }))
       .sort(
-        (
-          a: { name: string; value: number },
-          b: { name: string; value: number }
-        ) => b.value - a.value
+        (a: { name: string; value: number }, b: { name: string; value: number }) =>
+          b.value - a.value
       );
   }, [expressLaneProfitByController.data]);
 
@@ -141,8 +134,8 @@ function ExpressLaneSection({ id }: { id?: string }) {
               hideZeroValues={true}
               lines={[
                 {
-                  dataKey: "total",
-                  name: "Net Profit",
+                  dataKey: 'total',
+                  name: 'Net Profit',
                   strokeColor: chartColors.atomic,
                 },
               ]}
