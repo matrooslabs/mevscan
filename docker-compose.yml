@@ -6,6 +6,7 @@ version: '3.8'
 # - server/ (@mevscan/server) 
 # - client/ (@mevscan/client)
 # - websocket/ (@mevscan/websocket)
+# - mcp/ (@mevscan/mcp)
 
 services:
   api:
@@ -55,6 +56,23 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
       - ABLY_API_KEY=${ABLY_API_KEY}
+      - NODE_ENV=${NODE_ENV}
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  mcp:
+    build:
+      context: .  # Root context allows access to all workspaces
+      dockerfile: mcp/Dockerfile
+    container_name: mevscan-mcp
+    ports:
+      - "3002:3002"
+    environment:
+      - CLICKHOUSE_URL=${CLICKHOUSE_URL}
+      - CLICKHOUSE_USERNAME=${CLICKHOUSE_USERNAME}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
       - NODE_ENV=${NODE_ENV}
     env_file:
       - .env
