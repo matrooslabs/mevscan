@@ -80,6 +80,31 @@ export default defineConfig([
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+  // MCP configuration (Node.js environment) - TypeScript
+  {
+    files: ['mcp/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: path.join(__dirname, 'mcp/tsconfig.json'),
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
   // Client configuration (Browser environment) - JavaScript/JSX
   {
     files: ['client/**/*.{js,jsx}'],

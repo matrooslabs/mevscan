@@ -1,0 +1,36 @@
+{
+  "name": "@mevscan/mcp",
+  "version": "1.0.0",
+  "description": "MCP server for MEVScan",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "node dist/index.js",
+    "dev": "tsx index.ts",
+    "dev:watch": "tsx watch index.ts",
+    "lint": "eslint .",
+    "format": "prettier --write --ignore-path ../.prettierignore \"**/*.ts\"",
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"**/*.ts\""
+  },
+  "keywords": [
+    "mcp",
+    "blockchain",
+    "mev"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@clickhouse/client": "^0.2.7",
+    "@mevscan/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.0"
+  }
+}
