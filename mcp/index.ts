@@ -24,8 +24,7 @@ const server = new McpServer({
   { tx_hash: z.string() },
   async ({ tx_hash }: { tx_hash: string }) => {
     const result = await clickhouse.query({
-      query: `SELECT trace_nodes.trace_idx, trace_nodes.trace_address,
-                   trace_nodes.action_kind, trace_nodes.action
+      query: `SELECT *
             FROM brontes.tree
             WHERE tx_hash = {tx_hash:String}
             LIMIT 1`,
