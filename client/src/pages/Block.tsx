@@ -90,7 +90,7 @@ function Block() {
       {/* Header */}
       <div className="block-header">
         <div className="block-header-content">
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={() => navigate('/explorer')} className="back-button">
             ← Back
           </button>
           <div className="block-title-section">

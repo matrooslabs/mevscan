@@ -78,6 +78,12 @@
   transform: translateY(0);
 }
 
+.navbar-menu-item-active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
 .navbar-menu-item:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;

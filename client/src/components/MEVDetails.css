@@ -1,0 +1,217 @@
+/* MEV Details shared styles */
+.mev-details {
+  padding: 0;
+}
+
+.mev-details-loading,
+.mev-details-error,
+.mev-details-empty {
+  padding: var(--spacing-lg);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.mev-details-loading {
+  color: var(--color-primary);
+}
+
+.mev-details-error {
+  color: #ef4444;
+  background-color: #fef2f2;
+  border-radius: var(--radius-sm);
+  margin: var(--spacing-md);
+}
+
+.mev-details-empty {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Summary */
+.mev-details-summary {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Detail rows */
+.mev-detail-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 0.375rem 0;
+}
+
+.mev-detail-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.mev-detail-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mev-detail-value a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.mev-detail-value a:hover {
+  text-decoration: underline;
+}
+
+.mev-profit {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+/* MEV Type Badges */
+.mev-type-badge-atomic {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(0, 153, 204, 0.1);
+  color: #0099cc;
+  border: 1px solid #0099cc;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mev-type-badge-cexdex {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(204, 0, 102, 0.1);
+  color: #cc0066;
+  border: 1px solid #cc0066;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mev-type-badge-liquidation {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(139, 63, 216, 0.1);
+  color: #8b3fd8;
+  border: 1px solid #8b3fd8;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Protocol Badge */
+.protocol-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Token Symbol */
+.token-symbol {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+}
+
+/* Section Block */
+.mev-section-block {
+  border-top: 1px solid var(--color-border-primary);
+  padding: var(--spacing-lg);
+}
+
+.mev-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mev-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Swaps List */
+.swaps-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.swap-card {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.swap-header {
+  padding: 0.5rem var(--spacing-md);
+  background-color: var(--color-bg-quaternary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.swap-details {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.monospace {
+  font-family: var(--font-family-mono);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mev-detail-label {
+    min-width: 100px;
+  }
+
+  .mev-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .mev-details-summary {
+    padding: var(--spacing-md);
+  }
+
+  .mev-section-block {
+    padding: var(--spacing-md);
+  }
+}

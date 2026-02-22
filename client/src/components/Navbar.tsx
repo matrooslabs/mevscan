@@ -1,10 +1,13 @@
 import { useCallback } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Button, Box } from '@mui/material';
 import logoImage from '../assets/logo-timeboost.png';
 import './Navbar.css';
 
 function Navbar() {
+  const location = useLocation();
+  const isDashboard = location.pathname === '/';
+
   const scrollToSection = useCallback((targetId: string) => {
     if (typeof window === 'undefined') return;
 
@@ -49,37 +52,49 @@ function Navbar() {
           aria-label="Section navigation"
         >
           <Button
-            type="button"
-            className="navbar-menu-item"
+            component={RouterLink}
+            to="/explorer"
+            className={`navbar-menu-item ${!isDashboard ? 'navbar-menu-item-active' : ''}`}
             variant="text"
-            onClick={() => scrollToSection('live-section')}
           >
-            Live
+            Explorer
           </Button>
-          <Button
-            type="button"
-            className="navbar-menu-item"
-            variant="text"
-            onClick={() => scrollToSection('mev-section')}
-          >
-            MEV
-          </Button>
-          <Button
-            type="button"
-            className="navbar-menu-item"
-            variant="text"
-            onClick={() => scrollToSection('express-lane-section')}
-          >
-            Express Lane
-          </Button>
-          <Button
-            type="button"
-            className="navbar-menu-item"
-            variant="text"
-            onClick={() => scrollToSection('timeboost-section')}
-          >
-            Timeboost
-          </Button>
+          {isDashboard && (
+            <>
+              <Button
+                type="button"
+                className="navbar-menu-item"
+                variant="text"
+                onClick={() => scrollToSection('live-section')}
+              >
+                Live
+              </Button>
+              <Button
+                type="button"
+                className="navbar-menu-item"
+                variant="text"
+                onClick={() => scrollToSection('mev-section')}
+              >
+                MEV
+              </Button>
+              <Button
+                type="button"
+                className="navbar-menu-item"
+                variant="text"
+                onClick={() => scrollToSection('express-lane-section')}
+              >
+                Express Lane
+              </Button>
+              <Button
+                type="button"
+                className="navbar-menu-item"
+                variant="text"
+                onClick={() => scrollToSection('timeboost-section')}
+              >
+                Timeboost
+              </Button>
+            </>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

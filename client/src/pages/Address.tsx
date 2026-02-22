@@ -85,7 +85,7 @@ function Address() {
       {/* Header */}
       <div className="address-header">
         <div className="address-header-content">
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={() => navigate('/explorer')} className="back-button">
             ← Back
           </button>
           <div className="address-title-section">
@@ -300,7 +300,7 @@ function Address() {
                           </Link>
                         </td>
                         <td>
-                          <Link to={`/block/${tx.blockNumber}`} className="block-link">
+                          <Link to={`/blocks/${tx.blockNumber}`} className="block-link">
                             {tx.blockNumber.toLocaleString()}
                           </Link>
                         </td>

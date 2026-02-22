@@ -86,7 +86,7 @@ function Transaction() {
       {/* Header */}
       <div className="transaction-header">
         <div className="transaction-header-content">
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={() => navigate('/explorer')} className="back-button">
             ← Back
           </button>
           <div className="transaction-title-section">
