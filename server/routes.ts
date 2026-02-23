@@ -7,6 +7,7 @@ import { registerExpressLaneRoutes } from './routes/expressLane';
 import { registerTimeboostRoutes } from './routes/timeboost';
 import { registerMevDetailsRoutes } from './routes/mevDetails';
 import { registerHealthRoutes } from './routes/health';
+import { registerTreeRoutes } from './routes/tree';
 
 /**
  * Register all routes with the Express app
@@ -19,5 +20,6 @@ export function registerRoutes(app: Express) {
   registerExpressLaneRoutes(app);
   registerTimeboostRoutes(app);
   registerMevDetailsRoutes(app);
+  registerTreeRoutes(app);
   registerHealthRoutes(app);
 }
