@@ -2,6 +2,69 @@ import type { Express } from 'express';
 import { Request, Response, ErrorResponse } from './types';
 import { handleRouteError } from '../utils/errorHandler';
 
+interface TraceNode {
+  trace_idx: number;
+  trace_address: number[];
+  action_kind: string | null;
+  action: object | null;
+  children: TraceNode[];
+}
+
+function buildTraceTree(
+  traceIdxs: number[],
+  traceAddresses: number[][],
+  actionKinds: (string | null)[],
+  actions: (string | null)[],
+): TraceNode[] {
+  const nodes: TraceNode[] = traceIdxs.map((_, i) => {
+    let parsedAction: object | null = null;
+    if (actions[i]) {
+      try {
+        parsedAction = JSON.parse(actions[i]!);
+      } catch {
+        parsedAction = { raw: actions[i] };
+      }
+    }
+    return {
+      trace_idx: traceIdxs[i],
+      trace_address: traceAddresses[i],
+      action_kind: actionKinds[i],
+      action: parsedAction,
+      children: [],
+    };
+  });
+
+  nodes.sort((a, b) => {
+    const len = Math.min(a.trace_address.length, b.trace_address.length);
+    for (let i = 0; i < len; i++) {
+      if (a.trace_address[i] !== b.trace_address[i]) return a.trace_address[i] - b.trace_address[i];
+    }
+    return a.trace_address.length - b.trace_address.length;
+  });
+
+  const addrToNode = new Map<string, TraceNode>();
+  const roots: TraceNode[] = [];
+
+  for (const node of nodes) {
+    const key = node.trace_address.join(',');
+    addrToNode.set(key, node);
+
+    if (node.trace_address.length === 0) {
+      roots.push(node);
+    } else {
+      const parentKey = node.trace_address.slice(0, -1).join(',');
+      const parent = addrToNode.get(parentKey);
+      if (parent) {
+        parent.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    }
+  }
+
+  return roots;
+}
+
 /**
  * Register tree routes
  */
@@ -52,7 +115,12 @@ export function registerTreeRoutes(app: Express) {
             tx_idx: number;
             from: string;
             to: string | null;
-            gas_details: [string | null, string, string, string];
+            gas_details: {
+              coinbase_transfer: string | null;
+              priority_fee: string;
+              gas_used: string;
+              effective_gas_price: string;
+            };
             'trace_nodes.trace_idx': number[];
             'trace_nodes.trace_address': number[][];
             'trace_nodes.action_kind': (string | null)[];
@@ -69,7 +137,25 @@ export function registerTreeRoutes(app: Express) {
           return;
         }
 
-        res.json(data[0]);
+        const row = data[0];
+
+        const traceTree = buildTraceTree(
+          row['trace_nodes.trace_idx'],
+          row['trace_nodes.trace_address'],
+          row['trace_nodes.action_kind'],
+          row['trace_nodes.action'],
+        );
+
+        res.json({
+          block_number: row.block_number,
+          tx_hash: row.tx_hash,
+          tx_idx: row.tx_idx,
+          from: row.from,
+          to: row.to,
+          gas_details: row.gas_details,
+          timeboosted: row.timeboosted,
+          trace_tree: traceTree,
+        });
       } catch (error) {
         handleRouteError(error, res, 'transaction tree');
       }
