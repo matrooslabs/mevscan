@@ -6,8 +6,50 @@ interface TraceNode {
   trace_idx: number;
   trace_address: number[];
   action_kind: string | null;
-  action: object | null;
+  action: Record<string, unknown> | null;
   children: TraceNode[];
+}
+
+function isRational(value: unknown): value is { s: boolean; n: string; d: string } {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  return typeof obj.s === 'boolean' && typeof obj.n === 'string' && typeof obj.d === 'string';
+}
+
+function rationalToDecimal(n: string, d: string, s: boolean): string {
+  const num = BigInt(n);
+  const den = BigInt(d);
+  if (den === 0n) return '0';
+  const whole = num / den;
+  const remainder = num % den;
+  const sign = s ? '' : '-';
+  if (remainder === 0n) return `${sign}${whole}`;
+  const precision = 18;
+  const scaled = (remainder * 10n ** BigInt(precision)) / den;
+  const decimalPart = scaled.toString().padStart(precision, '0').replace(/0+$/, '');
+  if (!decimalPart) return `${sign}${whole}`;
+  return `${sign}${whole}.${decimalPart}`;
+}
+
+function enrichValue(value: unknown): unknown {
+  if (isRational(value)) {
+    return rationalToDecimal(value.n, value.d, value.s);
+  }
+  if (Array.isArray(value)) {
+    return value.map(enrichValue);
+  }
+  if (value && typeof value === 'object') {
+    return enrichAction(value as Record<string, unknown>);
+  }
+  return value;
+}
+
+function enrichAction(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = enrichValue(value);
+  }
+  return result;
 }
 
 function buildTraceTree(
@@ -17,10 +59,10 @@ function buildTraceTree(
   actions: (string | null)[],
 ): TraceNode[] {
   const nodes: TraceNode[] = traceIdxs.map((_, i) => {
-    let parsedAction: object | null = null;
+    let parsedAction: Record<string, unknown> | null = null;
     if (actions[i]) {
       try {
-        parsedAction = JSON.parse(actions[i]!);
+        parsedAction = enrichAction(JSON.parse(actions[i]!));
       } catch {
         parsedAction = { raw: actions[i] };
       }
